@@ -14,7 +14,7 @@ export default function SuggestionGroupClickModal({
   const [suggestionGroups, setSuggestionGroups] = useState<SuggestionGroup[]>([])
 
   useEffect(() => {
-    fetch("/src/api/suggestGroup.json")
+    fetch("/src/api/suggestionGroup.json")
       .then((res) => res.json())
       .then((data) => setSuggestionGroups(data))
   }, [])
