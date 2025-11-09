@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "groupName": "USTP Green Advocate",
+    "members": 100,
+    "isFollowed": false
+  },
+  {
+    "id": 2,
+    "groupName": "Cyber Org",
+    "members": 100,
+    "isFollowed": false
+  },
+  {
+    "id": 3,
+    "groupName": "Lycan Org",
+    "members": 99,
+    "isFollowed": false
+  },
+  {
+    "id": 4,
+    "groupName": "Office of Student Affair",
+    "members": 1256,
+    "isFollowed": false
+  }
+]

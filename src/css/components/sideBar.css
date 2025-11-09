@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+
+@layer components{
+    .side-bar-container{
+        @apply fixed bottom-0 left-0 w-full bg-[#1F1B4F] h-16 justify-center items-center p-2 /* --- Smaller Screens --- */
+        sm:px-8
+        md:relative md:h-full md:justify-start md:p-4 md:w-56 /* Set fixed width (14rem) & full height */
+    }
+
+    .list-item-container{
+        @apply flex flex-row justify-between w-full
+        md:flex-col md:gap-y-2 /* Tighter gap for sleeker look */
+    }
+
+    .logo-container{
+        @apply cursor-pointer flex flex-col justify-center items-center
+        md:flex-row md:w-full md:justify-start md:gap-x-3 /* Use full width and a larger gap */
+        md:p-3 md:rounded-lg md:hover:bg-[#3A357A] /* Hover button styles */
+    }
+
+    .typograpy{
+        @apply text-sm      /* Standardized mobile text */
+        md:text-base      /* Standardized desktop text (16px) */
+    }
+
+    .logo-size{
+        @apply h-6 w-6; /* 24px is a clear, solid size for all breakpoints */
+    }
+}
