@@ -195,6 +195,7 @@ export default function Register() {
         <Button 
           type="submit"
           buttonText = "Sign Up"
+          buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"
         />  
         
       </>
