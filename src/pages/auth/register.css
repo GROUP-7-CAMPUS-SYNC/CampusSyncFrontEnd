@@ -1,0 +1,6 @@
+
+@media (min-width: 641px){
+    .custom-break{
+        flex-direction: row
+    }
+}
