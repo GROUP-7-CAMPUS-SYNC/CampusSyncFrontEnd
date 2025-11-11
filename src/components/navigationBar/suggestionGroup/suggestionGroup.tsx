@@ -17,8 +17,8 @@ export default function suggestionGroup() {
     <form action="" onSubmit={handleClickSuggestionGroup}>
         <button
             type="button"
-            className="block sm:hidden
-            bg-[#3B82F6] px-[12px] py-[3px] w-fit text-white rounded-[6px]
+            className="block [@media(min-width:820px)]:hidden
+            bg-[#3B82F6] px-3 py-[3px] w-fit text-white rounded-md
             hover:bg-[#2563EB] transition-colors
             duration-200 hover:cursor-pointer"
             onClick={() => setClickSuggestionGroup(true)}
@@ -27,7 +27,7 @@ export default function suggestionGroup() {
         </button>
         <Button
             type="button"
-            buttonContainerDesign="hidden sm:block bg-[#3B82F6] px-[8px] py-[6px] text-white rounded-[6px]
+            buttonContainerDesign="hidden [@media(min-width:820px)]:block bg-[#3B82F6] px-[8px] py-[6px] text-white rounded-[6px]
             hover:bg-[#2563EB] transition-colors duration-200 hover:cursor-pointer whitespace-nowrap
             "
             buttonText="Suggest Group"

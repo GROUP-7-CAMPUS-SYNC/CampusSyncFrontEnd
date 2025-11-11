@@ -1,10 +1,16 @@
 interface LogoHoverMessageProps {
+  clickNotification: boolean
+  clickProfile: boolean
+  clickLogOut: boolean
   containerDesign?: string
   messageDesign?: string
   message: string
 }
 
 export default function LogoHoverMessage({
+  clickNotification,
+  clickProfile,
+  clickLogOut,
   containerDesign = `
     absolute left-1/2 -translate-x-1/2 top-full mt-7
     invisible opacity-0 group-hover:visible group-hover:opacity-100
@@ -15,11 +21,15 @@ export default function LogoHoverMessage({
   message,
 }: LogoHoverMessageProps) {
   return (
-    <div
-      className={containerDesign}
-      style={{ fontFamily: 'Roboto, sans-serif' }}
-    >
-      <p className={messageDesign}>{message}</p>
-    </div>
+    <>
+      {!clickNotification && !clickProfile && !clickLogOut && (
+        <div
+          className={containerDesign}
+          style={{ fontFamily: 'Roboto, sans-serif' }}
+        >
+          <p className={messageDesign}>{message}</p>
+        </div>
+      )}
+    </>
   )
 }

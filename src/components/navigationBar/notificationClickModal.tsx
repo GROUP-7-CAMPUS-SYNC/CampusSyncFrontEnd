@@ -27,9 +27,9 @@ export default function NotificationClickModal() {
   return (
     <div
       className="
-        fixed right-4 top-[11%]
+        fixed right-4 top-19
         bg-white shadow-lg rounded-xl border border-gray-200
-        p-4 z-[9999]
+        p-4 z-9999
         w-[90vw] sm:w-[350px] md:w-[400px] lg:w-[450px]
       "
     >
@@ -47,7 +47,7 @@ export default function NotificationClickModal() {
             <img
               src={NotificationPersonLogo}
               alt="User Icon"
-              className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0"
+              className="w-10 h-10 rounded-full bg-gray-100 shrink-0"
             />
 
             {/* Content */}

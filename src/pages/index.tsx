@@ -31,14 +31,17 @@ export default function index() {
     <div
         className="flex flex-col h-screen overflow-hidden"
     >
-        <TopBar/>
         <div
             className="flex md:flex-row flex-col flex-1 overflow-hidden"
         >
+            
             <SideBar currentPage={currentPage} setCurrentPage={setCurrentPage}/>
+
             <main
                 className="flex-1 overflow-y-auto pb-16 md:pb-0" 
             >
+                <TopBar/>
+
                 {renderPage()}
             </main>
         </div>
