@@ -7,7 +7,7 @@ interface WebsiteLogoProps {
 
 export default function websiteLogo({
     profileDesign,
-    imageDesign = "h-full"
+    imageDesign = "w-full h-full"
 } : WebsiteLogoProps) {
   return (
     <div

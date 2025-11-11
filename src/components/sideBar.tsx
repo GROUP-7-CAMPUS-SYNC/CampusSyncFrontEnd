@@ -1,6 +1,8 @@
 import { Home, Search, Calendar, BookOpen, BookmarkPlus } from "lucide-react"
 import type { SideBarProps } from "../types/sideBar"
 import '../css/components/sideBar.css'
+import WebsiteLogo from "../components/navigationBar/websiteLogo"
+
 
 export default function sideBar({ 
     currentPage,
@@ -9,6 +11,13 @@ export default function sideBar({
     <nav
         className="side-bar-container"
     >
+        <div
+            className="hidden md:flex justify-center items-center w-full mb-5"
+        >
+            <WebsiteLogo 
+                profileDesign="w-[100px] h-[100px]"
+            />
+        </div>
         <ul
             className="list-item-container"
         >
@@ -16,11 +25,11 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("home")}
-                    className="logo-container"
+                    className={`logo-container ${currentPage === "home" ? "logo-container-current-page" : ""}`}
                 >
-                    <Home color={`${currentPage === "home" ? "#F9BF3B" : "white"}`} className="logo-size"/>
+                    <Home className="logo-size"/>
                     <p
-                        className={`typograpy ${currentPage === "home" ? "text-[#F9BF3B]" : "text-white"}`}
+                        className={`typograpy`}
                     >
                         Home
                     </p>
@@ -30,12 +39,12 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("lost&found")}
-                    className="logo-container"
+                    className={`logo-container ${currentPage === "lost&found" ? "logo-container-current-page" : ""}`}
                 >
-                    <Search color={`${currentPage === "lost&found" ? "#F9BF3B" : "white"}`} className="logo-size"/>
+                    <Search className="logo-size"/>
 
                     <p
-                        className={`typograpy ${currentPage === "lost&found" ? "text-[#F9BF3B]" : "text-white"}`}
+                        className={`typograpy`}
                     >
                         Lost & Found
                     </p>
@@ -45,11 +54,11 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("event")}
-                    className="logo-container"
+                    className={`logo-container ${currentPage === "event" ? "logo-container-current-page" : ""}`}
                 >
-                    <Calendar color={`${currentPage === "event" ? "#F9BF3B" : "white"}`} className="logo-size"/>
+                    <Calendar className="logo-size"/>
                     <p
-                        className={`typograpy ${currentPage === "event" ? "text-[#F9BF3B]" : "text-white"}`} 
+                        className={`typograpy`}
                     >
                         Event
                     </p>
@@ -59,11 +68,11 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("announcement")}
-                    className="logo-container"
+                    className={`logo-container ${currentPage === "announcement" ? "logo-container-current-page" : ""}`}
                 >
-                    <BookOpen color={`${currentPage === "announcement" ? "#F9BF3B" : "white"}`} className="logo-size"/>
+                    <BookOpen className="logo-size"/>
                     <p
-                        className={`typograpy ${currentPage === "announcement" ? "text-[#F9BF3B]" : "text-white"}`} 
+                        className={`typograpy`}
                     >
                         Announce
                     </p>
@@ -73,12 +82,12 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("save")} 
-                    className="logo-container"
+                    className={`logo-container ${currentPage === "save" ? "logo-container-current-page" : ""}`}
                 >
-                    <BookmarkPlus color={`${currentPage === "save" ? "#F9BF3B" : "white"}`} className="logo-size"/>
+                    <BookmarkPlus className="logo-size"/>
 
                     <p
-                        className={`typograpy ${currentPage === "save" ? "text-[#F9BF3B]" : "text-white"}`}
+                        className={`typograpy`}
                     >
                         Save
                     </p>
