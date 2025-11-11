@@ -1,4 +1,4 @@
-import { Home, Search, Calendar, BookOpen, BookmarkPlus } from "lucide-react"
+import { Home, Search, Calendar, GraduationCap, BookmarkPlus } from "lucide-react"
 import type { SideBarProps } from "../types/sideBar"
 import '../css/components/sideBar.css'
 import WebsiteLogo from "../components/navigationBar/websiteLogo"
@@ -67,14 +67,14 @@ export default function sideBar({
 
             <li>
                 <button
-                    onClick={() => setCurrentPage("announcement")}
-                    className={`logo-container ${currentPage === "announcement" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
+                    onClick={() => setCurrentPage("academic")}
+                    className={`logo-container ${currentPage === "academic" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
-                    <BookOpen className="logo-size"/>
+                    <GraduationCap className="logo-size"/>
                     <p
                         className={`typograpy`}
                     >
-                        Announce
+                        Academic
                     </p>
                 </button>
             </li>

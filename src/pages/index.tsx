@@ -19,7 +19,7 @@ export default function index() {
                 return <LostAndFound/>
             case "event":
                 return <Event/>
-            case "announcement":
+            case "academic":
                 return <Announcement/>
             case "save":
                 return <Save/>
