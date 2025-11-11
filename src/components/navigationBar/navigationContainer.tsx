@@ -37,7 +37,7 @@ export default function navigationContainer() {
 
   return (
     <div
-        className="2xl:pl-10 flex border-b w-full h-18 py-2 2xl:px-3 px-2"
+        className="2xl:pl-10 flex shadow-lg w-full h-18 py-2 2xl:px-3 px-2"
     >
         <div
             className="w-full flex justify-between gap-x-2 items-center"
