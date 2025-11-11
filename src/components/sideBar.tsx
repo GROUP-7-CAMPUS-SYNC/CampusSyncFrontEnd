@@ -25,7 +25,7 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("home")}
-                    className={`logo-container ${currentPage === "home" ? "logo-container-current-page" : ""}`}
+                    className={`logo-container ${currentPage === "home" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
                     <Home className="logo-size"/>
                     <p
@@ -39,7 +39,7 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("lost&found")}
-                    className={`logo-container ${currentPage === "lost&found" ? "logo-container-current-page" : ""}`}
+                    className={`logo-container ${currentPage === "lost&found" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
                     <Search className="logo-size"/>
 
@@ -54,7 +54,7 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("event")}
-                    className={`logo-container ${currentPage === "event" ? "logo-container-current-page" : ""}`}
+                    className={`logo-container ${currentPage === "event" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
                     <Calendar className="logo-size"/>
                     <p
@@ -68,7 +68,7 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("announcement")}
-                    className={`logo-container ${currentPage === "announcement" ? "logo-container-current-page" : ""}`}
+                    className={`logo-container ${currentPage === "announcement" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
                     <BookOpen className="logo-size"/>
                     <p
@@ -82,7 +82,7 @@ export default function sideBar({
             <li>
                 <button
                     onClick={() => setCurrentPage("save")} 
-                    className={`logo-container ${currentPage === "save" ? "logo-container-current-page" : ""}`}
+                    className={`logo-container ${currentPage === "save" ? "logo-container-current-page" : "md:hover:bg-gray-300"}`}
                 >
                     <BookmarkPlus className="logo-size"/>
 
