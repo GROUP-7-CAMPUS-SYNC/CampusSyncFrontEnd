@@ -3,9 +3,10 @@
 
 @layer components{
     .side-bar-container{
-        @apply fixed bottom-0 left-0 w-full bg-white shadow-lg h-16 justify-center items-center p-2 /* --- Smaller Screens --- */
+        @apply fixed bottom-0 left-0 w-full bg-white   h-16 justify-center items-center p-2 /* --- Smaller Screens --- */
         sm:px-8
         md:relative md:h-full md:justify-start md:p-4 md:w-56 /* Set fixed width (14rem) & full height */
+        shadow-[0_-8px_16px_rgba(0,0,0,0.1)]  md:shadow-[2px_0_8px_rgba(0,0,0,0.1)]
     }
 
     .list-item-container{
