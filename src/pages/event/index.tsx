@@ -31,8 +31,10 @@ export default function index() {
       />
 
       {isPostClicked && (
-        <CreatePost onClose={() => setIsPostClicked(false)} />
+        <CreatePost  onClose={() => setIsPostClicked(false)} />
       )}
+
+      <p>wqeqw</p>
     </div>
   )
 }
