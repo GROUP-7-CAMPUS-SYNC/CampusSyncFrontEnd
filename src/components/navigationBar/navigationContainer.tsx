@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import Notification from "./notification";
-import Profile from "./profile/profilePicture";
+import ProfilePicture from "./profile/profilePicture";
 import UserName from "./profile/userName";
 import SearchBar from "../searchBar";
 import SuggestionGroup from "./suggestionGroup/suggestionGroup";
@@ -130,7 +130,7 @@ export default function NavigationContainer() {
 
                         {/* PROFILE */}
                         <div className="relative group">
-                            <Profile
+                            <ProfilePicture
                                 profileImageURL="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
                                 onClick={handleProfileClick}
                             />

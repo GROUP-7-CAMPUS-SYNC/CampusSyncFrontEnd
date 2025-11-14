@@ -61,12 +61,15 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
             }`}
           >
             <Calendar className="logo-size" />
-            <p
+
+            <div
               className={`flex flex-row justify-between w-full items-center typograpy`}
             >
-              Event
-              <ChevronDown />
-            </p>
+              <p>Event</p>
+              <p className="hidden md:block">
+                <ChevronDown />
+              </p>
+            </div>
           </button>
         </li>
 

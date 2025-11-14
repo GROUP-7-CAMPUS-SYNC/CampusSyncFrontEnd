@@ -56,9 +56,9 @@ export default function SearchBar({
             <li className="px-4 py-2 text-xs text-gray-500 font-semibold sticky top-0 mb-1 bg-white">
               Recent Searches
             </li>
-            {filteredSearches.map((term) => (
+            {filteredSearches.map((term, index) => (
               <li
-                key={term}
+                key={`${term}-${index}`}
                 className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm text-gray-800"
                 onMouseDown={() => handleRecentSearchClick(term)}
               >
