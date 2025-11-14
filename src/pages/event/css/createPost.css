@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+form {
+  @apply flex flex-col space-y-3;
+}
+
+.event-details {
+  @apply flex flex-col space-y-2;
+}
+
+label {
+  @apply sm:text-base text-sm font-medium;
+}
+
+.input-detail {
+  @apply border rounded-lg sm:px-3 sm:py-2 px-2 py-1 outline-[#3A357A];
+}
+
+h3 {
+  @apply text-center font-semibold sm:text-xl text-lg sm:mb-4 mb-3 text-gray-800;
+}
+
+p {
+  @apply text-sm sm:text-base font-medium;
+}
+
+.set-date-wrapper {
+  @apply flex flex-col sm:gap-4 gap-2 sm:pt-2;
+}
+
+.set-date-container {
+  @apply flex flex-row justify-between items-center;
+}
+
+.set-date {
+  @apply bg-[#3A357A] text-[#fafafa] rounded-xl sm:px-3 sm:py-2 px-2 py-1 cursor-pointer;
+}
+
+.set-date::-webkit-calendar-picker-indicator {
+  @apply invert  sm:ml-0 -ml-3;
+}
+
+.set-date::-webkit-datetime-edit {
+  @apply sm:text-base text-sm;
+}
+
+.img-input-container {
+  @apply flex flex-col border rounded-lg px-6 py-12 items-center justify-center cursor-pointer;
+}
+
+.img-input {
+  @apply hidden;
+}
+
+.button-wrapper {
+  @apply flex justify-between md:pt-4;
+}
+
+.close-btn {
+  @apply border font-semibold md:px-4 md:py-2 p-2  rounded-lg transition-colors duration-100;
+}
+
+.close-btn:hover {
+  @apply bg-black/70 text-white;
+}
+
+.post-btn {
+  @apply border bg-[#3A357A] text-white font-semibold md:px-5 md:py-2 px-3 rounded-lg transition-colors duration-100;
+}
+
+.post-btn:hover {
+  @apply bg-[#2655a1] border-[#2655a1];
+}
