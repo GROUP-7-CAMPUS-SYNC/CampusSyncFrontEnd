@@ -35,6 +35,15 @@ export default function navigationContainer() {
         setClickProfile(false)
     }
 
+    const recentSearchesData: string[] = [
+        "Student ID",
+        "Laptop Acer",
+        "Week of welcome",
+        "Samsung phone",
+        "Cyber Security",
+        "Organization of Student Asso."
+    ]
+
   return (
     <div
         className="2xl:pl-10 flex shadow-lg w-full h-18 py-2 2xl:px-3 px-2"
@@ -60,6 +69,7 @@ export default function navigationContainer() {
                             value={searchBarValue}
                             onChange={(e) => setSearchBarValue(e.target.value)}
                             placeholder="Search post, event, or item"
+                            recentSearch={recentSearchesData}
                         />
                     </div>
                 </div>
@@ -119,7 +129,6 @@ export default function navigationContainer() {
                         message="Log Out" 
                     />
                 </div>
-
             </div>
         </div>
 
