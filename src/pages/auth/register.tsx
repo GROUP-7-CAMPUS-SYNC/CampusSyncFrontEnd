@@ -104,11 +104,11 @@ export default function Register() {
             <>
               <StringTextField
                 label="University Email"
-                placeholder="example@1.ustp.edu.ph"
+                placeholder="example@ustp.edu.ph"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                errorMessage="Please enter a valid university email"
-                showError={formSubmitted && email.trim() === ""}
+                errorMessage="Please use your USTP student email"
+                showError={formSubmitted && !email.endsWith("@ustp.edu.ph")}
               />
 
               <StringTextField
@@ -175,7 +175,7 @@ export default function Register() {
 
         <StringTextField
           label="University Email"
-          placeholder="example@1.ustp.edu.ph"
+          placeholder="example@ustp.edu.ph"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           errorMessage="Please enter a valid university email"
