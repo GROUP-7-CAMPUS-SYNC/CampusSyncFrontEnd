@@ -17,7 +17,7 @@ export default function login() {
         e.preventDefault()
         setFormSubmitted(true)
 
-        if(email.trim() === "" || password.trim() === "") return
+        if(email.trim() === "" || password.trim() === "" ||   !email.endsWith("@ustp.edu.ph")) return
         setLoginFlag()
 
         navigation("/home")

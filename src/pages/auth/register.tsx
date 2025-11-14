@@ -39,7 +39,8 @@ export default function Register() {
         lastName.trim() === "" || 
         course.trim() === "" || 
         email.trim() === "" ||
-        password.trim() === ""
+        password.trim() === "" ||
+        !email.endsWith("@ustp.edu.ph")
       ) return
     setLoginFlag()
 
@@ -179,7 +180,7 @@ export default function Register() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           errorMessage="Please enter a valid university email"
-          showError={formSubmitted && email.trim() === ""}
+          showError={formSubmitted && !email.endsWith("@ustp.edu.ph")}
         />
 
         <StringTextField
