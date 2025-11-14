@@ -4,11 +4,11 @@ import {
   Calendar,
   GraduationCap,
   BookmarkPlus,
-  Triangle,
 } from "lucide-react";
 import type { SideBarProps } from "../types/sideBar";
 import "../css/components/sideBar.css";
 import WebsiteLogo from "../components/navigationBar/websiteLogo";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
@@ -61,7 +61,12 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
             }`}
           >
             <Calendar className="logo-size" />
-            <p className={`typograpy`}>Event</p>
+            <p
+              className={`flex flex-row justify-between w-full items-center typograpy`}
+            >
+              Event
+              <ChevronDown />
+            </p>
           </button>
         </li>
 

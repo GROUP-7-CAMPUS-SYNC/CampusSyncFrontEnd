@@ -1,6 +1,5 @@
-// File: src/pages/lost&found/createPost/createPost.tsx
-import React, { useState } from "react";
-import LostFoundPost from "../../../components/lostFoundPost";
+import { useState } from "react";
+import LostFoundPost from "../../../components/LostFoundPost";
 
 const CreatePost = () => {
   const [isOpen, setIsOpen] = useState(false);

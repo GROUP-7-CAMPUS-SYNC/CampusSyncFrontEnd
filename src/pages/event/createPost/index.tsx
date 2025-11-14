@@ -74,12 +74,12 @@ export default function CreatePost({ onClose }: CloseProps) {
           </div>
 
           {/* Image Input */}
-          <div className="img-input-container">
+          <label className="img-input-container">
             <BiImageAdd size={40} />
             <span className="text-gray-800">+ Upload Image</span>
 
             <input type="file" accept="image" className="img-input" />
-          </div>
+          </label>
 
           {/* Buttons */}
           <div className="button-wrapper">

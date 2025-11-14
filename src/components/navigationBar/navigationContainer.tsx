@@ -145,7 +145,7 @@ export default function NavigationContainer() {
                         {/* LOGOUT */}
                         <div className="relative group">
                             <button
-                                className={`p-2 flex items-center gap-x-2 rounded-md transition-colors duration-200 ${
+                                className={`p-2 flex cursor-pointer items-center gap-x-2 rounded-md transition-colors duration-200 ${
                                     clickLogOut
                                         ? "bg-gray-400"
                                         : "hover:bg-gray-300"
