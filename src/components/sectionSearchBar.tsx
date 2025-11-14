@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { SearchBarProps } from "../../../types/searchBar";
+import type { SearchBarProps } from "../types/searchBar";
 import { Search } from "lucide-react";
 
 export default function SearchBar({
