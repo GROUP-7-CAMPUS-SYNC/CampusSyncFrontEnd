@@ -1,11 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
 import "../css/createPost.css";
+import SearchBar from "../../../components/searchBar";
 import { BiImageAdd } from "react-icons/bi";
 
-export default function CreatePost() {
+type CloseProps = {
+  onClose: () => void;
+};
+
+export default function CreatePost({ onClose }: CloseProps) {
   return (
     <>
-      <div className="w-full max-w-lg md:mx-auto mx-14 bg-white rounded-2xl md:p-6 p-4 border shadow-xl shadow-white">
+      <div
+        className="
+      
+      bg-white border shadow-xl 
+
+      w-screen h-screen rounded-none
+
+      sm:w-full sm:h-auto sm:max-w-lg sm:rounded-2xl
+
+      p-4 lg:p-6
+      
+      "
+      >
         <h3>Create Post</h3>
 
         <form>
@@ -16,6 +33,7 @@ export default function CreatePost() {
               type="text"
               className="input-detail"
               placeholder="Enter Event Name"
+              required
             />
 
             <label>Location: </label>
@@ -23,6 +41,7 @@ export default function CreatePost() {
               type="text"
               className="input-detail"
               placeholder="Enter Event Location"
+              required
             />
 
             <label>Course: </label>
@@ -30,6 +49,7 @@ export default function CreatePost() {
               type="text"
               className="input-detail"
               placeholder="e.g. All BSIT Students"
+              required
             />
 
             <label>Open To: </label>
@@ -37,6 +57,7 @@ export default function CreatePost() {
               type="text"
               className="input-detail"
               placeholder="e.g. Open to Everyone"
+              required
             />
           </div>
 
@@ -53,17 +74,19 @@ export default function CreatePost() {
           </div>
 
           {/* Image Input */}
-          <label className="img-input-container">
+          <div className="img-input-container">
             <BiImageAdd size={40} />
             <span className="text-gray-800">+ Upload Image</span>
 
             <input type="file" accept="image" className="img-input" />
-          </label>
+          </div>
 
           {/* Buttons */}
           <div className="button-wrapper">
-            <button className="close-btn">Close</button>
-            <button className="post-btn">Post</button>
+            <button className="close-btn" onClick={onClose}>
+              Close
+            </button>
+            <button className="post-Btn">Post</button>
           </div>
         </form>
       </div>

@@ -1,132 +1,193 @@
-import { useState } from "react"
-import Notification from "./notification"
-import Profile from "./profile/profilePicture"
-import UserName from "./profile/userName"
-import SearchBar from "../searchBar"
-import SuggestionGroup from "./suggestionGroup/suggestionGroup"
-import LogoHoverMessage from "./logoHoverMessage"
-import NotificationClickModal from "./notificationClickModal"
-import ProfileClickModal from "./profileClickModal"
-import LogOutUser from "./logout"
-import { Search, ChevronDown, ChevronUp } from "lucide-react"
+import { useEffect, useRef, useState } from "react";
 
-export default function navigationContainer() {
-    
-    const [searchBarValue, setSearchBarValue] = useState<string>("")
-    const [clickNotification, setClickNotification] = useState<boolean>(false)
-    const [clickProfile, setClickProfile] = useState<boolean>(false)
-    const [clickLogOut, setClickLogOut] = useState<boolean>(false)
+import Notification from "./notification";
+import Profile from "./profile/profilePicture";
+import UserName from "./profile/userName";
+import SearchBar from "../searchBar";
+import SuggestionGroup from "./suggestionGroup/suggestionGroup";
+import LogoHoverMessage from "./logoHoverMessage";
 
+import NotificationClickModal from "./notificationClickModal";
+import ProfileClickModal from "./profileClickModal";
+import LogoutModal from "./logout";
+
+import { useScreenSize } from "../../hooks/useScreenSize";
+import { Search, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+
+export default function NavigationContainer() {
+    const [searchBarValue, setSearchBarValue] = useState<string>("");
+    const [clickNotification, setClickNotification] = useState(false);
+    const [clickProfile, setClickProfile] = useState(false);
+    const [clickLogOut, setClickLogOut] = useState(false);
+    const [clickSmallScreenSearchBar, setClickSmallScreenSearchbar] = useState(false);
+
+    const isSmallScreen = useScreenSize(400);
+
+    // Refs
+    const navRef = useRef<HTMLDivElement>(null);
+    const notifModalRef = useRef<HTMLDivElement>(null);
+    const profileModalRef = useRef<HTMLDivElement>(null);
+    const logoutModalRef = useRef<HTMLDivElement>(null);
+
+    // Reset mobile search bar when resizing to large screen
+    useEffect(() => {
+        if (!isSmallScreen) {
+            setClickSmallScreenSearchbar(false);
+        }
+    }, [isSmallScreen]);
+
+    // Global outside click handler
+    useEffect(() => {
+        const handleGlobalClick = (e: MouseEvent) => {
+            const target = e.target as Node;
+
+            const insideNav = navRef.current?.contains(target);
+            const insideNotifModal = notifModalRef.current?.contains(target);
+            const insideProfileModal = profileModalRef.current?.contains(target);
+            const insideLogoutModal = logoutModalRef.current?.contains(target);
+
+            if (insideNav || insideNotifModal || insideProfileModal || insideLogoutModal) {
+                return; // Do NOT close anything if clicked inside
+            }
+
+            // Close all modals if clicked outside
+            setClickNotification(false);
+            setClickProfile(false);
+            setClickLogOut(false);
+        };
+
+        window.addEventListener("mousedown", handleGlobalClick);
+        return () => window.removeEventListener("mousedown", handleGlobalClick);
+    }, []);
+
+    // Handlers
     const handleNotificationClick = () => {
-        setClickNotification(!clickNotification)
-        setClickProfile(false)
-        setClickLogOut(false)
-    }
+        setClickNotification(!clickNotification);
+        setClickProfile(false);
+        setClickLogOut(false);
+    };
 
     const handleProfileClick = () => {
-        setClickProfile(!clickProfile)
-        setClickNotification(false)
-        setClickLogOut(false)
-    }
+        setClickProfile(!clickProfile);
+        setClickNotification(false);
+        setClickLogOut(false);
+    };
 
     const handleLogOutClick = () => {
-        setClickLogOut(!clickLogOut)
-        setClickNotification(false)
-        setClickProfile(false)
-    }
+        setClickLogOut(!clickLogOut);
+        setClickNotification(false);
+        setClickProfile(false);
+    };
 
-  return (
-    <div
-        className="2xl:pl-10 flex shadow-lg w-full h-18 py-2 2xl:px-3 px-2"
-    >
-        <div
-            className="w-full flex justify-between gap-x-2 items-center"
-        >
-            <div
-                className="flex gap-x-3 items-center "
-            >
-                <div
-                    className=""
-                >
-                    {/* Small screen: only show Search icon */}
-                    <div className="block [@media(min-width:400px)]:hidden">
-                        <Search />
+    const recentSearchesData: string[] = [
+        "Student ID",
+        "Laptop Acer",
+        "Week of welcome",
+        "Samsung phone",
+        "Cyber Security",
+        "Organization of Student Asso.",
+    ];
+
+    return (
+        <div className="relative shadow-lg w-full" ref={navRef}>
+            {/* DESKTOP / NORMAL VIEW */}
+            {clickSmallScreenSearchBar === false && (
+                <div className="2xl:pl-10 flex w-full h-18 py-2 2xl:px-3 px-2 justify-between items-center gap-x-2">
+                    {/* LEFT SIDE */}
+                    <div className="flex gap-x-3 items-center">
+                        {/* Mobile Search Icon */}
+                        <div className="block [@media(min-width:400px)]:hidden">
+                            <button onClick={() => setClickSmallScreenSearchbar(true)}>
+                                <Search />
+                            </button>
+                        </div>
+
+                        {/* Desktop Search Bar */}
+                        <div className="hidden [@media(min-width:400px)]:block">
+                            <SearchBar
+                                value={searchBarValue}
+                                onChange={(e) => setSearchBarValue(e.target.value)}
+                                placeholder="Search post, event, or item"
+                                recentSearch={recentSearchesData}
+                            />
+                        </div>
+
+                        <SuggestionGroup />
                     </div>
 
+                    {/* RIGHT SIDE */}
+                    <div className="flex gap-x-6 items-center">
+                        {/* NOTIFICATION */}
+                        <div className="relative group">
+                            <Notification badgeCount={5} onClick={handleNotificationClick} />
+                            <LogoHoverMessage
+                                clickNotification={clickNotification}
+                                clickProfile={clickProfile}
+                                clickLogOut={clickLogOut}
+                                message="Notification"
+                            />
+                        </div>
 
-                    {/* Medium and larger screens: show SearchBar */}
-                    <div className="hidden [@media(min-width:400px)]:block">
-                        <SearchBar
-                            value={searchBarValue}
-                            onChange={(e) => setSearchBarValue(e.target.value)}
-                            placeholder="Search post, event, or item"
-                        />
+                        {/* PROFILE */}
+                        <div className="relative group">
+                            <Profile
+                                profileImageURL="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+                                onClick={handleProfileClick}
+                            />
+                            <LogoHoverMessage
+                                clickNotification={clickNotification}
+                                clickProfile={clickProfile}
+                                clickLogOut={clickLogOut}
+                                message="Profile"
+                            />
+                        </div>
+
+                        {/* LOGOUT */}
+                        <div className="relative group">
+                            <button
+                                className={`p-2 flex items-center gap-x-2 rounded-md transition-colors duration-200 ${
+                                    clickLogOut
+                                        ? "bg-gray-400"
+                                        : "hover:bg-gray-300"
+                                }`}
+                                onClick={handleLogOutClick}
+                            >
+                                <UserName userName="Liam" />
+                                {clickLogOut ? <ChevronUp /> : <ChevronDown />}
+                            </button>
+
+                            <LogoHoverMessage
+                                clickNotification={clickNotification}
+                                clickProfile={clickProfile}
+                                clickLogOut={clickLogOut}
+                                message="Log Out"
+                            />
+                        </div>
                     </div>
                 </div>
+            )}
 
-                <SuggestionGroup />
-            </div>
-
-            {/* Right Section - Icons */}
-            <div className="flex gap-x-6 items-center">
-                <div className="relative group">
-                    <Notification 
-                        badgeCount={5}
-                        onClick={handleNotificationClick}
-                    />
-                    <LogoHoverMessage
-                        clickNotification={clickNotification}
-                        clickProfile={clickProfile}
-                        clickLogOut={clickLogOut} 
-                        message="Notification" 
-                    />
-                </div>
-
-                <div className="relative group">
-                    <Profile 
-                        profileImageURL="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
-                        onClick={handleProfileClick}
-                    />
-
-                    <LogoHoverMessage
-                        clickNotification={clickNotification}
-                        clickProfile={clickProfile}
-                        clickLogOut={clickLogOut} 
-                        message="Profile" 
-                    />
-                </div>
-
-                <div className="relative group">
-                    <button
-                        className={`p-2 cursor-pointer flex flex-row items-center gap-x-2 rounded-md transition-colors duration-200 ${
-                            clickLogOut 
-                            ? 'bg-gray-400' // Active state (matches your image)
-                            : 'hover:bg-gray-300' // Subtle hover when not active
-                        }`}
-                        onClick={handleLogOutClick}
-                    >
-                        <UserName 
-                            userName="Liam"
-                        />
-
-                        {clickLogOut ? <ChevronUp/> : <ChevronDown/>}
+            {/* MOBILE SEARCH BAR */}
+            {clickSmallScreenSearchBar && (
+                <div className="flex flex-row justify-center items-center gap-y-10 w-full">
+                    <button onClick={() => setClickSmallScreenSearchbar(false)}>
+                        <ArrowLeft />
                     </button>
 
-                    <LogoHoverMessage
-                        clickNotification={clickNotification}
-                        clickProfile={clickProfile}
-                        clickLogOut={clickLogOut}
-                        message="Log Out" 
+                    <SearchBar
+                        searchBarContainerDesign="relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh] w-full"
+                        value={searchBarValue}
+                        onChange={(e) => setSearchBarValue(e.target.value)}
+                        placeholder="Search post, event, or item"
+                        recentSearch={recentSearchesData}
                     />
                 </div>
+            )}
 
-            </div>
+            {/* MODALS */}
+            {clickNotification && <NotificationClickModal ref={notifModalRef} />}
+            {clickProfile && <ProfileClickModal ref={profileModalRef} />}
+            {clickLogOut && <LogoutModal ref={logoutModalRef} />}
         </div>
-
-        {clickNotification && <NotificationClickModal />}
-        {clickProfile && <ProfileClickModal />}
-        {clickLogOut && <LogOutUser />}
-        
-    </div>
-  )
+    );
 }

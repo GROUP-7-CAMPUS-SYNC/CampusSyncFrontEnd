@@ -16,11 +16,6 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
     {}
   );
 
-  const handlePage = (currentPage: string) => {
-    setCurrentPage(currentPage);
-    setArrowClicked((prev) => ({ ...prev, [currentPage]: !prev[currentPage] }));
-  };
-
   return (
     <nav className="side-bar-container">
       <div className="hidden md:flex justify-center items-center w-full mb-5">
@@ -58,7 +53,7 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
 
         <li>
           <button
-            onClick={() => handlePage("event")}
+            onClick={() => setCurrentPage("event")}
             className={`logo-container ${
               currentPage === "event"
                 ? "logo-container-current-page"
@@ -67,20 +62,12 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
           >
             <Calendar className="logo-size" />
             <p className={`typograpy`}>Event</p>
-            <Triangle
-              className={`dropdown-icon transition-transform duration-500 ${
-                arrowClicked["event"] ? "rotate-180" : "rotate-0"
-              } `}
-              size={10}
-              fill="currentColor"
-              stroke="none"
-            />
           </button>
         </li>
 
         <li>
           <button
-            onClick={() => handlePage("academic")}
+            onClick={() => setCurrentPage("academic")}
             className={`logo-container ${
               currentPage === "academic"
                 ? "logo-container-current-page"
@@ -89,14 +76,6 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
           >
             <GraduationCap className="logo-size" />
             <p className={`typograpy`}>Academic</p>
-            <Triangle
-              className={`dropdown-icon transition-transform duration-500 ${
-                arrowClicked["academic"] ? "rotate-180" : "rotate-0"
-              } `}
-              size={10}
-              fill="currentColor"
-              stroke="none"
-            />
           </button>
         </li>
 
