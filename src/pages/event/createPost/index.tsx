@@ -1,6 +1,4 @@
-import React, { useState } from "react";
 import "../css/createPost.css";
-import SearchBar from "../../../components/searchBar";
 import { BiImageAdd } from "react-icons/bi";
 
 type CloseProps = {

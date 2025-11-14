@@ -1,4 +1,4 @@
-import SectionHeader from "../../components/sectionHeader2"
+import SectionHeader from "../../components/sectionHeader"
 import SearchBar from "../../components/sectionSearchBar"
 import CreatePost from "./formPost/index"
 import { useState } from "react";
