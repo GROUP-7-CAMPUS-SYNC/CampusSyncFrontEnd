@@ -2,7 +2,7 @@ import { Home, Search, Calendar, GraduationCap, BookmarkPlus } from "lucide-reac
 import type { SideBarProps } from "../types/sideBar"
 import '../css/components/sideBar.css'
 import WebsiteLogo from "../components/navigationBar/websiteLogo"
-
+import { ChevronDown } from "lucide-react"
 
 export default function sideBar({ 
     currentPage,
@@ -58,9 +58,10 @@ export default function sideBar({
                 >
                     <Calendar className="logo-size"/>
                     <p
-                        className={`typograpy`}
+                        className={`flex flex-row justify-between w-full items-center typograpy`}
                     >
                         Event
+                        <ChevronDown/>
                     </p>
                 </button>
             </li>
