@@ -167,7 +167,7 @@ export default function index({onClose} : CreatePostProps) {
                         />
                     )}                    
 
-                    <div className="flex flex-row gap-x-10">
+                    <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
                         type="button"
@@ -226,7 +226,7 @@ export default function index({onClose} : CreatePostProps) {
                         )}
                     </div>
 
-                    <div className="flex flex-row gap-x-10">
+                    <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
                         type="button"
@@ -257,7 +257,7 @@ export default function index({onClose} : CreatePostProps) {
                         <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
                     )}
 
-                    <div className="flex flex-row gap-x-10">
+                    <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
                         type="button"

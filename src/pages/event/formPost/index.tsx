@@ -134,7 +134,7 @@ export default function index({
                             showError={formSubmitted && openTo.trim() === ""}
                         />
 
-                        <div className="flex flex-row gap-x-10">
+                        <div className="flex flex-row gap-x-10 mt-2">
                             <Button
                                 buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50  transition-colors duration-200 hover:cursor-pointer"
                                 type="button"
@@ -209,7 +209,7 @@ export default function index({
                             </div>
                         )}
 
-                        <div className="flex flex-row gap-x-10">
+                        <div className="flex flex-row gap-x-10 mt-2">
                             <Button
                                 buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
                                 type="button"
@@ -240,7 +240,7 @@ export default function index({
                         )}
 
                         {/* Navigation Buttons */}
-                        <div className="flex flex-row gap-x-10">
+                        <div className="flex flex-row gap-x-10 mt-2">
                             <Button
                                 buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
                                 type="button"
