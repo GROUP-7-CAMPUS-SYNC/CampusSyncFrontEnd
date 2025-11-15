@@ -8,13 +8,10 @@ import {
 import type { SideBarProps } from "../types/sideBar";
 import "../css/components/sideBar.css";
 import WebsiteLogo from "../components/navigationBar/websiteLogo";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { ChevronDown } from "lucide-react"
 
 export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
-  const [arrowClicked, setArrowClicked] = useState<{ [key: string]: boolean }>(
-    {}
-  );
+
 
   return (
     <nav className="side-bar-container">
