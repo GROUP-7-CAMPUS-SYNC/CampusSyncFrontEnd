@@ -1,9 +1,38 @@
-import CreatePost from "./createPost/CreatePost.tsx"
+import SectionHeader from "../../components/sectionHeader"
+import SearchBar from "../../components/sectionSearchBar"
+import LostFoundPost from "../../components/LostFoundPost";
+import { useState } from "react";
 
 export default function index() {
+
+  const recentSearchesData: string[] = [
+    "Student ID",
+    "Laptop Acer",
+    "Blue Waller",
+    "Samsung Phone",
+  ];
+  const [searchBarValue, setSearchBarValue] = useState<string>("");
+  const [isPostClicked, setIsPostClicked] = useState(false);
+  
   return (
     <div>
-      <CreatePost/>
+      <SectionHeader
+        profileLink="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+        searchBar={
+          <SearchBar
+            value={searchBarValue}
+            onChange={(e) => setSearchBarValue(e.target.value)}
+            placeholder="Search"
+            recentSearch={recentSearchesData}
+          />
+        }
+        
+        postButtonClick={() => setIsPostClicked(true)}
+      />
+
+      {isPostClicked && (
+        <LostFoundPost onClose={() => setIsPostClicked(false)} />
+      )}
     </div>
   )
 }
