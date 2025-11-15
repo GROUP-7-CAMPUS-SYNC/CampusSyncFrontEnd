@@ -9,7 +9,7 @@ import Save from "../pages/save"
 
 export default function index() {
 
-    const [currentPage, setCurrentPage] = useState<string>("academic")
+    const [currentPage, setCurrentPage] = useState<string>("home")
 
     const renderPage = () => {
         switch(currentPage) {

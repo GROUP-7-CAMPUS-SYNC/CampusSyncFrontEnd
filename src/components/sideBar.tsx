@@ -29,7 +29,7 @@ export default function sideBar({ currentPage, setCurrentPage }: SideBarProps) {
             }`}
           >
             <Home className="logo-size" />
-            <p className={`typograpy`}>Home</p>
+            <p className={`typograpy`}>Dashboard</p>
           </button>
         </li>
 
