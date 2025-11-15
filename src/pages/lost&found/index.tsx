@@ -1,6 +1,6 @@
 import SectionHeader from "../../components/sectionHeader"
 import SearchBar from "../../components/sectionSearchBar"
-import LostFoundPost from "../../components/LostFoundPost";
+import CreatePost from "./formPost/index"
 import { useState } from "react";
 
 export default function index() {
@@ -31,7 +31,7 @@ export default function index() {
       />
 
       {isPostClicked && (
-        <LostFoundPost onClose={() => setIsPostClicked(false)} />
+        <CreatePost onClose={() => setIsPostClicked(false)} />
       )}
     </div>
   )
