@@ -1,26 +1,90 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import StringTextField from "../../components/stringTextField"
 import Button from "../../components/button"
 import { setLoginFlag } from "../../utils/setLogInFlag"
 import { useNavigate } from "react-router-dom"
+import api from "../../api/api" 
 
 export default function login() {
 
     const [email, setEmail] = useState<string>("")
     const [password, setPassword] = useState<string>("")
+    const [isLoading, setIsLoading] = useState<boolean>(false)
+
     const navigation = useNavigate()
 
     // 🔹 Track if form has been submitted
     const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
 
-    const handleSubmit = (e : React.FormEvent) => {
+    useEffect(() => {
+        const checkAuth  = async () => {
+            const token = localStorage.getItem("authToken")
+            if(!token){
+                setIsLoading(false)
+                return
+            } 
+
+            try
+            {
+                const response = await api.get('/auth/verify')
+
+                if(response.status === 200)
+                {
+                    setLoginFlag()
+                    localStorage.setItem("firstName", response.data.user.firstname)
+                    localStorage.setItem("lastName", response.data.user.lastname)
+                    localStorage.setItem("course", response.data.user.course)
+                    localStorage.setItem("email", response.data.user.email)
+                    localStorage.setItem("profileLink", response.data.user.profileLink)
+                    localStorage.setItem("role", response.data.user.role)
+                    navigation("/home")
+                }
+            }catch(error : any)
+            {
+                localStorage.clear()
+            }
+        }
+
+        checkAuth()
+    }, [])
+
+    const handleSubmit = async (e : React.FormEvent) => {
         e.preventDefault()
         setFormSubmitted(true)
 
         if(email.trim() === "" || password.trim() === "" ||   !email.endsWith("@1.ustp.edu.ph")) return
         setLoginFlag()
 
-        navigation("/home")
+        setIsLoading(true)
+        try
+        {
+            const payload = {
+                email,
+                password
+            }
+
+            const response = await api.post("/auth/login", payload)
+            console.log("✅ Login successful:", response.data)
+            localStorage.setItem("authToken", response.data.token)
+            localStorage.setItem("firstName", response.data.user.firstname)
+            localStorage.setItem("lastName", response.data.user.lastname)
+            localStorage.setItem("course", response.data.user.course)
+            localStorage.setItem("email", response.data.user.email)
+            localStorage.setItem("profileLink", response.data.user.profileLink)
+            localStorage.setItem("role", response.data.user.role)
+
+            navigation("/home")
+
+        }catch(error : any)
+        {
+            console.error("❌ Registration failed:", error)
+            
+            // Extract error message from backend response
+            const errorMessage = error.response?.data?.message || "Something went wrong. Please try again."
+            alert(errorMessage) // Professional Tip: Replace with a toast notification later
+        }finally{
+            setIsLoading(false)
+        }
     }
 
   return (
@@ -47,7 +111,7 @@ export default function login() {
 
     <Button 
         type="submit"
-        buttonText="Sign In"
+        buttonText={`${isLoading ? "Logging In..." : "Log In"}`}
         buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"    />
    </form>
   )
