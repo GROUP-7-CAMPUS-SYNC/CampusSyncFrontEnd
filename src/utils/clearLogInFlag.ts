@@ -19,5 +19,5 @@
  *   all authentication-related data.
  */
 export const clearLogInFlag = () => {
-  localStorage.removeItem("isLoggedIn")
+  localStorage.clear();
 }

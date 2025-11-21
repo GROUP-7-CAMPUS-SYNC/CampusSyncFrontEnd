@@ -5,7 +5,7 @@ import Button from "../../components/button"
 import { setLoginFlag } from "../../utils/setLogInFlag"
 import "./register.css"
 import { useNavigate } from "react-router-dom"
-
+import api from "../../api/api" // Ensure this path matches your structure
 
 export default function Register() {
   const [firstName, setFirstName] = useState<string>("")
@@ -15,9 +15,11 @@ export default function Register() {
   const [password, setPassword] = useState<string>("")
   const navigation = useNavigate()
 
-
   // 🔹 Track if form has been submitted
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
+  
+  // 🔹 Loading state to prevent double submissions
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   // use screen dectection
   const [step, setStep] = useState<number>(1)
@@ -31,30 +33,61 @@ export default function Register() {
     setStep(2)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormSubmitted(true)
 
+    // Basic Frontend Validation
     if(firstName.trim() === "" || 
         lastName.trim() === "" || 
         course.trim() === "" || 
         email.trim() === "" ||
         password.trim() === "" ||
-        !email.endsWith("@ustp.edu.ph")
+        !email.endsWith("@1.ustp.edu.ph")
       ) return
-    setLoginFlag()
 
-    // 🔹 If all fields are filled, log the data
-    console.log("✅ Form submitted successfully:")
-    console.log({
-      firstName,
-      lastName,
-      course,
-      email,
-      password
-    })
+    setIsLoading(true)
 
-    navigation("/home")
+    try {
+      // 1. Prepare Payload (Map frontend camelCase to backend lowercase)
+      const payload = {
+        firstname: firstName, // Backend expects 'firstname'
+        lastname: lastName,   // Backend expects 'lastname'
+        course,
+        email,
+        password
+      }
+
+      // 2. API Call
+      // NOTE: Verify your backend route. I am assuming '/auth/register'.
+      // If your backend route is just '/register', change this line.
+      const response = await api.post("/auth/register", payload)
+
+      // 3. Success Handling
+      console.log("✅ Registration successful:", response.data)
+      
+      // Store the token for future authenticated requests
+      localStorage.setItem("authToken", response.data.token)
+      localStorage.setItem("firstName", response.data.user.firstname)
+      localStorage.setItem("lastName", response.data.user.lastname)
+      localStorage.setItem("course", response.data.user.course)
+      localStorage.setItem("email", response.data.user.email)
+      localStorage.setItem("profileLink", response.data.user.profileLink)
+      localStorage.setItem("role", response.data.user.role)
+      
+      setLoginFlag() // Keep your existing flag logic if needed
+      navigation("/home")
+
+    } catch (error: any) {
+      // 4. Error Handling
+      console.error("❌ Registration failed:", error)
+      
+      // Extract error message from backend response
+      const errorMessage = error.response?.data?.message || "Something went wrong. Please try again."
+      alert(errorMessage) // Professional Tip: Replace with a toast notification later
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -105,11 +138,11 @@ export default function Register() {
             <>
               <StringTextField
                 label="University Email"
-                placeholder="example@ustp.edu.ph"
+                placeholder="example@1.ustp.edu.ph"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 errorMessage="Please use your USTP student email"
-                showError={formSubmitted && !email.endsWith("@ustp.edu.ph")}
+                showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
               />
 
               <StringTextField
@@ -133,7 +166,9 @@ export default function Register() {
 
                 <Button
                   type="submit"
-                  buttonText="Sign Up"
+                  buttonText={isLoading ? "Signing Up..." : "Sign Up"} // UI Feedback
+                  // Optional: Disable button while loading
+                  // disabled={isLoading} 
                 />
               </div>              
             </>
@@ -176,11 +211,11 @@ export default function Register() {
 
         <StringTextField
           label="University Email"
-          placeholder="example@ustp.edu.ph"
+          placeholder="example@1.ustp.edu.ph"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           errorMessage="Please enter a valid university email"
-          showError={formSubmitted && !email.endsWith("@ustp.edu.ph")}
+          showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
         />
 
         <StringTextField
@@ -195,7 +230,7 @@ export default function Register() {
 
         <Button 
           type="submit"
-          buttonText = "Sign Up"
+          buttonText={isLoading ? "Signing Up..." : "Sign Up"} // UI Feedback
           buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"
         />  
         

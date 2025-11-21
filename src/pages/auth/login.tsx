@@ -17,7 +17,7 @@ export default function login() {
         e.preventDefault()
         setFormSubmitted(true)
 
-        if(email.trim() === "" || password.trim() === "" ||   !email.endsWith("@ustp.edu.ph")) return
+        if(email.trim() === "" || password.trim() === "" ||   !email.endsWith("@1.ustp.edu.ph")) return
         setLoginFlag()
 
         navigation("/home")
@@ -28,11 +28,11 @@ export default function login() {
 
     <StringTextField
         label="University Email"
-        placeholder="example@ustp.edu.ph"
+        placeholder="example@1.ustp.edu.ph"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         errorMessage="Please use your USTP student email"
-        showError={formSubmitted && !email.endsWith("@ustp.edu.ph")}
+        showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
     />
 
     <StringTextField 
