@@ -15,44 +15,77 @@ export default function SuggestionGroupClickModal({
 }: SuggestionGroupClickModalProps) {
     const [suggestionGroups, setSuggestionGroups] = useState<SuggestionGroup[]>([]);
 
-    useEffect(() => {
-        // console.log("WEW")
+    // useEffect(() => {
+    //     // console.log("WEW")
 
-        const userGroupSuggestion = async () =>{
-            try
-            {
-                const response = await api.get("/organizations/get_organizations")
-                console.log(response.data)
+    //     const userGroupSuggestion = async () =>{
+    //         try
+    //         {
+    //             const response = await api.get("/organizations/get_organizations")
+    //             console.log(response.data)
 
-                const formattedData: SuggestionGroup[] = response.data.map((org: any) => ({
-                    id: org.id,
-                    groupName:  org.organizationName,
-                    members: org.members,
-                    isFollowed: false,
-                }))
+    //             const formattedData: SuggestionGroup[] = response.data.map((org: any) => ({
+    //                 id: org.id,
+    //                 groupName:  org.organizationName,
+    //                 members: org.members,
+    //                 isFollowed: org.isFollowed,
+    //             }))
 
-                setSuggestionGroups(formattedData)
-            }catch(error : any)
-            {   
-                console.log(error)
-            }
+    //             setSuggestionGroups(formattedData)
+    //         }catch(error : any)
+    //         {   
+    //             console.log(error)
+    //         }
+    //     }
+
+    //     userGroupSuggestion()
+    //     // fetch("/src/api/suggestionGroup.json")
+    //     //     .then((res) => res.json())
+    //     //     .then((data) => setSuggestionGroups(data));
+    // }, []);
+
+    const fetchSuggestionGroups = async () => {
+        try
+        {
+            const response = await api.get("/organizations/get_organizations")
+
+            const formattedData: SuggestionGroup[] = response.data.map((org: any) => ({
+                id: org.id,
+                groupName: org.organizationName,
+                members: org.members,
+                isFollowed: org.isFollowed,
+            }));
+
+            setSuggestionGroups(formattedData);
         }
+        catch(error : any)
+        {
+            console.log(error)
+        }
+    }
 
-        userGroupSuggestion()
-        // fetch("/src/api/suggestionGroup.json")
-        //     .then((res) => res.json())
-        //     .then((data) => setSuggestionGroups(data));
+    useEffect(() => {
+        fetchSuggestionGroups();
     }, []);
 
-    // ADDED: Handler to update the follow state for a specific group
-    const handleFollowToggle = (id: number) => {
-        setSuggestionGroups((currentGroups) =>
-            currentGroups.map((group) =>
-                group.id === id
-                    ? { ...group, isFollowed: !group.isFollowed } // Toggle the status
-                    : group
+
+    const handleFollowToggle = async (id: number | string) => {
+        try
+        {
+            const response = await api.patch(`/organizations/toggle_follow/${id}`)
+
+            const { isFollowed, members } = response.data
+
+            setSuggestionGroups((currentGroups) => 
+                currentGroups.map((group) => 
+                    group.id === id ? { ...group, isFollowed, members } : group
+                )
             )
-        );
+        }
+        catch(error : any)
+        {
+            console.log(error)
+        }
     };
 
     return (
@@ -85,13 +118,14 @@ export default function SuggestionGroupClickModal({
                             {/* MODIFIED: Button props are now conditional */}
                             <Button
                                 buttonContainerDesign={
-                                    groupDetails.isFollowed
+                                    groupDetails.isFollowed === true 
                                         ? "lg:w-fit bg-gray-100 border border-gray-300 w-full px-4 py-2 cursor-pointer text-gray-600 rounded-md hover:bg-gray-200 transition-colors"
                                         : "lg:w-fit bg-[#3B82F6] w-full px-4 py-2 cursor-pointer text-white rounded-md hover:bg-[#2563EB] transition-colors"
                                 }
                                 type="button"
                                 buttonText={
-                                    groupDetails.isFollowed ? "Unfollow" : "Follow"
+                                    groupDetails.isFollowed === true 
+                                       ? "Unfollow" : "Follow"
                                 }
                                 onClick={() => handleFollowToggle(groupDetails.id)} // ADDED: onClick handler
                             />
