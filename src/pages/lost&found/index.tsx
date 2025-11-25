@@ -2,8 +2,11 @@ import SectionHeader from "../../components/sectionHeader"
 import SearchBar from "../../components/sectionSearchBar"
 import CreatePost from "./formPost/index"
 import { useState } from "react";
+import LostAndFountContent from "./lostandFoundContent";
+
 
 export default function index() {
+
 
   const recentSearchesData: string[] = [
     "Student ID",
@@ -13,7 +16,7 @@ export default function index() {
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
-  
+ 
   return (
     <div>
       <SectionHeader
@@ -26,13 +29,17 @@ export default function index() {
             recentSearch={recentSearchesData}
           />
         }
-        
+       
         postButtonClick={() => setIsPostClicked(true)}
       />
+
 
       {isPostClicked && (
         <CreatePost onClose={() => setIsPostClicked(false)} />
       )}
+
+
+      <LostAndFountContent/>
     </div>
   )
 }

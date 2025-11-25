@@ -4,13 +4,16 @@ import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useState } from "react";
 import { Calendar } from "lucide-react";
+import api from "../../../api/api";
 
 
 interface CreatePostProps {
   onClose: () => void;
 }
 
+
 export default function index({onClose} : CreatePostProps) {
+
 
     const [reportType, setReportType] = useState<string>("Found")
     const [itemName, setItemName] = useState<string>("")
@@ -26,39 +29,49 @@ export default function index({onClose} : CreatePostProps) {
     const [dateError, setDateError] = useState<boolean>(false)
 
 
+
+
     const showContentError = formSubmitted && description.trim() === "";
+
 
     const handleFirstStep = () => {
         setFormSubmitted(true)
-        
+       
         if
-        ( 
+        (
             itemName.trim() == "" ||  
-            description.trim() == "" || 
+            description.trim() == "" ||
             ( reportType === "Found" && turnedOver.trim() === "")
         ) return
 
+
         setFormSubmitted(false)
+
 
         setSteps(2)
     }
 
+
     const handleSecondStep = () => {
         setFormSubmitted(true)
 
+
         if (
-            contact.trim() == "" || 
-            locationDetails.trim() == "" || 
+            contact.trim() == "" ||
+            locationDetails.trim() == "" ||
             timeDetails.trim() == ""
         ) return
 
+
         const foundItemTime = new Date(timeDetails)
         const today = new Date()
+
 
         if (foundItemTime > today) {
             setDateError(true)
             return
         }
+
 
         setFormSubmitted(false)
  
@@ -66,12 +79,38 @@ export default function index({onClose} : CreatePostProps) {
     }
 
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setFormSubmitted(true)
 
+
+        try
+        {  
+            const payload = {
+                reportType,
+                itemName,
+                description,
+                locationDetails,
+                contactDetails: contact,
+                dateLostOrFound: timeDetails,
+                turnOver: turnedOver,
+                image: "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+            }
+            const response = await api.post('/report_types/createPost', payload)
+            console.log(response)
+        }
+        catch(error)
+        {
+            console.log(error)
+        }
+
+
+        console.log(turnedOver)
         setSuccessfullySubmitted(true)
     }
+
 
   return (
     <Modal
@@ -82,11 +121,12 @@ export default function index({onClose} : CreatePostProps) {
                 <>
                     <h2 className="text-2xl font-bold mb-6">Lost & Found Report</h2>
 
+
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-700" htmlFor="report-type">
                             Report Type
                         </label>
-                        
+                       
                         {/* 1. Add 'relative' to the wrapper div */}
                         <div className="relative flex items-center gap-2">
                             <select
@@ -95,7 +135,7 @@ export default function index({onClose} : CreatePostProps) {
                             onChange={(e) => setReportType(e.target.value)}
                             className={`
                                 appearance-none
-                                border border-gray-400 rounded-[5px] px-3 py-1 w-full 
+                                border border-gray-400 rounded-[5px] px-3 py-1 w-full
                                 focus:outline-none focus:ring-2 focus:ring-blue-400
                                 pr-8
                             `}
@@ -104,11 +144,12 @@ export default function index({onClose} : CreatePostProps) {
                             <option value="Lost">Lost</option>
                             </select>
 
+
                             {/* 2. Add this block for the arrow icon */}
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg 
-                                className="fill-current h-4 w-4" 
-                                xmlns="http://www.w3.org/2000/svg" 
+                            <svg
+                                className="fill-current h-4 w-4"
+                                xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 20 20"
                             >
                                 <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
@@ -117,6 +158,7 @@ export default function index({onClose} : CreatePostProps) {
                             {/* === End of new block === */}
                         </div>
                     </div>
+
 
                     <StringTextField
                         value={itemName}
@@ -127,20 +169,21 @@ export default function index({onClose} : CreatePostProps) {
                         showError={formSubmitted && itemName.trim() === ""}
                     />
 
+
                     <div className="flex flex-col gap-1">
                         {/* Label (using styles from your component) */}
                         <label className="text-sm text-gray-700" htmlFor="content-field">
                             Description
                         </label>
-                        
+                       
                         {/* Textarea Wrapper (to match StringTextField structure) */}
                         <div className="flex items-center gap-2">
                             <textarea
                             id="content-field"
                             name="content-field"
-                            rows={3} 
+                            rows={3}
                             className={`
-                                border border-gray-400 rounded-[5px] px-3 py-1 w-full 
+                                border border-gray-400 rounded-[5px] px-3 py-1 w-full
                                 focus:outline-none focus:ring-2 focus:ring-blue-400
                                 ${showContentError ? "border-red-500 focus:ring-red-400" : ""}
                             `}
@@ -149,12 +192,13 @@ export default function index({onClose} : CreatePostProps) {
                             onChange={(e) => setDescription(e.target.value)}
                             />
                         </div>
-                        
+                       
                         {/* Error Message (matches StringTextField's logic) */}
                         <p className={`text-sm ${showContentError ? "text-red-500" : "text-white"}`}>
                             Please fill the text field
                         </p>
                     </div>
+
 
                     {reportType === "Found" && (
                         <StringTextField
@@ -167,6 +211,7 @@ export default function index({onClose} : CreatePostProps) {
                         />
                     )}                    
 
+
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
@@ -174,6 +219,7 @@ export default function index({onClose} : CreatePostProps) {
                         buttonText="Close"
                         onClick={onClose}
                         />
+
 
                         <Button
                         type="button"
@@ -185,9 +231,12 @@ export default function index({onClose} : CreatePostProps) {
             )}
 
 
+
+
             {step === 2 && (
                <>
                     <h2 className="text-2xl font-bold mb-6">Item Details</h2>
+
 
                     <StringTextField
                         value={contact}
@@ -198,6 +247,7 @@ export default function index({onClose} : CreatePostProps) {
                         showError={formSubmitted && contact.trim() === ""}
                     />
 
+
                     <StringTextField
                         value={locationDetails}
                         onChange={(e) => setLocationDetails(e.target.value)}
@@ -207,7 +257,8 @@ export default function index({onClose} : CreatePostProps) {
                         showError={formSubmitted && locationDetails.trim() === ""}
                     />
 
-                    
+
+                   
                     <div className="mb-6">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                             Time details
@@ -226,6 +277,7 @@ export default function index({onClose} : CreatePostProps) {
                         )}
                     </div>
 
+
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
@@ -233,6 +285,7 @@ export default function index({onClose} : CreatePostProps) {
                         buttonText="Back"
                         onClick={() => setSteps(1)}
                         />
+
 
                         <Button
                         type="button"
@@ -242,20 +295,25 @@ export default function index({onClose} : CreatePostProps) {
                     </div>
                </>
 
+
             )}
+
 
             {step === 3 && (
                 <>
                     <h2 className="text-2xl font-bold mb-6">Item Image</h2>
+
 
                     <UploadPicture
                         image={image}
                         setImage={setImage}
                     />
 
+
                     {formSubmitted && !image && (
                         <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
                     )}
+
 
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
@@ -265,6 +323,7 @@ export default function index({onClose} : CreatePostProps) {
                         onClick={() => setSteps(2)}
                         />
 
+
                         <Button
                             type="submit"
                             buttonText="Submit"
@@ -273,6 +332,7 @@ export default function index({onClose} : CreatePostProps) {
                 </>
             )}
         </form>
+
 
         {successfullySubmitted && (
             <Modal>
