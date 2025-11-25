@@ -37,7 +37,15 @@ export default function login() {
                     localStorage.setItem("email", response.data.user.email)
                     localStorage.setItem("profileLink", response.data.user.profileLink)
                     localStorage.setItem("role", response.data.user.role)
-                    navigation("/home")
+
+                    if(response.data.user.role === "moderator")
+                    {   
+                        navigation("/moderator")
+                    }
+                    else
+                    {
+                        navigation("/home")
+                    }
                 }
             }catch(error : any)
             {
@@ -73,7 +81,14 @@ export default function login() {
             localStorage.setItem("profileLink", response.data.user.profileLink)
             localStorage.setItem("role", response.data.user.role)
 
-            navigation("/home")
+            if(response.data.user.role === "moderator")
+            {   
+                navigation("/moderator")
+            }
+            else
+            {
+                navigation("/home")
+            }
 
         }catch(error : any)
         {

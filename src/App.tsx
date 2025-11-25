@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import LandingPage from "./pages/landingPage"
 import { ProtectedRoute } from "./hooks/userIsLogIn"
 import Home from "./pages/index"
+import Moderator from "./pages/moderator"
 
 /**
  * PROTECTED ROUTE FUNCTIONS
@@ -21,6 +22,7 @@ export default function App() {
         <Route path="/" element={<LandingPage/>}/>
         {/* <Route path="/home" element={<Home/>}/> */}
         <Route path="/home" element={<ProtectedRoute element={<Home/>}/>}/>
+        <Route path="/moderator" element={<ProtectedRoute element={<Moderator/>}/>}/>
       </Routes>
     </BrowserRouter>
   )
