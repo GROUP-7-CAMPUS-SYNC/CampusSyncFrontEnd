@@ -1,8 +1,13 @@
 import { useState, useEffect } from 'react';
-import { X, User, Mail, Users, ShieldCheck, Edit2, Trash2, Save } from 'lucide-react'; 
+import { X, User, Edit2, Save } from 'lucide-react'; 
 import type { IOrganization } from './index'; 
 import ChangeHeadSelector from './changeHeadSelector';
 import type { HeadCandidate } from "./changeHeadSelector"
+import Footer from "./footer"
+import ModeratorCard from './moderatorCard';
+import CurrentHeadInformation from './currentHeadInformation';
+import DescriptionSection from './descriptionSection'; // Import new component
+import ModalHeader from "./ModalHeader"
 
 // --- MOCK CANDIDATE DATA ---
 const MOCK_CANDIDATES: HeadCandidate[] = [
@@ -98,119 +103,31 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                 
                 {/* --- HEADER --- */}
                 {/* FIXED: Reduced padding (p-4) for mobile, adjusted to p-6 for tablet+ */}
-                <div className="flex justify-between items-start p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
-                    {/* FIXED: Added min-w-0 to allow flex child to shrink below content size (fixes overflow on 320px) */}
-                    <div className="flex-1 mr-4 min-w-0">
-                        {isEditingName ? (
-                            <div className="animate-in fade-in zoom-in-95 duration-100">
-                                <input 
-                                    type="text" 
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-xl font-bold text-gray-900 mb-2"
-                                    value={orgName}
-                                    onChange={(e) => setOrgName(e.target.value)}
-                                    autoFocus
-                                />
-                                <div className="flex gap-2">
-                                    <button 
-                                        onClick={handleSaveName}
-                                        className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700 flex items-center gap-1 transition-colors"
-                                    >
-                                        <Save size={12} /> Save
-                                    </button>
-                                    <button 
-                                        onClick={() => { setIsEditingName(false); setOrgName(organization.organizationName); }}
-                                        className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="group flex items-center gap-2">
-                                {/* FIXED: Added responsive text size (text-xl on mobile, text-2xl on sm+) */}
-                                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{orgName}</h2>
-                                <button 
-                                    onClick={() => setIsEditingName(true)}
-                                    // FIXED: Added shrink-0 to prevent button from disappearing or squashing
-                                    className="text-gray-400 hover:text-indigo-600 p-1.5 rounded-md hover:bg-gray-200 transition-all shrink-0"
-                                    title="Edit Name"
-                                >
-                                    <Edit2 size={16} />
-                                </button>
-                            </div>
-                        )}
-                        
-                        {!isEditingName && (
-                            <span className="inline-flex items-center mt-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                {organization.course}
-                            </span>
-                        )}
-                    </div>
-
-                    <button 
-                        onClick={onClose} 
-                        // FIXED: Added shrink-0
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors shrink-0"
-                    >
-                        <X size={24} />
-                    </button>
-                </div>
+                <ModalHeader
+                    isEditingName={isEditingName}
+                    orgName={orgName}
+                    setOrgName={(e) =>setOrgName(e.target.value)}
+                    onSave={handleSaveName}
+                    onCancel={() => {setIsEditingName(false); setOrgName(organization.organizationName);} }
+                    onClickEdit={() => setIsEditingName(true)}
+                    organization={organization.course}
+                    onClose={onClose}
+                />
 
                 {/* --- SCROLLABLE CONTENT --- */}
                 {/* FIXED: Reduced padding (p-4) for mobile */}
                 <div className="p-4 sm:p-6 overflow-y-auto space-y-8">
                     
                     {/* 1. Description Section */}
-                    <div className="space-y-2 group">
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">About</h3>
-                            {!isEditingDesc && (
-                                <button 
-                                    onClick={() => setIsEditingDesc(true)}
-                                    className="text-indigo-600 hover:text-indigo-800 p-1 rounded-md hover:bg-indigo-50 transition-colors"
-                                    title="Edit Description"
-                                >
-                                    <Edit2 size={14} />
-                                </button>
-                            )}
-                        </div>
-
-                        {isEditingDesc ? (
-                            <div className="animate-in fade-in zoom-in-95 duration-100">
-                                <textarea 
-                                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-700 min-h-[100px]"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Enter organization description..."
-                                    autoFocus
-                                />
-                                <div className="flex justify-end gap-2 mt-2">
-                                    <button 
-                                        onClick={() => { setIsEditingDesc(false); setDescription(organization.description || ""); }}
-                                        className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button 
-                                        onClick={handleSaveDescription}
-                                        className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-700 flex items-center gap-1"
-                                    >
-                                        <Save size={12} /> Save
-                                    </button>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="prose text-gray-600 text-sm leading-relaxed p-2 rounded hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-                                {description || <span className="italic text-gray-400">No description provided.</span>}
-                            </div>
-                        )}
-                        
-                        <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 w-fit">
-                            <Users size={18} className="text-indigo-600" />
-                            <span className="font-semibold">{organization.members}</span>
-                            <span>Active Members</span>
-                        </div>
-                    </div>
+                    <DescriptionSection 
+                        isEditing={isEditingDesc}
+                        setIsEditing={setIsEditingDesc}
+                        description={description}
+                        setDescription={setDescription}
+                        onSave={handleSaveDescription}
+                        onCancel={() => { setIsEditingDesc(false); setDescription(organization.description || ""); }}
+                        members={organization.members}
+                    />
 
                     {/* 2. Personnel Grid */}
                     <div className="grid md:grid-cols-2 gap-6">
@@ -243,86 +160,28 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                                         onSave={handleSaveHead}
                                     />
                                 ) : (
-                                    <div className="space-y-3">
-                                        {currentHead ? (
-                                            <>
-                                                <div className="flex items-center gap-3">
-                                                    {currentHead.profileLink ? (
-                                                        <img src={currentHead.profileLink} alt="Head" className="w-12 h-12 rounded-full object-cover border border-gray-200" />
-                                                    ) : (
-                                                        <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-lg">
-                                                            {currentHead.firstname[0]}{currentHead.lastname[0]}
-                                                        </div>
-                                                    )}
-                                                    <div>
-                                                        <p className="font-bold text-gray-900 text-lg">{currentHead.firstname} {currentHead.lastname}</p>
-                                                        <p className="text-sm text-gray-500">{currentHead.course}</p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-100">
-                                                    <Mail size={14} className="text-gray-400" />
-                                                    <a href={`mailto:${currentHead.email}`} className="hover:text-blue-600 hover:underline truncate">{currentHead.email}</a>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div className="text-center py-4 text-gray-400 italic">
-                                                No head assigned. Click change to assign one.
-                                            </div>
-                                        )}
-                                    </div>
+                                    <CurrentHeadInformation 
+                                        currentHead={currentHead}
+                                    />
                                 )}
                             </div>
                         </div>
 
                         {/* --- MODERATOR CARD (Read-Only) --- */}
                         {!isEditingHead && (
-                            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                                {/* Updated to bg-linear-to-r for Tailwind v4 */}
-                                <div className="bg-linear-to-r from-emerald-50 to-teal-50 px-4 py-3 border-b border-gray-100 flex items-center gap-2">
-                                    <ShieldCheck size={18} className="text-emerald-600" />
-                                    <h3 className="font-semibold text-gray-800">Approved By</h3>
-                                </div>
-                                <div className="p-4 space-y-3">
-                                    {moderator ? (
-                                        <>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-sm">
-                                                    {moderator.firstname[0]}{moderator.lastname[0]}
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-gray-900">{moderator.firstname} {moderator.lastname}</p>
-                                                    <p className="text-xs text-gray-500">Moderator</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                                                <Mail size={14} />
-                                                <a href={`mailto:${moderator.email}`} className="hover:text-blue-600 hover:underline truncate">{moderator.email}</a>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <span className="text-gray-400 text-sm italic">System/Unknown</span>
-                                    )}
-                                </div>
-                            </div>
+                            <ModeratorCard 
+                                moderator={moderator}
+                            />
                         )}
                     </div>
                 </div>
 
                 {/* --- FOOTER --- */}
-                <div className="bg-gray-50 p-4 rounded-b-xl border-t border-gray-200 flex justify-between items-center">
-                    <button 
-                        onClick={handleDeleteOrganization}
-                        className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
-                    >
-                        <Trash2 size={16} /> Delete Organization
-                    </button>
-                    <button 
-                        onClick={onClose}
-                        className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
-                    >
-                        Close
-                    </button>
-                </div>
+                <Footer 
+                    handleDeleteOrganization={handleDeleteOrganization}
+                    onClose={onClose}
+                />
+
             </div>
         </div>
     );
