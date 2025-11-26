@@ -2,7 +2,7 @@
 export default function index() {
   return (
     <div>
-      <p>Home Section</p>
+      <p>Testing Git pull request</p>
     </div>
   )
 }
