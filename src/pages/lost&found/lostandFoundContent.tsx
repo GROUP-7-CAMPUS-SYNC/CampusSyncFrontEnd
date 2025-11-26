@@ -42,17 +42,6 @@ export default function LostAndFoundContent() {
 
     useEffect(() => {
         fetchLostAndFoundContent()
-
-
-        const interval = setInterval(() => {
-            fetchLostAndFoundContent()
-       
-        }, 2000)
-
-
-        return () => {
-            clearInterval(interval)
-        }
     }, [])
 
     const handleWitnessClick = (itemId: string) => {
