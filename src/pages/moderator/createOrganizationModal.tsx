@@ -1,36 +1,72 @@
-import { useState } from 'react';
-import { X, Check, Plus, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Check, Plus, User, Loader2 } from 'lucide-react';
+import api from '../../api/api'; // Ensuring we use the configured instance
 
-// --- MOCK DATA FOR USER SELECTION ---
-// In a real app, this would come from an API call like api.get('/users/candidates')
-const MOCK_USERS = [
-    { _id: 'u1', firstname: 'Juan', lastname: 'Dela Cruz', email: 'juan.dc@student.edu', course: 'BS Information Technology' },
-    { _id: 'u2', firstname: 'Maria', lastname: 'Clara', email: 'maria.c@student.edu', course: 'BS Civil Engineering' },
-    { _id: 'u3', firstname: 'Jose', lastname: 'Rizal', email: 'jose.r@student.edu', course: 'BS Computer Science' },
-    { _id: 'u4', firstname: 'Andres', lastname: 'Bonifacio', email: 'andres.b@student.edu', course: 'BS Food Technology' },
-    { _id: 'u5', firstname: 'Apolinario', lastname: 'Mabini', email: 'pol.m@student.edu', course: 'BS Information Technology' },
-    { _id: 'u6', firstname: 'Gabriela', lastname: 'Silang', email: 'gab.s@student.edu', course: 'BS Civil Engineering' },
-];
+interface Candidate {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    course: string;
+    email: string;
+    profileLink: string;
+    role: string;
+}
 
 interface CreateOrganizationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void; // Trigger refetch on parent
+    onSuccess: () => void;
+}
+
+interface FormDataState {
+    organizationName: string,
+    description: string,
+    course: string,
+    organizationHeadID: string,
+}
+
+const InitialFormData = {
+    organizationName: '',
+    description: '',
+    course: 'BS Information Technology',
+    organizationHeadID: '',
 }
 
 export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOrganizationModalProps) {
-    const [formData, setFormData] = useState({
-        organizationName: '',
-        description: '',
-        course: 'BS Information Technology', // Default value from schema enum
-        organizationHeadID: '',
-        moderators: 'current-user-id' // Mocked ID representing the logged-in moderator
-    });
+    const [formData, setFormData] = useState<FormDataState>(InitialFormData);
     
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
     const [selectedHead, setSelectedHead] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (!isOpen) return null;
+    // Fetch users when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            fetchCandidates();
+        }
+    }, [isOpen]);
+
+    const fetchCandidates = async () => {
+        setIsLoadingCandidates(true);
+        try {
+            // Using the api instance (baseURL is already configured)
+            const response = await api.get('/moderator/get_all_users');
+            
+            // Axios places the body in response.data. 
+            // Based on your JSON, the array is in response.data.data
+            if (response.data && response.data.data) {
+                setCandidates(response.data.data);
+            }
+            
+
+
+        } catch (error) {
+            console.error("Failed to fetch candidates:", error);
+        } finally {
+            setIsLoadingCandidates(false);
+        }
+    };
 
     const handleSelectUser = (userId: string) => {
         setSelectedHead(userId);
@@ -42,24 +78,26 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
         setIsSubmitting(true);
         
         try {
-            // TODO: Replace with actual API call
-            // await api.post('/moderator/create_organization', formData);
+            // Replace with actual endpoint
+            const response = await api.post('/moderator/create_organization', formData);
             
-            console.log("PAYLOAD TO SEND:", formData);
-            
-            // Simulate network delay
-            setTimeout(() => {
-                alert("Organization created successfully (Mock)!");
-                onSuccess(); // Refresh parent data
-                onClose();
-                setIsSubmitting(false);
-            }, 1000);
+            console.log("Creation success:", response.data);
+            setFormData(InitialFormData)
 
-        } catch (error) {
+            onSuccess(); // Trigger parent refresh
+            onClose();   // Close modal
+            
+        } catch (error: any) {
             console.error("Creation failed", error);
+            // Optional: Extract error message like in login.tsx
+            // const errorMessage = error.response?.data?.message || "Failed to create organization";
+            // alert(errorMessage); 
+        } finally {
             setIsSubmitting(false);
         }
     };
+
+    if (!isOpen) return null;
 
     return (
         <div 
@@ -128,44 +166,55 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                     <div className="border-t border-gray-100 pt-4">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Assign Organization Head</label>
                         <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                Select a candidate from the list
+                            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                                <span>Select a candidate from the list</span>
+                                {isLoadingCandidates && <Loader2 size={14} className="animate-spin text-indigo-600"/>}
                             </div>
                             
                             {/* Scrollable User List */}
                             <div className="max-h-52 overflow-y-auto divide-y divide-gray-100 custom-scrollbar">
-                                {MOCK_USERS.map((user) => (
-                                    <div 
-                                        key={user._id}
-                                        onClick={() => handleSelectUser(user._id)}
-                                        className={`flex items-center justify-between p-3 cursor-pointer transition-colors duration-150 ${
-                                            selectedHead === user._id 
-                                                ? 'bg-indigo-50 border-l-4 border-indigo-600' 
-                                                : 'hover:bg-gray-50 border-l-4 border-transparent'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shadow-sm ${
+                                {isLoadingCandidates ? (
+                                    <div className="p-4 text-center text-sm text-gray-500">Loading candidates...</div>
+                                ) : candidates.length === 0 ? (
+                                    <div className="p-4 text-center text-sm text-gray-500">No users found.</div>
+                                ) : (
+                                    candidates.map((user) => (
+                                        <div 
+                                            key={user._id}
+                                            onClick={() => handleSelectUser(user._id)}
+                                            className={`flex items-center justify-between p-3 cursor-pointer transition-colors duration-150 ${
                                                 selectedHead === user._id 
-                                                    ? 'bg-indigo-200 text-indigo-700' 
-                                                    : 'bg-gray-200 text-gray-600'
-                                            }`}>
-                                                {user.firstname[0]}{user.lastname[0]}
+                                                    ? 'bg-indigo-50 border-l-4 border-indigo-600' 
+                                                    : 'hover:bg-gray-50 border-l-4 border-transparent'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold shadow-sm ${
+                                                    selectedHead === user._id 
+                                                        ? 'bg-indigo-200 text-indigo-700' 
+                                                        : 'bg-gray-200 text-gray-600'
+                                                }`}>
+                                                    {user.profileLink ? (
+                                                        <img src={user.profileLink} alt="avatar" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span>{user.firstname[0]}{user.lastname[0]}</span>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-sm font-medium ${selectedHead === user._id ? 'text-indigo-900' : 'text-gray-900'}`}>
+                                                        {user.firstname} {user.lastname}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{user.course}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className={`text-sm font-medium ${selectedHead === user._id ? 'text-indigo-900' : 'text-gray-900'}`}>
-                                                    {user.firstname} {user.lastname}
-                                                </p>
-                                                <p className="text-xs text-gray-500">{user.course}</p>
-                                            </div>
+                                            {selectedHead === user._id && (
+                                                <div className="bg-indigo-100 p-1 rounded-full">
+                                                    <Check size={16} className="text-indigo-600" />
+                                                </div>
+                                            )}
                                         </div>
-                                        {selectedHead === user._id && (
-                                            <div className="bg-indigo-100 p-1 rounded-full">
-                                                <Check size={16} className="text-indigo-600" />
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                         {!selectedHead && <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">* <User size={12}/> Selection required</p>}
