@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, User, Edit2, Save } from 'lucide-react'; 
+import { User, Edit2 } from 'lucide-react'; 
 import type { IOrganization } from './index'; 
 import ChangeHeadSelector from './changeHeadSelector';
 import type { HeadCandidate } from "./changeHeadSelector"
