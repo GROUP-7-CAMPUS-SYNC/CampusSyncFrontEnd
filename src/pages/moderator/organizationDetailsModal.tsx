@@ -114,9 +114,28 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
         setSelectedCandidateId(null);
     };
 
-    const handleSaveDescription = () => {
-        console.log(`[API CALL] Update Description: Org ${organization._id} -> "${description}"`);
-        setIsEditingDesc(false);
+    const handleSaveDescription = async () => {
+        try
+        {
+            const payload = {
+                description: description,
+                organizationId: organization._id
+            }
+            
+            const response = await api.put('/moderator/update_organization_description', payload)
+
+            if(response.status === 200)
+            {
+                setSuccessMessage(response.data.message || "Succesfully update organization Description")
+                setHandleButtonGotSuccess(true)
+            }
+        } 
+        catch(error : any)
+        {
+            const message = error.response.data.message || "Failed to update organization description"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
+        }
     };
 
     const handleDeleteOrganization = async () => {
