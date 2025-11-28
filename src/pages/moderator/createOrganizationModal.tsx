@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Check, Plus, User, Loader2 } from 'lucide-react';
-import api from '../../api/api'; // Ensuring we use the configured instance
+import api from '../../api/api'; 
 import Modal from "../../components/modal"
 import Button from "../../components/button"
 import type { Candidate } from '../../types/candidates';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Users, Mail, ShieldCheck } from 'lucide-react'; 
-import type { IOrganization } from './index'; 
+import type { IOrganization } from '../../types/IOrganization'; 
 import OrganizationDetailModal from './clickOrganizationRow';
 
 interface OrganizationTableProps {

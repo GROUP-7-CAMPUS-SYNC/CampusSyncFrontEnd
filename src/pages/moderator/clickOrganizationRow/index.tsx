@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, Edit2 } from 'lucide-react'; 
-import type { IOrganization } from '../index';
+import type { IOrganization } from '../../../types/IOrganization';
 import type { Candidate } from '../../../types/candidates';
 import OrgModalChangeHeadSelector from './orgModalChangeOrganizationHead';
 import OrgModalFooter from "./orgModalFooter"
