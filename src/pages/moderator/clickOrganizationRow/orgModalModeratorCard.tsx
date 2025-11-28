@@ -1,13 +1,13 @@
 import { Mail, ShieldCheck} from 'lucide-react'; 
 
 
-interface ModeratorCard {
+interface ModeratorCardProps {
     moderator: any
 }
 
 export default function moderatorCard({
     moderator,
-} : ModeratorCard) {
+} : ModeratorCardProps) {
   return (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             {/* Updated to bg-linear-to-r for Tailwind v4 */}

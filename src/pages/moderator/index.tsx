@@ -7,36 +7,7 @@ import { OrganizationTable } from './OrganizationTable';
 import { ErrorMessage } from './ErrorMessage';
 import CreateOrganizationModal from './createOrganizationModal'; 
 import { clearLogInFlag } from "../../utils/clearLogInFlag";
-
-// --- Data Interfaces ---
-interface IOrganizationHead {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-    profileLink?: string;
-    course: string;
-}
-
-interface IModerator {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-}
-
-export interface IOrganization {
-    _id: string;
-    organizationName: string;
-    description?: string;
-    profileLink?: string;
-    course: "BS Civil Engineering" | "BS Information Technology" | "BS Computer Science" | "BS Food Technology";
-    members: number;
-    organizationHeadID: IOrganizationHead; 
-    moderators: IModerator; 
-    __v: number;
-}
-// --- End Data Interfaces ---
+import type { IOrganization } from "../../types/IOrganization" 
 
 const useOrganizations = () => {
     const [data, setData] = useState<IOrganization[] | null>(null);
