@@ -47,6 +47,14 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
     // Moderator Delete Organization
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // Error Modal Message 
+    const [errorMessage, setErrorMessage] = useState<String>("")
+    const [handleButtonGotError, setHandleButtonGotError] = useState(false)
+
+    // Success Modal Message 
+    const [successMessage, setSuccessMessage] = useState<String>("")
+    const [handleButtonGotSuccess, setHandleButtonGotSuccess] = useState(false)
+
 
     // Sync state with props when modal opens or organization changes
     useEffect(() => {
@@ -65,9 +73,26 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
     const moderator = organization.moderators;
 
     // --- HANDLERS ---
-    const handleSaveName = () => {
-        console.log(`[API CALL] Update Name: Org ${organization._id} -> "${orgName}"`);
-        setIsEditingName(false);
+    const handleSaveName = async () => {
+        try
+        {   
+            const payload = {
+                organizationName: orgName,
+                organizationId: organization._id
+            }
+            const response = await api.put('/moderator/update_organization_name', payload)
+
+            if(response.status === 200)
+            {
+                setSuccessMessage(response.data.message || "Succesfully update organization name")
+                setHandleButtonGotSuccess(true)
+            }
+        }catch(error : any)
+        {
+            const message = error.response.data.message || "Failed to update organization name"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
+        }
     };
 
     const handleSaveHead = () => {
@@ -101,16 +126,16 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
 
             if(response.status === 200)
             {
-                onClose();
-                window.location.reload()
+                setSuccessMessage(response.data.message || "Succesfully delete organization")
+                console.log(response.data.message)
+                setHandleButtonGotSuccess(true)
             }
         }
         catch(error : any)
         {
-            if(error.response.status === 400)
-            {
-                alert(error.response.data.message);
-            }
+            const message = error.response.data.message || "Failed to delete organization"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
         }
     };
 
@@ -228,6 +253,53 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                             onClick={handleDeleteOrganization}
                         />
                     </div>
+                </Modal>
+            )}
+
+            {handleButtonGotError && (
+                <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-red-500">Action Failed</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                {errorMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => window.location.reload()}
+                    />
+                </Modal>
+            )}
+
+            {handleButtonGotSuccess && (
+                 <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-green-500">Success Update</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                { successMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => {
+                            onClose();
+                            window.location.reload()
+                        }}
+                    />
                 </Modal>
             )}
         </div>
