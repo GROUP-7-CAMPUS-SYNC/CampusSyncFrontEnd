@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { User, Edit2 } from 'lucide-react'; 
-import type { IOrganization } from './index'; 
-import ChangeHeadSelector from './changeHeadSelector';
-import Footer from "./footer"
-import ModeratorCard from './moderatorCard';
-import CurrentHeadInformation from './currentHeadInformation';
-import DescriptionSection from './descriptionSection'; // Import new component
-import ModalHeader from "./ModalHeader"
-import Modal from "../../components/modal"
-import Button from '../../components/button';
-import api from '../../api/api';
+import type { IOrganization } from '../index'; 
+import OrgModalChangeHeadSelector from './orgModalChangeOrganizationHead';
+import OrgModalFooter from "./orgModalFooter"
+import OrgModalModeratorCard from './orgModalModeratorCard';
+import OrgModalCurrentHead from './orgModalCurrentHead';
+import OrgModalDescriptionSection from './orgModalDescriptionSection'; // Import new component
+import OrgModalHeader from "./orgModalHeader"
+import Modal from "../../../components/modal"
+import Button from '../../../components/button';
+import api from '../../../api/api';
 
 interface OrganizationDetailModalProps {
     isOpen: boolean;
@@ -196,7 +196,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                 
                 {/* --- HEADER --- */}
                 {/* FIXED: Reduced padding (p-4) for mobile, adjusted to p-6 for tablet+ */}
-                <ModalHeader
+                <OrgModalHeader
                     isEditingName={isEditingName}
                     orgName={orgName}
                     setOrgName={(e) =>setOrgName(e.target.value)}
@@ -212,7 +212,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                 <div className="p-4 sm:p-6 overflow-y-auto space-y-8">
                     
                     {/* 1. Description Section */}
-                    <DescriptionSection 
+                    <OrgModalDescriptionSection 
                         isEditing={isEditingDesc}
                         setIsEditing={setIsEditingDesc}
                         description={description}
@@ -245,7 +245,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
 
                             <div className="p-4">
                                 {isEditingHead ? (
-                                    <ChangeHeadSelector 
+                                    <OrgModalChangeHeadSelector 
                                         candidates={userChangeHeadCandidate}
                                         selectedCandidateId={selectedCandidateId}
                                         onSelect={setSelectedCandidateId}
@@ -253,7 +253,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                                         onSave={handleSaveHead}
                                     />
                                 ) : (
-                                    <CurrentHeadInformation 
+                                    <OrgModalCurrentHead 
                                         currentHead={currentHead}
                                     />
                                 )}
@@ -262,7 +262,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
 
                         {/* --- MODERATOR CARD (Read-Only) --- */}
                         {!isEditingHead && (
-                            <ModeratorCard 
+                            <OrgModalModeratorCard 
                                 moderator={moderator}
                             />
                         )}
@@ -270,7 +270,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                 </div>
 
                 {/* --- FOOTER --- */}
-                <Footer 
+                <OrgModalFooter 
                     handleDeleteOrganization={() => setIsDeleting(true)}
                     onClose={onClose}
                 />

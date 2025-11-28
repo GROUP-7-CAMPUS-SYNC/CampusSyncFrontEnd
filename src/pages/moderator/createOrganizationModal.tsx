@@ -34,7 +34,7 @@ const InitialFormData = {
     organizationHeadID: '',
 }
 
-export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOrganizationModalProps) {
+export default function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationModalProps) {
     const [formData, setFormData] = useState<FormDataState>(InitialFormData);
     
     const [candidates, setCandidates] = useState<Candidate[]>([]);

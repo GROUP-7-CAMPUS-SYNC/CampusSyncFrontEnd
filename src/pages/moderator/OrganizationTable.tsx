@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Users, Mail, ShieldCheck } from 'lucide-react'; 
 import type { IOrganization } from './index'; 
-import OrganizationDetailModal from './organizationDetailsModal'; // Imported decoupled component
+import OrganizationDetailModal from './clickOrganizationRow';
 
 interface OrganizationTableProps {
     organizations: IOrganization[] | null | undefined; 
