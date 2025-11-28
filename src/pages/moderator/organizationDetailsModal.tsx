@@ -8,6 +8,9 @@ import ModeratorCard from './moderatorCard';
 import CurrentHeadInformation from './currentHeadInformation';
 import DescriptionSection from './descriptionSection'; // Import new component
 import ModalHeader from "./ModalHeader"
+import Modal from "../../components/modal"
+import Button from '../../components/button';
+import api from '../../api/api';
 
 // --- MOCK CANDIDATE DATA ---
 const MOCK_CANDIDATES: HeadCandidate[] = [
@@ -40,6 +43,10 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
     // Description Editing
     const [isEditingDesc, setIsEditingDesc] = useState(false);
     const [description, setDescription] = useState(organization.description || "");
+
+    // Moderator Delete Organization
+    const [isDeleting, setIsDeleting] = useState(false);
+
 
     // Sync state with props when modal opens or organization changes
     useEffect(() => {
@@ -87,13 +94,27 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
         setIsEditingDesc(false);
     };
 
-    const handleDeleteOrganization = () => {
-        if (confirm(`Are you sure you want to PERMANENTLY DELETE "${organization.organizationName}"? This action cannot be undone.`)) {
-            console.log(`[API CALL] DELETE Organization: ${organization._id}`);
-            onClose(); 
+    const handleDeleteOrganization = async () => {
+        try
+        {
+            const response = await api.delete(`/moderator/delete_organization/${organization._id}`)
+
+            if(response.status === 200)
+            {
+                onClose();
+                window.location.reload()
+            }
+        }
+        catch(error : any)
+        {
+            if(error.response.status === 400)
+            {
+                alert(error.response.data.message);
+            }
         }
     };
 
+    
     return (
         <div 
             className="fixed inset-0 z-50 overflow-y-auto bg-gray-900/75 backdrop-blur-sm flex justify-center items-center p-4 transition-opacity"
@@ -178,11 +199,37 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
 
                 {/* --- FOOTER --- */}
                 <Footer 
-                    handleDeleteOrganization={handleDeleteOrganization}
+                    handleDeleteOrganization={() => setIsDeleting(true)}
                     onClose={onClose}
                 />
 
             </div>
+
+            {isDeleting && (
+                <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <p className='text-center'>You want to delete  this organization?</p>
+
+                    <div
+                        className='flex justify-between gap-x-2 mt-2'
+                    >
+                        <Button
+                            buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
+                            type='button'
+                            buttonText='Close'
+                            onClick={() => setIsDeleting(false)}
+                        />
+
+                        <Button
+                            type='button'
+                            buttonText='Delete'
+                            buttonContainerDesign="bg-red-600 p-[10px] w-full text-white rounded-[6px] hover:bg-red-700 transition-colors duration-200 hover:cursor-pointer"                            
+                            onClick={handleDeleteOrganization}
+                        />
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };
