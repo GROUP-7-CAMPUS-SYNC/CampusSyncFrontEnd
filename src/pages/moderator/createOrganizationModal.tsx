@@ -232,9 +232,9 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                         </button>
                         <button
                             type="submit"
-                            disabled={!selectedHead || !formData.organizationName || isSubmitting}
+                            disabled={!selectedHead || !formData.organizationName  || !formData.description || isSubmitting}
                             className={`px-5 py-2 text-white font-medium rounded-lg transition-all shadow-sm flex items-center gap-2 ${
-                                (!selectedHead || !formData.organizationName || isSubmitting) 
+                                (!selectedHead || !formData.organizationName || !formData.description  || isSubmitting) 
                                 ? 'bg-gray-300 cursor-not-allowed' 
                                 : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md'
                             }`}
