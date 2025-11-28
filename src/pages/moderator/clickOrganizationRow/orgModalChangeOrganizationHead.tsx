@@ -1,23 +1,5 @@
 import { Check, AlertCircle } from 'lucide-react';
-
-// Define the shape of a candidate strictly for this UI
-// export interface HeadCandidate {
-//     _id: string;
-//     firstname: string;
-//     lastname: string;
-//     course: string;
-//     email: string; 
-// }
-
-interface Candidate {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    course: string;
-    email: string;
-    profileLink: string;
-    role: string;
-}
+import type { Candidate } from "../../../types/candidates"
 
 interface ChangeHeadSelectorProps {
     candidates: Candidate[];

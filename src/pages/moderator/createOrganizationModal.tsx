@@ -3,16 +3,7 @@ import { X, Check, Plus, User, Loader2 } from 'lucide-react';
 import api from '../../api/api'; // Ensuring we use the configured instance
 import Modal from "../../components/modal"
 import Button from "../../components/button"
-
-interface Candidate {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    course: string;
-    email: string;
-    profileLink: string;
-    role: string;
-}
+import type { Candidate } from '../../types/candidates';
 
 interface CreateOrganizationModalProps {
     isOpen: boolean;

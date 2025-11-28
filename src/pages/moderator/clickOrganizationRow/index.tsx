@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Edit2 } from 'lucide-react'; 
-import type { IOrganization } from '../index'; 
+import type { IOrganization } from '../index';
+import type { Candidate } from '../../../types/candidates';
 import OrgModalChangeHeadSelector from './orgModalChangeOrganizationHead';
 import OrgModalFooter from "./orgModalFooter"
 import OrgModalModeratorCard from './orgModalModeratorCard';
@@ -17,15 +18,6 @@ interface OrganizationDetailModalProps {
     organization: IOrganization;
 }
 
-interface Candidate {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    course: string;
-    email: string;
-    profileLink: string;
-    role: string;
-}
 
 const OrganizationDetailModal = ({ isOpen, onClose, organization }: OrganizationDetailModalProps) => {
     // --- STATE MANAGEMENT ---
