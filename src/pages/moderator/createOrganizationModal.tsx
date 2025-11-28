@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { X, Check, Plus, User, Loader2 } from 'lucide-react';
 import api from '../../api/api'; // Ensuring we use the configured instance
+import Modal from "../../components/modal"
+import Button from "../../components/button"
 
 interface Candidate {
     _id: string;
@@ -40,6 +42,14 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
     const [selectedHead, setSelectedHead] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Error Modal Message 
+    const [errorMessage, setErrorMessage] = useState<String>("")
+    const [handleButtonGotError, setHandleButtonGotError] = useState(false)
+
+    // Success Modal Message 
+    const [successMessage, setSuccessMessage] = useState<String>("")
+    const [handleButtonGotSuccess, setHandleButtonGotSuccess] = useState(false)
+
     // Fetch users when modal opens
     useEffect(() => {
         if (isOpen) {
@@ -58,8 +68,6 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
             if (response.data && response.data.data) {
                 setCandidates(response.data.data);
             }
-            
-
 
         } catch (error) {
             console.error("Failed to fetch candidates:", error);
@@ -78,21 +86,24 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
         setIsSubmitting(true);
         
         try {
-            // Replace with actual endpoint
             const response = await api.post('/moderator/create_organization', formData);
             
-            console.log("Creation success:", response.data);
-            setFormData(InitialFormData)
-
-            onSuccess(); // Trigger parent refresh
-            onClose();   // Close modal
+            if(response.status === 200)
+            {
+                setSuccessMessage(response.data.message || "Succesfully create organization")
+                setHandleButtonGotSuccess(true)
+            }
             
-        } catch (error: any) {
-            console.error("Creation failed", error);
-            // Optional: Extract error message like in login.tsx
-            // const errorMessage = error.response?.data?.message || "Failed to create organization";
-            // alert(errorMessage); 
-        } finally {
+        } 
+        catch (error: any) 
+        {
+            
+            const message = error.response.data.message || "Failed to create organization"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
+        } 
+        finally 
+        {
             setIsSubmitting(false);
         }
     };
@@ -251,6 +262,53 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                     </div>
                 </form>
             </div>
+
+            {handleButtonGotError && (
+                <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-red-500">Action Failed</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                {errorMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => window.location.reload()}
+                    />
+                </Modal>
+            )}
+
+            {handleButtonGotSuccess && (
+                    <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-green-500">Success Update</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                { successMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => {
+                            onClose();
+                            window.location.reload()
+                        }}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }
