@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { User, Edit2 } from 'lucide-react'; 
 import type { IOrganization } from './index'; 
 import ChangeHeadSelector from './changeHeadSelector';
-import type { HeadCandidate } from "./changeHeadSelector"
 import Footer from "./footer"
 import ModeratorCard from './moderatorCard';
 import CurrentHeadInformation from './currentHeadInformation';
@@ -12,20 +11,20 @@ import Modal from "../../components/modal"
 import Button from '../../components/button';
 import api from '../../api/api';
 
-// --- MOCK CANDIDATE DATA ---
-const MOCK_CANDIDATES: HeadCandidate[] = [
-    { _id: 'u1', firstname: 'Juan', lastname: 'Dela Cruz', email: 'juan.dc@student.edu', course: 'BS Information Technology' },
-    { _id: 'u2', firstname: 'Maria', lastname: 'Clara', email: 'maria.c@student.edu', course: 'BS Civil Engineering' },
-    { _id: 'u3', firstname: 'Jose', lastname: 'Rizal', email: 'jose.r@student.edu', course: 'BS Computer Science' },
-    { _id: 'u4', firstname: 'Andres', lastname: 'Bonifacio', email: 'andres.b@student.edu', course: 'BS Food Technology' },
-    { _id: 'u5', firstname: 'Apolinario', lastname: 'Mabini', email: 'pol.m@student.edu', course: 'BS Information Technology' },
-    { _id: 'u6', firstname: 'Gabriela', lastname: 'Silang', email: 'gab.s@student.edu', course: 'BS Civil Engineering' },
-];
-
 interface OrganizationDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     organization: IOrganization;
+}
+
+interface Candidate {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    course: string;
+    email: string;
+    profileLink: string;
+    role: string;
 }
 
 const OrganizationDetailModal = ({ isOpen, onClose, organization }: OrganizationDetailModalProps) => {
@@ -39,6 +38,8 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
     const [isEditingHead, setIsEditingHead] = useState(false);
     const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
     const [currentHead, setCurrentHead] = useState(organization.organizationHeadID);
+    const [userChangeHeadCandidate, setUserChangeHeadCandidate] = useState<Candidate[]>([]);
+
 
     // Description Editing
     const [isEditingDesc, setIsEditingDesc] = useState(false);
@@ -68,6 +69,27 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
         }
     }, [organization, isOpen]);
 
+    useEffect(() => {
+        const fetchCandidates = async () => {
+
+            try
+            {
+                const response = await api.get('/moderator/get_all_users')
+
+                if(response.data && response.data.data){
+                    setUserChangeHeadCandidate(response.data.data)
+                }
+            }
+            catch(error : any)
+            {
+                const message = error.response.data.message || "Failed to fetch candidates"
+                setErrorMessage(message)
+                setHandleButtonGotError(true)
+            }
+        }
+        fetchCandidates()
+    }, [])
+
     if (!isOpen) return null;
 
     const moderator = organization.moderators;
@@ -95,23 +117,29 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
         }
     };
 
-    const handleSaveHead = () => {
-        if (!selectedCandidateId) return;
-        const newHead = MOCK_CANDIDATES.find(u => u._id === selectedCandidateId);
-        
-        if (newHead) {
-            console.log(`[API CALL] Update Head: Org ${organization._id} -> User ${newHead._id}`);
-            setCurrentHead({
-                _id: newHead._id,
-                firstname: newHead.firstname,
-                lastname: newHead.lastname,
-                email: newHead.email,
-                course: newHead.course,
-                profileLink: "" 
-            });
+    const handleSaveHead = async() => {
+        try
+        {
+            const payload = {
+                newHeadId: selectedCandidateId,
+                organizationId: organization._id
+            }
+
+            const response = await api.put('/moderator/change_organization_head', payload)
+
+            if(response.status === 200)
+            {
+                setSuccessMessage(response.data.message || "Succesfully update organization head")
+                setHandleButtonGotSuccess(true)
+            }
+
         }
-        setIsEditingHead(false);
-        setSelectedCandidateId(null);
+        catch(error : any)
+        {
+            const message = error.response.data.message || "Failed to update organization head"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
+        }
     };
 
     const handleSaveDescription = async () => {
@@ -218,7 +246,7 @@ const OrganizationDetailModal = ({ isOpen, onClose, organization }: Organization
                             <div className="p-4">
                                 {isEditingHead ? (
                                     <ChangeHeadSelector 
-                                        candidates={MOCK_CANDIDATES}
+                                        candidates={userChangeHeadCandidate}
                                         selectedCandidateId={selectedCandidateId}
                                         onSelect={setSelectedCandidateId}
                                         onCancel={() => setIsEditingHead(false)}
