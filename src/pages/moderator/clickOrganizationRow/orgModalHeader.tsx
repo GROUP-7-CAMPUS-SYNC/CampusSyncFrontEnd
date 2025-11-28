@@ -1,6 +1,6 @@
 import { X, Edit2, Save } from 'lucide-react'; 
 
-interface OrganizationDetailsModalHeader {
+interface OrganizationDetailsModalHeaderProps {
     isEditingName: boolean;
     orgName: string;
     setOrgName: (e : any) => void;
@@ -20,7 +20,7 @@ export default function organizationDetailsModalHeader({
     onClickEdit,
     organization,
     onClose
-} : OrganizationDetailsModalHeader) {
+} : OrganizationDetailsModalHeaderProps) {
   return (
                     <div className="flex justify-between items-start p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
                     {/* FIXED: Added min-w-0 to allow flex child to shrink below content size (fixes overflow on 320px) */}
