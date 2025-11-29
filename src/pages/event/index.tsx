@@ -1,10 +1,10 @@
-import SectionHeader from "../../components/sectionHeader"
-import SearchBar from "../../components/sectionSearchBar"
+import SectionHeader from "../../components/sectionHeader";
+import SearchBar from "../../components/sectionSearchBar";
 import { useState } from "react";
-import CreatePost from "./formPost/index"
+import CreatePost from "./formPost/index";
+import EventContent from "./eventContent";
 
 export default function index() {
-
   const recentSearchData: string[] = [
     "CITC Days",
     "ROTC Event",
@@ -13,9 +13,9 @@ export default function index() {
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
-  
+
   return (
-    <div>
+    <div className="bg-[#fafafa] ">
       <SectionHeader
         profileLink="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
         searchBar={
@@ -26,13 +26,12 @@ export default function index() {
             recentSearch={recentSearchData}
           />
         }
-        
         postButtonClick={() => setIsPostClicked(true)}
       />
-
-      {isPostClicked && (
-        <CreatePost  onClose={() => setIsPostClicked(false)} />
-      )}
+      <div className="flex flex-col items-center">
+        <EventContent />
+      </div>
+      {isPostClicked && <CreatePost onClose={() => setIsPostClicked(false)} />}
     </div>
-  )
+  );
 }
