@@ -16,10 +16,7 @@ interface CreatePostProps {
     onClose: () => void;
 }
 
-
-// NOTE: Using a placeholder URL for the image as file upload handling (S3/Cloudinary)
-// is usually external to this submission logic.
-const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/placeholder-event/image/upload/v1/default_event_image.png";
+const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png";
 
 
 export default function Index({
@@ -49,8 +46,6 @@ export default function Index({
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-
-    // --- 1. Fetch Managed Organization(s) on load ---
     useEffect(() => {
         const getAllOrganizationAssigned = async () => {
             try
