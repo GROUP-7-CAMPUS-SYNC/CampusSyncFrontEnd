@@ -11,11 +11,11 @@ export default function index() {
   const recentSearchesData: string[] = [
     "Student ID",
     "Laptop Acer",
-    "Blue Wallet",
+    "Blue Waller",
     "Samsung Phone",
-    "Yellow Towel",
-    "Clean Handkerchief",
-    "Black Eyeglasses",
+    "Blue Towel",
+    "Yellow Handkerchief",
+    "Black Eyeglasses"
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
