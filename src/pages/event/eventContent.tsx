@@ -7,6 +7,7 @@ import {
   Calendar,
   Bookmark,
   Users,
+  User, // Ensure User is imported for the fallback avatar
 } from "lucide-react";
 import CommentModal from "./commentModal";
 
@@ -45,7 +46,7 @@ function formatDateTime(dateString: string) {
   return `${d} · ${t}`;
 }
 
-// Helper: Calculate relative time (posted 5 mins ago)
+// Helper: Calculate relative time
 function timeAgo(dateString: string) {
   const now = new Date();
   const past = new Date(dateString);
@@ -76,7 +77,7 @@ export default function EventContent() {
   const [savePostClicked, setSavePostClicked] = useState<{
     [key: string]: boolean;
   }>({});
-  
+
   const commentCount = 3000;
 
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -93,9 +94,9 @@ export default function EventContent() {
   const fetchEventPosts = async () => {
     try {
       const response = await api.get("/events/getPosts/event");
-      // Optional: Sort by newest first
-      const sortedData = response.data.sort((a: EventPost, b: EventPost) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      const sortedData = response.data.sort(
+        (a: EventPost, b: EventPost) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       setEventPosts(sortedData);
     } catch (error) {
@@ -112,10 +113,25 @@ export default function EventContent() {
   return (
     <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl">
       {eventPosts.map((post) => {
-        // Variable declared here was previously unused
         const isCommentClicked = commentClicked[post._id] || false;
         const isNotifyClicked = notifyClicked[post._id] || false;
         const isSaved = savePostClicked[post._id] || false;
+
+        // --- DISPLAY LOGIC ---
+        const hasOrg = !!post.organization;
+        // 1. Determine Avatar: Org Profile Link OR Default User Icon
+        const avatarSrc = hasOrg ? post.organization?.profileLink : null;
+        
+        // 2. Determine Main Title: Org Name OR User Name
+        const postedByName = post.postedBy
+          ? `${post.postedBy.firstname} ${post.postedBy.lastname}`
+          : "Unknown";
+        const displayTitle = hasOrg
+          ? post.organization?.organizationName
+          : postedByName;
+
+        // 3. Time Display
+        const timeDisplay = post.createdAt ? timeAgo(post.createdAt) : "Just now";
 
         return (
           <div
@@ -125,23 +141,38 @@ export default function EventContent() {
             {/* Post Head */}
             <div className="flex items-center justify-between">
               <div className="flex gap-3 items-center">
-                <img
-                  src={post.image}
-                  alt="preview"
-                  className="h-12 sm:h-14 rounded"
-                />
-                <div>
-                  <p className="font-semibold text-base sm:text-lg">
-                    {post.postedBy
-                      ? `${post.postedBy.firstname} ${post.postedBy.lastname}`
-                      : "Unknown"}
-                  </p>
-                  <p className="text-gray-500 text-sm">
-                    {post.createdAt ? timeAgo(post.createdAt) : "Just now"}
-                  </p>
+                
+                {/* AVATAR SECTION */}
+                <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+                    {avatarSrc ? (
+                        <img 
+                            src={avatarSrc} 
+                            alt="avatar" 
+                            className="w-full h-full object-cover" 
+                        />
+                    ) : (
+                        <User className="text-gray-400" size={24} />
+                    )}
                 </div>
+
+                {/* TEXT SECTION */}
+                <div className="flex flex-col">
+                  {/* Organization Name (or User Name if no Org) */}
+                  <p className="font-semibold text-base sm:text-lg text-black">
+                    {displayTitle}
+                  </p>
+                  
+                  {/* Subtext: Posted By User + Time */}
+                  <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
+                    {hasOrg && (
+                        <span>Posted by {postedByName} •</span>
+                    )}
+                    <span>{timeDisplay}</span>
+                  </div>
+                </div>
+
               </div>
-              <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2  sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
+              <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
                 {post.type}
               </span>
             </div>
@@ -259,7 +290,7 @@ export default function EventContent() {
                   </p>
                 </button>
 
-                {/* Comment - FIXED: Now uses isCommentClicked for styling */}
+                {/* Comment */}
                 <button
                   className="flex flex-row items-center gap-2 cursor-pointer"
                   onClick={() => {
@@ -270,11 +301,13 @@ export default function EventContent() {
                     }));
                   }}
                 >
-                  <MessageCircle 
+                  <MessageCircle
                     className={`${isCommentClicked ? "text-[#F9BF3B]" : ""}`}
                   />
-                  <p 
-                    className={`sm:block hidden ${isCommentClicked ? "text-[#F9BF3B]" : ""}`}
+                  <p
+                    className={`sm:block hidden ${
+                      isCommentClicked ? "text-[#F9BF3B]" : ""
+                    }`}
                   >
                     Comment
                   </p>
