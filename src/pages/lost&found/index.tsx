@@ -39,7 +39,7 @@ export default function index() {
       )}
 
 
-      <LostAndFountContent/>
+      {/* <LostAndFountContent/> */}
     </div>
   )
 }
