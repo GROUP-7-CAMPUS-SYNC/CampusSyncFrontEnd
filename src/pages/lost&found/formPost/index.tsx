@@ -294,8 +294,6 @@ export default function index({onClose} : CreatePostProps) {
                         />
                     </div>
                </>
-
-
             )}
 
 
@@ -347,3 +345,6 @@ export default function index({onClose} : CreatePostProps) {
     </Modal>
   )
 }
+
+
+
