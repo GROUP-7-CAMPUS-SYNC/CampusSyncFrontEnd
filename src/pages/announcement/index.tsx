@@ -24,6 +24,8 @@ export default function index() {
   const [isUserIsHead, setIsUserIsHead] = useState<boolean>(false);
 
 
+
+
   const validateUserIsAdmin = async () => {
 
 
@@ -40,7 +42,7 @@ export default function index() {
       else
       {
         setIsUserIsHead(false)
-        setIsPostClicked(false)
+        setIsPostClicked(true)
       }
     }
     catch(error)
@@ -67,13 +69,16 @@ export default function index() {
 
 
       {
-        isPostClicked === true && (isUserIsHead ?
+        isPostClicked && (isUserIsHead ?
+        // User is head, show the event creation form
         <CreatePost
           onClose={() => setIsPostClicked(false)}
         />
         :
-        <Modal>
-          <h1>No Organizaton Under you named </h1>
+        // User is not head, show the access denial modal
+        <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-96 text-center">
+          <h1 className="text-xl font-bold mb-3 text-red-700">Access Denied</h1>
+          <p className="mb-4 text-gray-700">You must be the head of an organization to post academic post</p>
           <Button
             type="button"
             buttonText="Close"
