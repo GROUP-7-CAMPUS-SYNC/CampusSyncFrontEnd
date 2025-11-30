@@ -76,7 +76,7 @@ export default function Index({
   const handleFirstStep = () => {
     setFormSubmitted(true);
     // FIX 2: Check if organizationId is selected
-    if(title.trim() == "" || content.trim() == "" || organizationId == "") return;
+    if(title.trim() === "" || content.trim() === "" || organizationId === "") return;
     setFormSubmitted(false);
     setSteps(2);
   };
