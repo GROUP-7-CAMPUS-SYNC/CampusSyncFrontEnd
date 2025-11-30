@@ -39,10 +39,7 @@ export default function Index({
         {
           const response = await api.get("/academic/get_managed_organization");
          
-          // FIX 1: Access response.data.organization directly (which is the array)
-          // Do not look for .organizationName on the array itself
           const orgData = response.data.organization;
-
 
           if (Array.isArray(orgData)) {
             const formattedData: Organization[] = orgData.map((org: any) => ({
@@ -64,35 +61,21 @@ export default function Index({
         }
       }
 
-
       getAllOrganizationAssigned();
-
 
   }, []);
 
-
-
-
   const handleFirstStep = () => {
     setFormSubmitted(true);
-    // FIX 2: Check if organizationId is selected
     if(title.trim() === "" || content.trim() === "" || organizationId === "") return;
     setFormSubmitted(false);
     setSteps(2);
   };
 
-
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormSubmitted(true);
     if(!image) return;
-
-
-    // TODO: Perform your API call here using 'organizationId'
-    // Example: await api.post('/academic/create', { title, content, organizationId, ... })
-
 
     try
     {
@@ -113,7 +96,6 @@ export default function Index({
  
   const showContentError = formSubmitted && content.trim() === "";
 
-
   return (
     <Modal
       cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-[500px]"
@@ -126,13 +108,11 @@ export default function Index({
             <>
               <h2 className="text-2xl font-bold mb-6">Academic Details</h2>
 
-
               {/* === ORGANIZATION DROPDOWN === */}
               <div className="flex flex-col gap-1 mb-4">
                 <label className="text-sm text-gray-700 font-semibold" htmlFor="org-select">
                   Post As:
                 </label>
-
 
                 <div className="relative">
                   <select
@@ -159,7 +139,6 @@ export default function Index({
                       )}
                   </select>
 
-
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                     <svg
                       className="fill-current h-4 w-4"
@@ -173,7 +152,6 @@ export default function Index({
               </div>
               {/* === END DROPDOWN === */}
 
-
               <StringTextField
                 label="Title"
                 placeholder="Enter Title"
@@ -182,7 +160,6 @@ export default function Index({
                 errorMessage="Title minimum of 3 characters"
                 showError={formSubmitted && title.trim() === ""}
               />
-
 
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-gray-700" htmlFor="content-field">
@@ -210,7 +187,6 @@ export default function Index({
                 </p>
               </div>
 
-
               <div className="flex flex-row gap-x-10 mt-2">
                 <Button
                   buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
@@ -218,7 +194,6 @@ export default function Index({
                   buttonText="Close"
                   onClick={onClose}
                 />
-
 
                 <Button
                   type="button"
@@ -229,27 +204,22 @@ export default function Index({
             </>
           )}
 
-
           {step === 2 && (
             <>
               <h2 className="text-2xl font-bold mb-6">Upload Academic Image</h2>
 
-
               <div className="mb-4 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
                   Posting to: <strong>{managedOrgs.find(o => o._id === organizationId)?.organizationName}</strong>
               </div>
-
 
               <UploadPicture
                 image={image}
                 setImage={setImage}
               />
 
-
               {formSubmitted && !image && (
                 <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
               )}
-
 
               <div className="flex flex-row gap-x-10 mt-2">
                 <Button
@@ -258,7 +228,6 @@ export default function Index({
                   buttonText="Back"
                   onClick={() => setSteps(1)}
                 />
-
 
                 <Button
                   type="submit"
