@@ -131,7 +131,7 @@ export default function NavigationContainer() {
                         {/* PROFILE */}
                         <div className="relative group">
                             <ProfilePicture
-                                profileImageURL="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+                                profileImageURL={`${localStorage.getItem("profileLink")}`}
                                 onClick={handleProfileClick}
                             />
                             <LogoHoverMessage
@@ -152,7 +152,7 @@ export default function NavigationContainer() {
                                 }`}
                                 onClick={handleLogOutClick}
                             >
-                                <UserName userName="Liam" />
+                                <UserName userName={`${localStorage.getItem("firstName")} ${localStorage.getItem("lastName")}`} />
                                 {clickLogOut ? <ChevronUp /> : <ChevronDown />}
                             </button>
 

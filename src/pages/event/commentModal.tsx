@@ -1,4 +1,3 @@
-import React from "react";
 import { X, SendHorizontal } from "lucide-react";
 interface CommentProps {
   postId: string;
@@ -7,7 +6,6 @@ interface CommentProps {
 }
 
 export default function CommentModal({
-  postId,
   onClose,
   postedBy,
 }: CommentProps) {

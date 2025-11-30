@@ -64,7 +64,7 @@ export default function Index() {
   return (
     <div>
       <SectionHeader
-        profileLink="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+        profileLink={`${localStorage.getItem("profileLink")}`}
         searchBar={
           <SearchBar
             value={searchBarValue}
