@@ -54,7 +54,6 @@ export default function Index({
                 const response = await api.get("/events/get_managed_organization");
                
                 const orgData = response.data.organization;
-                console.log(isSubmitting)
 
 
                 if (Array.isArray(orgData) && orgData.length > 0) {
