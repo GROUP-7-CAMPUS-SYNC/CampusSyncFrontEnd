@@ -13,6 +13,9 @@ export default function index() {
     "Laptop Acer",
     "Blue Waller",
     "Samsung Phone",
+    "Blue Towel",
+    "Yellow Handkerchief",
+    "Black Eyeglasses"
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
