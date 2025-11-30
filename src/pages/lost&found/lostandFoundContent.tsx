@@ -11,22 +11,48 @@ import {
   X,
 } from "lucide-react";
 
-// 1. Updated Interface to match ALL fields in your JSON response
+// --- HELPER FUNCTION: Calculate Time Ago ---
+const timeAgo = (dateString: string) => {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "Just now";
+  
+  const minutes = Math.floor(diffInSeconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+
+  // Fallback to regular date for older posts
+  return past.toLocaleDateString();
+};
+
+interface PostedByUser {
+  _id: string;
+  firstname: string;
+  lastname: string;
+}
+
 interface ReportItem {
   _id: string;
   reportType: "Lost" | "Found";
   itemName: string;
   description: string;
-  turnOver: string; // Added
+  turnOver: string;
   locationDetails: string;
   contactDetails: string;
   dateLostOrFound: string;
   image: string;
-  postedBy: string; // Added (User ID)
-  status: string; // Added
-  witnesses: any[]; // Added (Array)
-  comments: any[]; // Added (Array)
-  // __v is omitted here
+  postedBy: PostedByUser | null;
+  status: string;
+  witnesses: any[];
+  comments: any[];
+  createdAt: string; // Added this field from your JSON
 }
 
 export default function LostAndFoundContent() {
@@ -42,7 +68,11 @@ export default function LostAndFoundContent() {
   const fetchLostAndFoundContent = async () => {
     try {
       const response = await api.get("/report_types/getPosts/reportItems");
-      setReportItems(response.data);
+      // Sort by newest first (optional but recommended)
+      const sortedData = response.data.sort((a: ReportItem, b: ReportItem) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setReportItems(sortedData);
     } catch (error) {
       console.log(error);
     }
@@ -53,7 +83,6 @@ export default function LostAndFoundContent() {
   }, []);
 
   const handleWitnessClick = (itemId: string) => {
-    // Toggle witness click state
     setWitnessClicks((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(itemId)) {
@@ -101,8 +130,8 @@ export default function LostAndFoundContent() {
                 {item.image ? (
                   <img
                     src={item.image}
-                    alt={item.postedBy}
                     className="w-full h-full object-cover"
+                    alt="user avatar"
                   />
                 ) : (
                   <User size={20} className="text-white" />
@@ -110,9 +139,14 @@ export default function LostAndFoundContent() {
               </div>
               <div>
                 <p className="font-semibold">
-                  {item.postedBy || "Unknown User"}
+                  {item.postedBy
+                    ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
+                    : "Unknown User"}
                 </p>
-                <p className="text-xs text-gray-500">5 hours ago</p>
+                {/* DYNAMIC TIME AGO */}
+                <p className="text-xs text-gray-500">
+                    {item.createdAt ? timeAgo(item.createdAt) : "Just now"}
+                </p>
               </div>
             </div>
 
@@ -165,6 +199,7 @@ export default function LostAndFoundContent() {
 
             <p className="flex items-center gap-2 text-sm">
               <Clock size={18} className="text-black" />
+              {/* This is the Date Lost/Found, separate from Posted Time */}
               {new Date(item.dateLostOrFound).toLocaleString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
@@ -187,14 +222,14 @@ export default function LostAndFoundContent() {
                   color: witnessClicks.has(item._id) ? "#fbbf24" : "inherit",
                 }}
               />{" "}
-              {item.witnesses?.length} Witness
+              {item.witnesses?.length || 0} Witness
             </button>
 
             <button
               onClick={() => handleCommentClick(item.comments)}
               className="flex items-center gap-1 cursor-pointer hover:text-blue-600 transition"
             >
-              <MessageCircle size={16} /> {item.comments?.length} comments
+              <MessageCircle size={16} /> {item.comments?.length || 0} comments
             </button>
 
             <button
@@ -219,11 +254,10 @@ export default function LostAndFoundContent() {
         </div>
       ))}
 
-      {/* MODAL - COMMENTS ONLY */}
+      {/* MODAL */}
       {selectedModal && selectedModal.type === "comments" && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-96 overflow-hidden flex flex-col">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Comments</h2>
               <button
@@ -233,8 +267,6 @@ export default function LostAndFoundContent() {
                 <X size={20} />
               </button>
             </div>
-
-            {/* Modal Content */}
             <div className="overflow-y-auto flex-1 p-4">
               {modalData.length > 0 ? (
                 <div className="space-y-3">
