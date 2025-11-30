@@ -1,9 +1,15 @@
 import SectionHeader from "../../components/sectionHeader"
 import SearchBar from "../../components/sectionSearchBar"
 import CreatePost from "./formPost/index"
+import Modal from "../../components/modal";
 import { useState } from "react";
+import Button from "../../components/button";
+import api from "../../api/api"
+import AcademicContext from "./academicContent"
+
 
 export default function index() {
+
 
   const recentSearchesData: string[] = [
     "Campus Clean-Up Drive this Saturday",
@@ -15,7 +21,34 @@ export default function index() {
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
-  
+  const [isUserIsHead, setIsUserIsHead] = useState<boolean>(false);
+
+
+  const validateUserIsAdmin = async () => {
+
+
+    try
+    {
+      const respose = await api.get("/academic/get_managed_organization")
+
+
+      if(respose.data.isHead)
+      {
+        setIsUserIsHead(true)
+        setIsPostClicked(true)
+      }
+      else
+      {
+        setIsUserIsHead(false)
+        setIsPostClicked(false)
+      }
+    }
+    catch(error)
+    {
+      console.log(error)
+    }
+  }
+ 
   return (
     <div>
       <SectionHeader
@@ -28,13 +61,32 @@ export default function index() {
             recentSearch={recentSearchesData}
           />
         }
-        
-        postButtonClick={() => setIsPostClicked(true)}
+       
+        postButtonClick={() => validateUserIsAdmin()}
       />
 
-      {isPostClicked && (
-        <CreatePost onClose={() => setIsPostClicked(false)} />
+
+      {
+        isPostClicked === true && (isUserIsHead ?
+        <CreatePost
+          onClose={() => setIsPostClicked(false)}
+        />
+        :
+        <Modal>
+          <h1>No Organizaton Under you named </h1>
+          <Button
+            type="button"
+            buttonText="Close"
+            onClick={() => setIsPostClicked(false)}
+          />
+        </Modal>
       )}
+
+
+      <AcademicContext/>
     </div>
   )
 }
+
+
+
