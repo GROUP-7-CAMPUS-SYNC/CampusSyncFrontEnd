@@ -20,7 +20,7 @@ reviews:
     eslint:
       enabled: true
     ruff:
-      enabled: true
+      enabled: false
 
   # THE FIX: Use path_instructions for detailed rules (Max 20,000 chars)
   path_instructions:
