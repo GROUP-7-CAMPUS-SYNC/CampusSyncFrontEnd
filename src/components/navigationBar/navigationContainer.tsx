@@ -7,12 +7,14 @@ import SearchBar from "../searchBar";
 import SuggestionGroup from "./suggestionGroup/suggestionGroup";
 import LogoHoverMessage from "./logoHoverMessage";
 
+
 import NotificationClickModal from "./notificationClickModal";
-import ProfileClickModal from "./profileClickModal";
 import LogoutModal from "./logout";
 
 import { useScreenSize } from "../../hooks/useScreenSize";
 import { Search, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom"
+
 
 export default function NavigationContainer() {
     const [searchBarValue, setSearchBarValue] = useState<string>("");
@@ -20,6 +22,8 @@ export default function NavigationContainer() {
     const [clickProfile, setClickProfile] = useState(false);
     const [clickLogOut, setClickLogOut] = useState(false);
     const [clickSmallScreenSearchBar, setClickSmallScreenSearchbar] = useState(false);
+    const navigation = useNavigate();
+
 
     const isSmallScreen = useScreenSize(400);
 
@@ -68,6 +72,7 @@ export default function NavigationContainer() {
     };
 
     const handleProfileClick = () => {
+        navigation("/profile");
         setClickProfile(!clickProfile);
         setClickNotification(false);
         setClickLogOut(false);
@@ -186,7 +191,6 @@ export default function NavigationContainer() {
 
             {/* MODALS */}
             {clickNotification && <NotificationClickModal ref={notifModalRef} />}
-            {clickProfile && <ProfileClickModal ref={profileModalRef} />}
             {clickLogOut && <LogoutModal ref={logoutModalRef} />}
         </div>
     );
