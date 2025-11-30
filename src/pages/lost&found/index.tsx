@@ -13,6 +13,9 @@ export default function index() {
     "Laptop Acer",
     "Blue Waller",
     "Samsung Phone",
+    "Blue Towel",
+    "Yellow Handkerchief",
+    "Black Eyeglasses"
   ];
   const [searchBarValue, setSearchBarValue] = useState<string>("");
   const [isPostClicked, setIsPostClicked] = useState(false);
@@ -20,7 +23,7 @@ export default function index() {
   return (
     <div>
       <SectionHeader
-        profileLink="https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+        profileLink={`${localStorage.getItem("profileLink")}`}
         searchBar={
           <SearchBar
             value={searchBarValue}
