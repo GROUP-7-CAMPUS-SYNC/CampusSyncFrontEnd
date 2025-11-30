@@ -7,7 +7,7 @@ import {
   Calendar,
   Bookmark,
   Users,
-  User, // Ensure User is imported for the fallback avatar
+  User,
 } from "lucide-react";
 import CommentModal from "./commentModal";
 
@@ -119,10 +119,8 @@ export default function EventContent() {
 
         // --- DISPLAY LOGIC ---
         const hasOrg = !!post.organization;
-        // 1. Determine Avatar: Org Profile Link OR Default User Icon
         const avatarSrc = hasOrg ? post.organization?.profileLink : null;
         
-        // 2. Determine Main Title: Org Name OR User Name
         const postedByName = post.postedBy
           ? `${post.postedBy.firstname} ${post.postedBy.lastname}`
           : "Unknown";
@@ -130,7 +128,6 @@ export default function EventContent() {
           ? post.organization?.organizationName
           : postedByName;
 
-        // 3. Time Display
         const timeDisplay = post.createdAt ? timeAgo(post.createdAt) : "Just now";
 
         return (
@@ -141,7 +138,6 @@ export default function EventContent() {
             {/* Post Head */}
             <div className="flex items-center justify-between">
               <div className="flex gap-3 items-center">
-                
                 {/* AVATAR SECTION */}
                 <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
                     {avatarSrc ? (
@@ -157,12 +153,10 @@ export default function EventContent() {
 
                 {/* TEXT SECTION */}
                 <div className="flex flex-col">
-                  {/* Organization Name (or User Name if no Org) */}
                   <p className="font-semibold text-base sm:text-lg text-black">
                     {displayTitle}
                   </p>
                   
-                  {/* Subtext: Posted By User + Time */}
                   <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
                     {hasOrg && (
                         <span>Posted by {postedByName} •</span>
@@ -170,7 +164,6 @@ export default function EventContent() {
                     <span>{timeDisplay}</span>
                   </div>
                 </div>
-
               </div>
               <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
                 {post.type}
@@ -188,74 +181,46 @@ export default function EventContent() {
 
             {/* Post Details */}
             <div className="flex flex-col gap-4">
-              {/* Event Name */}
               <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-                <p className="text-[#4B4D51] text-sm font-semibold">
-                  Event Name:
-                </p>
-                <p className="text-sm sm:text-base font-medium">
-                  {post.eventName || "N/A"}
-                </p>
+                <p className="text-[#4B4D51] text-sm font-semibold">Event Name:</p>
+                <p className="text-sm sm:text-base font-medium">{post.eventName || "N/A"}</p>
               </div>
 
-              {/* Start Date */}
               <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
                 <CalendarDays className="text-blue-500 w-6 h-6 sm:w-8 sm:h-8" />
                 <div className="flex flex-col">
-                  <p className="text-[#4B4D51] text-sm font-semibold">
-                    Start Event:
-                  </p>
-                  <p className="text-sm sm:text-base font-medium">
-                    {formatDateTime(post.startDate)}
-                  </p>
+                  <p className="text-[#4B4D51] text-sm font-semibold">Start Event:</p>
+                  <p className="text-sm sm:text-base font-medium">{formatDateTime(post.startDate)}</p>
                 </div>
               </div>
 
-              {/* End Date */}
               <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
                 <CalendarDays className="text-blue-500 w-6 h-6 sm:w-8 sm:h-8" />
                 <div className="flex flex-col">
-                  <p className="text-[#4B4D51] text-sm font-semibold">
-                    End Event:
-                  </p>
-                  <p className="text-sm sm:text-base font-medium">
-                    {formatDateTime(post.endDate)}
-                  </p>
+                  <p className="text-[#4B4D51] text-sm font-semibold">End Event:</p>
+                  <p className="text-sm sm:text-base font-medium">{formatDateTime(post.endDate)}</p>
                 </div>
               </div>
 
-              {/* Location */}
               <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
                 <MapPin className="text-red-500 w-6 h-6 " />
                 <div className="flex flex-col">
-                  <p className="text-[#4B4D51] text-sm font-semibold">
-                    Location:
-                  </p>
-                  <p className="text-sm sm:text-base font-medium">
-                    {post.location || "N/A"}
-                  </p>
+                  <p className="text-[#4B4D51] text-sm font-semibold">Location:</p>
+                  <p className="text-sm sm:text-base font-medium">{post.location || "N/A"}</p>
                 </div>
               </div>
 
-              {/* Open To */}
               <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
                 <Users className="text-blue-500 w-6 h-6 sm:w-8 sm:h-8" />
                 <div className="flex flex-col">
-                  <p className="text-[#4B4D51] text-sm font-semibold">
-                    Open To:
-                  </p>
-                  <p className="text-sm sm:text-base font-medium">
-                    {post.openTo || "N/A"}
-                  </p>
+                  <p className="text-[#4B4D51] text-sm font-semibold">Open To:</p>
+                  <p className="text-sm sm:text-base font-medium">{post.openTo || "N/A"}</p>
                 </div>
               </div>
 
-              {/* Course */}
               <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
                 <p className="text-[#4B4D51] text-sm font-semibold">Course:</p>
-                <p className="text-sm sm:text-base font-medium">
-                  {post.course || "N/A"}
-                </p>
+                <p className="text-sm sm:text-base font-medium">{post.course || "N/A"}</p>
               </div>
             </div>
 
@@ -278,14 +243,8 @@ export default function EventContent() {
                     }))
                   }
                 >
-                  <Calendar
-                    className={` ${isNotifyClicked ? "text-[#F9BF3B]" : ""}`}
-                  />
-                  <p
-                    className={`sm:block hidden ${
-                      isNotifyClicked ? "text-[#F9BF3B]" : ""
-                    }`}
-                  >
+                  <Calendar className={` ${isNotifyClicked ? "text-[#F9BF3B]" : ""}`} />
+                  <p className={`sm:block hidden ${isNotifyClicked ? "text-[#F9BF3B]" : ""}`}>
                     Notify Me
                   </p>
                 </button>
@@ -301,19 +260,13 @@ export default function EventContent() {
                     }));
                   }}
                 >
-                  <MessageCircle
-                    className={`${isCommentClicked ? "text-[#F9BF3B]" : ""}`}
-                  />
-                  <p
-                    className={`sm:block hidden ${
-                      isCommentClicked ? "text-[#F9BF3B]" : ""
-                    }`}
-                  >
+                  <MessageCircle className={`${isCommentClicked ? "text-[#F9BF3B]" : ""}`} />
+                  <p className={`sm:block hidden ${isCommentClicked ? "text-[#F9BF3B]" : ""}`}>
                     Comment
                   </p>
                 </button>
 
-                {/* Save */}
+                {/* Save - FIX APPLIED HERE */}
                 <button
                   className="flex flex-row items-center gap-2 cursor-pointer"
                   onClick={() =>
@@ -323,18 +276,10 @@ export default function EventContent() {
                     }))
                   }
                 >
-                  <Bookmark
-                    className={`${
-                      isSaved ? "fill-[#F9BF3B] text-[#F9BF3B]" : ""
-                    }`}
-                  />
-                  <div
-                    className={`sm:block hidden ${
-                      isSaved ? "text-[#F9BF3B] " : ""
-                    }`}
-                  >
-                    <p>{isSaved ? "Saved" : "Save"}</p>
-                  </div>
+                  <Bookmark className={`${isSaved ? "fill-[#F9BF3B] text-[#F9BF3B]" : ""}`} />
+                  <p className={`sm:block hidden ${isSaved ? "text-[#F9BF3B] " : ""}`}>
+                    {isSaved ? "Saved" : "Save"}
+                  </p>
                 </button>
               </div>
             </div>
