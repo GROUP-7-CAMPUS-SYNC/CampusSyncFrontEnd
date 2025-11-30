@@ -4,23 +4,20 @@ import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useEffect, useState } from "react";
 import api from "../../../api/api";
-
+import { CheckCircle, AlertCircle } from "lucide-react"; // Optional icons for better UI
 
 interface Organization {
   _id: string;
   organizationName: string;
 }
 
-
 interface CreatePostProps {
   onClose: () => void;
 }
 
-
 export default function Index({
   onClose,
 }: CreatePostProps) {
-
 
   const [title, setTitle] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -28,17 +25,17 @@ export default function Index({
   const [step, setSteps] = useState<number>(1);
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
   const [successfullySubmitted, setSuccessfullySubmitted] = useState<boolean>(false);
- 
+  
   const [managedOrgs, setManagedOrgs] = useState<Organization[]>([]);
   const [organizationId, setOrganizationId] = useState<string>("");
 
+  // Removed unused successMessage state
+  const [requestError, setRequestError] = useState<boolean>(false);
 
   useEffect(() => {
       const getAllOrganizationAssigned = async () => {
-        try
-        {
+        try {
           const response = await api.get("/academic/get_managed_organization");
-         
           const orgData = response.data.organization;
 
           if (Array.isArray(orgData)) {
@@ -46,23 +43,20 @@ export default function Index({
                 _id: org._id,
                 organizationName: org.organizationName,
             }));
-           
+            
             setManagedOrgs(formattedData);
-           
+            
             // Auto-select the first organization
             if (formattedData.length > 0) {
                 setOrganizationId(formattedData[0]._id);
             }
           }
-        }
-        catch(error)
-        {
+        } catch(error) {
           console.log("Error fetching organizations:", error);
         }
       }
 
       getAllOrganizationAssigned();
-
   }, []);
 
   const handleFirstStep = () => {
@@ -77,20 +71,25 @@ export default function Index({
     setFormSubmitted(true);
     if(!image) return;
 
-    try
-    {
+    // Reset error before new request
+    setRequestError(false);
+
+    try {
       const payload = {
             title,
             content,
             image: "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png",
             organizationId
         };
-      await api.post('/academic/create_post', payload)
-      setSuccessfullySubmitted(true);
-    }
-    catch(error)
-    {
-      console.error("Failed to create post:", error);
+      
+      const response = await api.post('/academic/create_post', payload);
+
+      if(response.status === 201){
+        setSuccessfullySubmitted(true);
+      }
+    } catch(error) {
+      console.error(error);
+      setRequestError(true);
     }    
   };
  
@@ -100,11 +99,29 @@ export default function Index({
     <Modal
       cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-[500px]"
     >
-      {!successfullySubmitted ? (
+      {successfullySubmitted ? (
+        <div className="text-center flex flex-col items-center justify-center p-4">
+          <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Post Created!</h2>
+          <p className="text-gray-600 mb-6">Your academic post has been successfully published.</p>
+          <Button
+            type="button"
+            buttonText="Close"
+            onClick={onClose}
+          />
+        </div>
+      ) : (
         <form onSubmit={handleSubmit}>
+          
+          {/* Global Error Message */}
+          {requestError && (
+             <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded-lg mb-4 flex items-center gap-2">
+                <AlertCircle size={18} />
+                <span className="text-sm font-medium">Failed to create post. Please try again.</span>
+             </div>
+          )}
 
-
-          {step == 1 && (
+          {step === 1 && (
             <>
               <h2 className="text-2xl font-bold mb-6">Academic Details</h2>
 
@@ -127,7 +144,6 @@ export default function Index({
                       text-gray-900
                     "
                   >
-                      {/* FIX 3: Map directly over managedOrgs state */}
                       {managedOrgs.length > 0 ? (
                         managedOrgs.map((org) => (
                             <option key={org._id} value={org._id} className="text-gray-900">
@@ -150,7 +166,6 @@ export default function Index({
                   </div>
                 </div>
               </div>
-              {/* === END DROPDOWN === */}
 
               <StringTextField
                 label="Title"
@@ -165,7 +180,7 @@ export default function Index({
                 <label className="text-sm text-gray-700" htmlFor="content-field">
                   Content
                 </label>
-               
+                
                 <div className="flex items-center gap-2">
                   <textarea
                     id="content-field"
@@ -181,8 +196,8 @@ export default function Index({
                     onChange={(e) => setContent(e.target.value)}
                   />
                 </div>
-               
-                <p className={`text-sm ${showContentError ? "text-red-500" : "text-white"}`}>
+                
+                <p className={`text-sm ${showContentError ? "text-red-500" : "text-transparent"}`}>
                   Please fill the text field
                 </p>
               </div>
@@ -237,19 +252,7 @@ export default function Index({
             </>
           )}
         </form>
-      ) : (
-        <Modal>
-          <div className="text-center">
-            <p className="mb-4 font-semibold text-green-600">Successfully Submitted</p>
-            <Button
-              type="button"
-              buttonText="Close"
-              onClick={onClose}
-            />
-          </div>
-        </Modal>
       )}
     </Modal>
   )
 }
-

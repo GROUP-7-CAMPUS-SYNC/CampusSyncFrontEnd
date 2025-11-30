@@ -38,7 +38,7 @@ export default function index() {
 
 
       {isPostClicked && (
-        <CreatePost onClose={() => setIsPostClicked(false)} />
+        <CreatePost onClose={() => window.location.reload()} />
       )}
 
 

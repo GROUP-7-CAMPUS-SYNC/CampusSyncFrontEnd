@@ -106,8 +106,6 @@ export default function EventContent() {
 
   useEffect(() => {
     fetchEventPosts();
-    const interval = setInterval(fetchEventPosts, 2000);
-    return () => clearInterval(interval);
   }, []);
 
   return (

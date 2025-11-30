@@ -72,7 +72,7 @@ export default function index() {
         isPostClicked && (isUserIsHead ?
         // User is head, show the event creation form
         <CreatePost
-          onClose={() => setIsPostClicked(false)}
+          onClose={() => window.location.reload()}
         />
         :
         // User is not head, show the access denial modal

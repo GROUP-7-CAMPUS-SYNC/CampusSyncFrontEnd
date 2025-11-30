@@ -67,13 +67,6 @@ export default function AcademicContent() {
 
     useEffect(() => {
         fetchAcademicPosts();
-        const interval = setInterval(() => {
-            fetchAcademicPosts();
-        }, 2000);
-
-        return () => {
-            clearInterval(interval);
-        };
     }, []);
 
     return (
