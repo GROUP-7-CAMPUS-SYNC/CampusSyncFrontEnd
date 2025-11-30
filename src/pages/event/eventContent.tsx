@@ -30,6 +30,7 @@ interface EventPost {
   createdAt: string;
 }
 
+// Helper: Format specific dates (start/end)
 function formatDateTime(dateString: string) {
   const date = new Date(dateString);
   const d = date.toLocaleDateString("en-US", {
@@ -44,6 +45,26 @@ function formatDateTime(dateString: string) {
   return `${d} · ${t}`;
 }
 
+// Helper: Calculate relative time (posted 5 mins ago)
+function timeAgo(dateString: string) {
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return "Just now";
+
+  const minutes = Math.floor(diffInSeconds / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+
+  return past.toLocaleDateString();
+}
+
 export default function EventContent() {
   const [eventPosts, setEventPosts] = useState<EventPost[]>([]);
   const [commentClicked, setCommentClicked] = useState<{
@@ -55,7 +76,7 @@ export default function EventContent() {
   const [savePostClicked, setSavePostClicked] = useState<{
     [key: string]: boolean;
   }>({});
-  const timePosted = "5 hours ago";
+  
   const commentCount = 3000;
 
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -72,7 +93,11 @@ export default function EventContent() {
   const fetchEventPosts = async () => {
     try {
       const response = await api.get("/events/getPosts/event");
-      setEventPosts(response.data);
+      // Optional: Sort by newest first
+      const sortedData = response.data.sort((a: EventPost, b: EventPost) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setEventPosts(sortedData);
     } catch (error) {
       console.log(error);
     }
@@ -87,6 +112,7 @@ export default function EventContent() {
   return (
     <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl">
       {eventPosts.map((post) => {
+        // Variable declared here was previously unused
         const isCommentClicked = commentClicked[post._id] || false;
         const isNotifyClicked = notifyClicked[post._id] || false;
         const isSaved = savePostClicked[post._id] || false;
@@ -110,7 +136,9 @@ export default function EventContent() {
                       ? `${post.postedBy.firstname} ${post.postedBy.lastname}`
                       : "Unknown"}
                   </p>
-                  <p className="text-gray-500 text-sm">{timePosted}</p>
+                  <p className="text-gray-500 text-sm">
+                    {post.createdAt ? timeAgo(post.createdAt) : "Just now"}
+                  </p>
                 </div>
               </div>
               <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2  sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
@@ -231,7 +259,7 @@ export default function EventContent() {
                   </p>
                 </button>
 
-                {/* Comment */}
+                {/* Comment - FIXED: Now uses isCommentClicked for styling */}
                 <button
                   className="flex flex-row items-center gap-2 cursor-pointer"
                   onClick={() => {
@@ -242,8 +270,14 @@ export default function EventContent() {
                     }));
                   }}
                 >
-                  <MessageCircle />
-                  <p className="sm:block hidden">Comment</p>
+                  <MessageCircle 
+                    className={`${isCommentClicked ? "text-[#F9BF3B]" : ""}`}
+                  />
+                  <p 
+                    className={`sm:block hidden ${isCommentClicked ? "text-[#F9BF3B]" : ""}`}
+                  >
+                    Comment
+                  </p>
                 </button>
 
                 {/* Save */}
@@ -261,13 +295,13 @@ export default function EventContent() {
                       isSaved ? "fill-[#F9BF3B] text-[#F9BF3B]" : ""
                     }`}
                   />
-                  <p
+                  <div
                     className={`sm:block hidden ${
                       isSaved ? "text-[#F9BF3B] " : ""
                     }`}
                   >
                     <p>{isSaved ? "Saved" : "Save"}</p>
-                  </p>
+                  </div>
                 </button>
               </div>
             </div>
