@@ -4,7 +4,7 @@ import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useEffect, useState } from "react";
 import api from "../../../api/api";
-import { CheckCircle, AlertCircle } from "lucide-react"; // Optional icons for better UI
+import { CheckCircle, AlertCircle, XCircleIcon } from "lucide-react"; // Optional icons for better UI
 
 interface Organization {
   _id: string;
@@ -31,6 +31,10 @@ export default function Index({
 
   // Removed unused successMessage state
   const [requestError, setRequestError] = useState<boolean>(false);
+
+
+  const [cloudinaryError, setCloudinaryError] = useState<boolean>(false)
+  const [cloudinaryErrorMessage, setCloudinaryErrorMessage] = useState<string>("")
 
   useEffect(() => {
       const getAllOrganizationAssigned = async () => {
@@ -74,18 +78,56 @@ export default function Index({
     // Reset error before new request
     setRequestError(false);
 
-    try {
-      const payload = {
+    try 
+    {
+      const signatureResponse = await api.get("/upload/generate_signature")
+      const {
+          timestamp,
+          signature,
+          folder,
+          apiKey,
+          cloudName
+      } = signatureResponse.data
+
+      // PREPARE FORM DATA FOR CLOUDINARY
+      const formData = new FormData()
+      formData.append("file", image)
+
+      // Essential Signed Upload Parameters
+      formData.append("api_key", apiKey); 
+      formData.append("timestamp", timestamp.toString());
+      formData.append("signature", signature);
+      formData.append("folder", folder);
+
+      // Upload to cloudunary Directly
+      const uploadResponse = await fetch(
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, 
+          {
+              method: "POST",
+              body: formData
+          }
+      )
+      
+      const uploadData = await uploadResponse.json()
+
+      if(!uploadResponse.ok){
+          setCloudinaryError(true)
+          setCloudinaryErrorMessage(uploadData.error.message || "Unknown Error during upload imaage")
+      }
+      else
+      {
+        const payload = {
             title,
             content,
-            image: "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png",
+            image: uploadData.secure_url,
             organizationId
         };
       
-      const response = await api.post('/academic/create_post', payload);
+        const response = await api.post('/academic/create_post', payload);
 
-      if(response.status === 201){
-        setSuccessfullySubmitted(true);
+        if(response.status === 201){
+          setSuccessfullySubmitted(true);
+        }
       }
     } catch(error) {
       console.error(error);
@@ -252,6 +294,21 @@ export default function Index({
             </>
           )}
         </form>
+      )}
+
+      {cloudinaryError && (
+        <Modal>
+            <div className="text-center flex flex-col items-center justify-center p-4">
+            <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Image Upload Failed</h2>
+            <p className="text-gray-600 mb-6">{cloudinaryErrorMessage}</p>
+            <Button
+                type="button"
+                buttonText="Close"
+                onClick={onClose}
+            />
+            </div>
+        </Modal>
       )}
     </Modal>
   )
