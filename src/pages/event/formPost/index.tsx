@@ -3,7 +3,7 @@ import Button from "../../../components/button"
 import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useState, useEffect } from "react";
-import { Calendar, CheckCircle } from "lucide-react";
+import { Calendar, CheckCircle, XCircleIcon } from "lucide-react";
 import api from "../../../api/api"
 
 interface Organization {
@@ -14,8 +14,6 @@ interface Organization {
 interface CreatePostProps {
     onClose: () => void;
 }
-
-const PLACEHOLDER_IMAGE_URL = "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png";
 
 export default function Index({
     onClose,
@@ -44,6 +42,9 @@ export default function Index({
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [submissionError, setSubmissionError] = useState<string | null>(null);
 
+    const [cloudinaryError, setCloudinaryError] = useState<boolean>(false)
+    const [cloudinaryErrorMessage, setCloudinaryErrorMessage] = useState<string>("")
+    
     useEffect(() => {
         const getAllOrganizationAssigned = async () => {
             try {
@@ -113,23 +114,64 @@ export default function Index({
 
         setIsSubmitting(true); // START LOADING
 
-        const payload = {
-            eventName,
-            location: eventLocation,
-            course,
-            openTo,
-            startDate: new Date(startDate).toISOString(),
-            endDate: new Date(endDate).toISOString(),
-            image: PLACEHOLDER_IMAGE_URL,
-            organizationId
-        }
 
-        try {
-            const response = await api.post("/events/create_post", payload);
-            if (response.status === 201) {
-                setSuccessfullySubmitted(true);
-            } else {
-                 setSubmissionError(response.data?.message || `Submission failed with status: ${response.status}`);
+        try 
+        {
+
+            const signatureResponse = await api.get("/upload/generate_signature")
+            const {
+                timestamp,
+                signature,
+                folder,
+                apiKey,
+                cloudName
+            } = signatureResponse.data
+
+            // PREPARE FORM DATA FOR CLOUDINARY
+            const formData = new FormData()
+            formData.append("file", image)
+
+            // Essential Signed Upload Parameters
+            formData.append("api_key", apiKey); 
+            formData.append("timestamp", timestamp.toString());
+            formData.append("signature", signature);
+            formData.append("folder", folder);
+
+            // Upload to cloudunary Directly
+            const uploadResponse = await fetch(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, 
+                {
+                    method: "POST",
+                    body: formData
+                }
+            )
+            
+            const uploadData = await uploadResponse.json()
+
+            if(!uploadResponse.ok)
+            {
+                setCloudinaryError(true)
+                setCloudinaryErrorMessage(uploadData.error.message || "Unknown Error during upload imaage")
+            }
+            else
+            {
+                const payload = {
+                    eventName,
+                    location: eventLocation,
+                    course,
+                    openTo,
+                    startDate: new Date(startDate).toISOString(),
+                    endDate: new Date(endDate).toISOString(),
+                    image: uploadData.secure_url,
+                    organizationId
+                }
+
+                const response = await api.post("/events/create_post", payload);
+                if (response.status === 201) {
+                    setSuccessfullySubmitted(true);
+                } else {
+                    setSubmissionError(response.data?.message || `Submission failed with status: ${response.status}`);
+                }
             }
         } catch (e: any) {
             console.error("Event submission failed:", e);
@@ -291,6 +333,21 @@ export default function Index({
                     )}
                 </form>
             )}
+
+                {cloudinaryError && (
+                    <Modal>
+                        <div className="text-center flex flex-col items-center justify-center p-4">
+                        <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+                        <h2 className="text-xl font-bold text-gray-800 mb-2">Image Upload Failed</h2>
+                        <p className="text-gray-600 mb-6">{cloudinaryErrorMessage}</p>
+                        <Button
+                            type="button"
+                            buttonText="Close"
+                            onClick={onClose}
+                        />
+                        </div>
+                    </Modal>
+                )}
         </Modal>
     )
 }
