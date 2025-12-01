@@ -5,7 +5,7 @@ import UploadPicture from "../../../components/uploadPicture";
 import { useState } from "react";
 import { Calendar } from "lucide-react";
 import api from "../../../api/api";
-
+import { CheckCircle } from "lucide-react"; // Optional icons for better UI
 
 interface CreatePostProps {
   onClose: () => void;
@@ -334,12 +334,16 @@ export default function index({onClose} : CreatePostProps) {
 
         {successfullySubmitted && (
             <Modal>
-                <p>Successfully Submitted</p>
+                <div className="text-center flex flex-col items-center justify-center p-4">
+                <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Post Created!</h2>
+                <p className="text-gray-600 mb-6">Report Item post has been successfully published.</p>
                 <Button
                     type="button"
                     buttonText="Close"
                     onClick={onClose}
                 />
+                </div>
             </Modal>
         )}
     </Modal>
