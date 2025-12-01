@@ -95,7 +95,6 @@ export default function index({onClose} : CreatePostProps) {
             formData.append("signature", signature);
             formData.append("folder", folder);
 
-            console.log(formData)
             // Upload to cloudunary Directly
             const uploadResponse = await fetch(
                 `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, 
