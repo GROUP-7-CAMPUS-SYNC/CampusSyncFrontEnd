@@ -5,6 +5,7 @@ import {
     Bookmark, 
     User, 
 } from "lucide-react";
+import CommentModal from "./commentModal";
 
 // Interface matching your Academic Model
 interface AcademicPost {
@@ -51,6 +52,20 @@ function timeAgo(dateString: string) {
 
 export default function AcademicContent() {
     const [posts, setPosts] = useState<AcademicPost[]>([]);
+    const [commentClicked, setCommentClicked] = useState<{ [key: string]: boolean }>({});
+    const [savePostClicked, setSavePostClicked] = useState<{ [key: string]: boolean }>({});
+
+    const [activePostId, setActivePostId] = useState<string | null>(null);
+    const [activeUser, setActiveUser] = useState<any>(null);
+
+    const openCommentModal = (postId: string, postedBy: any) => {
+        setActivePostId(postId);
+        setActiveUser(postedBy);
+    };
+
+    const closeCommentModal = () => {
+        setActivePostId(null);
+    };
 
     const fetchAcademicPosts = async () => {
         try {
@@ -70,7 +85,7 @@ export default function AcademicContent() {
     }, []);
 
     return (
-        <div className="flex flex-col w-full max-w-2xl mx-auto pb-10">
+        <div className="flex flex-col w-full max-w-4xl mx-auto pb-10">
             {posts.map((post) => {
                 // Determine display values
                 const orgName = post.organization?.organizationName || "Unknown Organization";
@@ -116,7 +131,7 @@ export default function AcademicContent() {
                             </div>
 
                             {/* Badge */}
-                            <span className="bg-[#60A5FA] text-white text-xs font-semibold px-3 py-1 rounded-lg shadow-sm">
+                            <span className="inline-flex items-center bg-[#60A5FA] text-white text-sm sm:text-base font-medium sm:font-semibold px-3 py-2 sm:px-4 rounded-xl shadow-sm">
                                 {post.type || "Academic"}
                             </span>
                         </div>
@@ -147,19 +162,61 @@ export default function AcademicContent() {
 
                         {/* FOOTER ACTIONS */}
                         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
-                                <MessageCircle size={18} />
-                                <span>{post.comments?.length || 0} comments</span>
+
+                            {/* COMMENT BUTTON (opens modal) */}
+                            <button
+                                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium"
+                                onClick={() => {
+                                    openCommentModal(post._id, post.postedBy);
+                                    setCommentClicked((prev) => ({ 
+                                        ...prev, 
+                                        [post._id]: !prev[post._id]
+                                    }));
+                                }}
+                            >
+                                <MessageCircle
+                                    size={18}
+                                    className={`${commentClicked[post._id] ? "text-[#F9BF3B]" : ""}`}
+                                />
+                                <span className={`${commentClicked[post._id] ? "text-[#F9BF3B]" : ""}`}>
+                                    Comment
+                                </span>
                             </button>
 
-                            <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
-                                <Bookmark size={18} />
-                                <span>Save</span>
+                            {/* SAVE BUTTON */}
+                            <button
+                                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium"
+                                onClick={() =>
+                                    setSavePostClicked((prev) => ({
+                                        ...prev,
+                                        [post._id]: !prev[post._id],
+                                    }))
+                                }
+                            >
+                                <Bookmark
+                                    size={18}
+                                    className={`${
+                                        savePostClicked[post._id] 
+                                        ? "fill-[#F9BF3B] text-[#F9BF3B]" 
+                                        : ""
+                                    }`}
+                                />
+                                <span className={`${savePostClicked[post._id] ? "text-[#F9BF3B]" : ""}`}>
+                                    {savePostClicked[post._id] ? "Saved" : "Save"}
+                                </span>
                             </button>
                         </div>
+
                     </div>
                 );
             })}
+            {activePostId && (
+                <CommentModal
+                    postId={activePostId}
+                    postedBy={activeUser}
+                    onClose={closeCommentModal}
+                />
+            )}
         </div>
     );
 }
