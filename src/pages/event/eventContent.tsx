@@ -31,6 +31,10 @@ interface EventPost {
   createdAt: string;
 }
 
+interface EventContentProps {
+  searchQuery: string;
+}
+
 // Helper: Format specific dates (start/end)
 function formatDateTime(dateString: string) {
   const date = new Date(dateString);
@@ -66,7 +70,7 @@ function timeAgo(dateString: string) {
   return past.toLocaleDateString();
 }
 
-export default function EventContent() {
+export default function EventContent({ searchQuery }: EventContentProps) {
   const [eventPosts, setEventPosts] = useState<EventPost[]>([]);
   const [commentClicked, setCommentClicked] = useState<{
     [key: string]: boolean;
@@ -82,6 +86,8 @@ export default function EventContent() {
 
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activeUser, setActiveUser] = useState<any>(null);
+  const [searchError, setSearchError] = useState<boolean>(false)
+
   const openCommentModal = (postId: string, postedBy: any) => {
     setActivePostId(postId);
     setActiveUser(postedBy);
@@ -93,24 +99,46 @@ export default function EventContent() {
 
   const fetchEventPosts = async () => {
     try {
-      const response = await api.get("/events/getPosts/event");
-      const sortedData = response.data.sort(
+      const url = searchQuery ?
+      `/events/getPosts/event?search=${encodeURIComponent(searchQuery)}`
+      : `/events/getPosts/event`;
+      const response = await api.get(url);
+
+      if(response.status === 200){
+        setSearchError(false)
+        const sortedData = response.data.sort(
         (a: EventPost, b: EventPost) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      setEventPosts(sortedData);
+        );
+        setEventPosts(sortedData);
+      }
     } catch (error) {
-      console.log(error);
+      setSearchError(true)
     }
   };
 
   useEffect(() => {
-    fetchEventPosts();
-  }, []);
+    // Add a small delay (debounce) to prevent API spam while typing
+    const delayDebounceFn = setTimeout(() => {
+      fetchEventPosts();
+    }, 1000);
+
+    return () => clearTimeout(delayDebounceFn);
+    
+  }, [searchQuery]);
 
   return (
     <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl">
-      {eventPosts.map((post) => {
+      {searchError ? (
+        <div
+          className="flex justify-center"
+        >
+          <p className="font-semibold mt-2">No search Found. Try Again.</p>
+        </div>
+      ) : 
+      (
+        <>
+        {eventPosts.map((post) => {
         const isCommentClicked = commentClicked[post._id] || false;
         const isNotifyClicked = notifyClicked[post._id] || false;
         const isSaved = savePostClicked[post._id] || false;
@@ -290,6 +318,8 @@ export default function EventContent() {
           postedBy={activeUser}
           onClose={closeCommentModal}
         />
+      )}
+        </>
       )}
     </div>
   );

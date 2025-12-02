@@ -6,6 +6,7 @@ export default function SearchBar({
   searchBarContainerDesign = "relative  flex items-center gap-3 w-full",
   value,
   onChange,
+  onSearch,
   searchBarDesign = "bg-transparent focus:outline-none w-full placeholder:text-gray-600",
   placeholder,
   disable,
@@ -13,7 +14,18 @@ export default function SearchBar({
   recentSearch,
 }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [recentSearches] = useState<string[]>(recentSearch);
+
+
+  // Handle "Enter" key press (works on the Mobile "Go" button too)
+  const handleKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
+    if(e.key === "Enter" && onSearch) {
+      onSearch(value)
+      setIsFocused(false)
+
+      // Optional: Remove focus from input to hide mobile keyboard
+      e.currentTarget.blur()
+    }
+  }
 
   const handleRecentSearchClick = (term: string) => {
     const syntheticEvent = {
@@ -21,10 +33,15 @@ export default function SearchBar({
     } as React.ChangeEvent<HTMLInputElement>;
 
     onChange(syntheticEvent);
+
+    // Trigger search immediately if clicked
+    if(onSearch){
+      onSearch(term)
+    }
     setIsFocused(false);
   };
 
-  const filteredSearches = recentSearches.filter((s) =>
+  const filteredSearches = recentSearch.filter((s) =>
     s.toLowerCase().includes(value ? value.toLowerCase() : "")
   );
 
@@ -40,6 +57,7 @@ export default function SearchBar({
         value={value}
         onChange={onChange}
         placeholder={placeholder}
+        onKeyDown={handleKeyDown}
         disabled={disable}
         type="text"
         onFocus={() => setIsFocused(true)}
@@ -50,7 +68,7 @@ export default function SearchBar({
       {isFocused && filteredSearches.length > 0 && !disable && (
         // MODIFIED: Replaced rounded-b-md with rounded-b-[5px] for pixel alignment
         <div
-          className={`absolute top-full overflow-y-auto left-0 mt-3.5 w-full bg-white shadow-lg rounded-b-[5px] border border-gray-200 z-50 no-scrollbar ${searchResultHeight}`}
+          className={`absolute top-full overflow-y-auto left-0 mt-3.5 w-full bg-white shadow-lg rounded-b-[5px] border border-gray-200 z-20 no-scrollbar ${searchResultHeight}`}
         >
           <ul className="py-1">
             <li className="px-4 py-2 text-xs text-gray-500 font-semibold sticky top-0 mb-1 bg-white">

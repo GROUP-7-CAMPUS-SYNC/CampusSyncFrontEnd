@@ -24,6 +24,7 @@ export interface SearchBarProps {
   searchBarLogoDesign?: string
   value: string
   onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  onSearch?: (searchTerm: string) => void
   searchBarDesign?: string
   placeholder: string
   disable?: boolean
