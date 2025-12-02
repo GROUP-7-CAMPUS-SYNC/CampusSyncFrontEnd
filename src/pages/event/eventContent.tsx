@@ -129,11 +129,9 @@ export default function EventContent({ searchQuery }: EventContentProps) {
 
   return (
     <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl">
-      {searchError ? (
-        <div
-          className="flex justify-center"
-        >
-          <p className="font-semibold mt-2">No search Found. Try Again.</p>
+      {searchError || (searchQuery && eventPosts.length === 0) ? (
+        <div className="flex justify-center py-10">
+          <p className="font-semibold text-gray-500">No items found matching "{searchQuery}".</p>
         </div>
       ) : 
       (
