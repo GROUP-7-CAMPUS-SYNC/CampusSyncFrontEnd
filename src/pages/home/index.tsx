@@ -211,7 +211,7 @@ export default function HomeFeed() {
               <p className="text-xs text-gray-500 mt-0.5">Posted by {posterName} • {timeAgo(item.createdAt)}</p>
             </div>
           </div>
-          <span className="bg-blue-400 text-white text-xs font-semibold px-3 py-1 rounded-lg">
+          <span className="bg-blue-400 text-white text-sm font-semibold px-3 py-1 rounded-lg">
             Academic
           </span>
         </div>
