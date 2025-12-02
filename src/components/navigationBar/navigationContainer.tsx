@@ -7,24 +7,27 @@ import SearchBar from "../searchBar";
 import SuggestionGroup from "./suggestionGroup/suggestionGroup";
 import LogoHoverMessage from "./logoHoverMessage";
 
-
 import NotificationClickModal from "./notificationClickModal";
 import LogoutModal from "./logout";
 
 import { useScreenSize } from "../../hooks/useScreenSize";
 import { Search, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom"
-
+import { useNavigate } from "react-router-dom";
+import api from "../../api/api"; // ✅ IMPORT API
 
 export default function NavigationContainer() {
     const [searchBarValue, setSearchBarValue] = useState<string>("");
+    
+    // UI States
     const [clickNotification, setClickNotification] = useState(false);
     const [clickProfile, setClickProfile] = useState(false);
     const [clickLogOut, setClickLogOut] = useState(false);
     const [clickSmallScreenSearchBar, setClickSmallScreenSearchbar] = useState(false);
+    
+    // ✅ NEW: Notification Badge State
+    const [badgeCount, setBadgeCount] = useState<number>(0);
+
     const navigation = useNavigate();
-
-
     const isSmallScreen = useScreenSize(400);
 
     // Refs
@@ -32,6 +35,31 @@ export default function NavigationContainer() {
     const notifModalRef = useRef<HTMLDivElement>(null);
     const profileModalRef = useRef<HTMLDivElement>(null);
     const logoutModalRef = useRef<HTMLDivElement>(null);
+
+    // ✅ HELPER: Fetch Notification Count
+    const fetchUnreadCount = async () => {
+        try {
+            const res = await api.get("/notification/getNotification");
+            // Filter only items where isRead is false
+            const unread = res.data.filter((n: any) => !n.isRead).length;
+            setBadgeCount(unread);
+        } catch (error) {
+            console.error("Error fetching notification count:", error);
+        }
+    };
+
+    // ✅ EFFECT 1: Fetch count on Mount
+    useEffect(() => {
+        fetchUnreadCount();
+    }, []);
+
+    // ✅ EFFECT 2: Re-fetch count when Modal Closes
+    // This ensures that if you read a message in the modal, the badge updates when you close it.
+    useEffect(() => {
+        if (!clickNotification) {
+            fetchUnreadCount();
+        }
+    }, [clickNotification]);
 
     // Reset mobile search bar when resizing to large screen
     useEffect(() => {
@@ -51,10 +79,9 @@ export default function NavigationContainer() {
             const insideLogoutModal = logoutModalRef.current?.contains(target);
 
             if (insideNav || insideNotifModal || insideProfileModal || insideLogoutModal) {
-                return; // Do NOT close anything if clicked inside
+                return; 
             }
 
-            // Close all modals if clicked outside
             setClickNotification(false);
             setClickProfile(false);
             setClickLogOut(false);
@@ -100,14 +127,12 @@ export default function NavigationContainer() {
                 <div className="2xl:pl-10 flex w-full h-18 py-2 2xl:px-3 px-2 justify-between items-center gap-x-2">
                     {/* LEFT SIDE */}
                     <div className="flex gap-x-3 items-center">
-                        {/* Mobile Search Icon */}
                         <div className="block [@media(min-width:400px)]:hidden">
                             <button onClick={() => setClickSmallScreenSearchbar(true)}>
                                 <Search />
                             </button>
                         </div>
 
-                        {/* Desktop Search Bar */}
                         <div className="hidden [@media(min-width:400px)]:block">
                             <SearchBar
                                 value={searchBarValue}
@@ -124,7 +149,11 @@ export default function NavigationContainer() {
                     <div className="flex gap-x-6 items-center">
                         {/* NOTIFICATION */}
                         <div className="relative group">
-                            <Notification badgeCount={5} onClick={handleNotificationClick} />
+                            {/* ✅ PASS DYNAMIC BADGE COUNT HERE */}
+                            <Notification 
+                                badgeCount={badgeCount} 
+                                onClick={handleNotificationClick} 
+                            />
                             <LogoHoverMessage
                                 clickNotification={clickNotification}
                                 clickProfile={clickProfile}
