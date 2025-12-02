@@ -141,7 +141,9 @@ export default function ProfilePage() {
   };
 
   const renderAcademicItem = (item: any) => {
+    // ✅ This variable is now used below
     const orgName = item.organization?.organizationName || "General Academic";
+
     return (
       <div key={item._id} className="bg-white rounded-xl shadow-md border border-gray-200 p-5 mb-6">
         <div className="flex justify-between items-start mb-4">
@@ -156,7 +158,7 @@ export default function ProfilePage() {
 
             <div className="flex flex-col">
               <h3 className="font-bold text-gray-900 leading-tight">
-                {item.organization?.organizationName || "Unknown Org"}
+                {orgName}
               </h3>
               <p className="text-xs text-gray-500 mt-0.5">
                 Posted by {item.postedBy?.firstname} {item.postedBy?.lastname} • {timeAgo(item.createdAt)}
@@ -168,7 +170,6 @@ export default function ProfilePage() {
             Academic
           </span>
         </div>
-
 
         <h4 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h4>
         <p className="text-gray-700 text-sm line-clamp-3 mb-3">{item.content}</p>
@@ -195,7 +196,6 @@ export default function ProfilePage() {
       </div>
     );
   };
-
   // --- MAIN UI ---
   return (
     <div className="w-full max-w-4xl mx-auto pb-10">
