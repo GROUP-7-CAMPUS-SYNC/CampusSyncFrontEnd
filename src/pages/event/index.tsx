@@ -2,27 +2,51 @@ import SectionHeader from "../../components/sectionHeader"
 import SearchBar from "../../components/sectionSearchBar"
 import CreatePost from "./formPost/index"
 import Modal from "../../components/modal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/button";
 import api from "../../api/api"
 import EventContent from "./eventContent" // New component to display posts
 import { Loader2 } from "lucide-react";
 
+
 export default function Index() {
 
-  const recentSearchData: string[] = [
-    "CITC Days",
-    "ROTC Event",
-    "Week of Welcome",
-    "MASTS",
-  ];
+  const [recentSearchData, setRecentSearchData] = useState<string[]>([])
   const [searchBarValue, setSearchBarValue] = useState<string>("");
+  const [submittedQuery, setSubmittedQuery] = useState<string>("")
   const [isPostClicked, setIsPostClicked] = useState(false);
   const [isUserIsHead, setIsUserIsHead] = useState<boolean>(false);
   const [isValidationLoading, setIsValidationLoading] = useState<boolean>(false);
  
   // State to hold the organization name for the error modal
   const [managedOrgName, setManagedOrgName] = useState<string | null>(null);
+
+  const getRecentSearch = async () =>{
+
+    try
+    {
+      const response = await api.get("/recentSearch/recent?context=event")
+ 
+      const searchStrings = response.data
+        .map((item : any) => item.queryText)
+        .filter((text : string) => text)
+
+      // Remove Duplicates 
+      // Use 'Set' to ensure unique search terms
+      const uniqueSearches = [... new Set(searchStrings)] as string []
+
+      setRecentSearchData(uniqueSearches)
+    }
+    catch(error)
+    {
+      console.error("Failed to fetch recent searches:", error);
+    }
+  }
+
+  useEffect( () => {
+    getRecentSearch();
+  }, [])
+  
 
   const validateUserIsAdmin = async () => {
 
@@ -32,7 +56,6 @@ export default function Index() {
     {
       // Target the correct event endpoint for managed organizations
       const response = await api.get("/events/get_managed_organization");
-
 
       if(response.data.isHead)
       {
@@ -60,6 +83,29 @@ export default function Index() {
       setIsValidationLoading(false);
     }
   }
+
+  const handleSearchSubmit = async (term: string) => {
+    setSubmittedQuery(term)
+
+    if(term.trim() !== "")
+    {
+      try
+      {
+        const payload = {
+          queryText: term,
+          searchContext: "event"
+        } 
+        const response = await api.post("/recentSearch/log", payload)
+
+        console.log(response)
+        getRecentSearch();
+      }
+      catch(error)
+      {
+        console.error("Failed to log search", error);
+      }
+    }
+  }
  
   return (
     <div>
@@ -69,6 +115,7 @@ export default function Index() {
           <SearchBar
             value={searchBarValue}
             onChange={(e) => setSearchBarValue(e.target.value)}
+            onSearch={handleSearchSubmit}
             placeholder="Search Events"
             recentSearch={recentSearchData}
           />
@@ -106,8 +153,8 @@ export default function Index() {
       )}
 
       {/* Display the list of events */}
-            <div className="flex flex-col items-center">
-        <EventContent />
+      <div className="flex flex-col items-center">
+        <EventContent searchQuery={submittedQuery}/>
       </div>
     </div>
   )

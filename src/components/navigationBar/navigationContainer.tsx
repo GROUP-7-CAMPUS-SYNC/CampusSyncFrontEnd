@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import Notification from "./notification";
+import Notification from "./notification/notification";
 import ProfilePicture from "./profile/profilePicture";
 import UserName from "./profile/userName";
 import SearchBar from "../searchBar";
 import SuggestionGroup from "./suggestionGroup/suggestionGroup";
 import LogoHoverMessage from "./logoHoverMessage";
 
-import NotificationClickModal from "./notificationClickModal";
+import NotificationClickModal from "./notification/notificationClickModal";
 import LogoutModal from "./logout";
 
 import { useScreenSize } from "../../hooks/useScreenSize";

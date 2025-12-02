@@ -1,7 +1,7 @@
-import NotificationPersonLogo from "../../assets/notification-initial-logo.svg";
+import NotificationPersonLogo from "../../../assets/notification-logo.svg";
 import { forwardRef, useEffect, useState } from "react";
-import api from "../../api/api"; 
-import PostDetailModal from "./notification/postDetailModal"; 
+import api from "../../../api/api"; 
+import PostDetailModal from "./postDetailModal"; 
 
 interface UserSender {
     _id: string;
