@@ -71,8 +71,6 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
   const fetchLostAndFoundContent = async () => {
     try {
       // ✅ 3. Dynamic URL Construction based on Search Query
-      // NOTE: Ensure your backend endpoint '/report_types/getPosts/reportItems' 
-      // is updated to handle `req.query.search` using regex ($or: [itemName, description, location...])
       const url = searchQuery
         ? `/report_types/getPosts/reportItems?search=${encodeURIComponent(searchQuery)}`
         : "/report_types/getPosts/reportItems";
