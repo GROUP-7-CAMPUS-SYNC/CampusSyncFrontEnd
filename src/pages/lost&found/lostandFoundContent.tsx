@@ -174,83 +174,100 @@ export default function LostAndFoundContent() {
 
           {/* DETAILS */}
           <div className="space-y-3">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Item name:</p>
-              <p className="font-medium text-lg text-black">{item.itemName}</p>
+            <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <p className="text-[#4B4D51] text-sm font-semibold">Item name:</p>
+              <p className="text-sm sm:text-base font-medium">{item.itemName}</p>
+            </div>
+            
+
+            <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <p className="text-[#4B4D51] text-sm font-semibold">Description:</p>
+              <p className="text-sm sm:text-base font-medium">{item.description}</p>
             </div>
 
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Description:</p>
-              <p className="text-base text-black">{item.description}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Contact:</p>
-              <p className="text-base text-black">{item.contactDetails}</p>
+            <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <p className="text-[#4B4D51] text-sm font-semibold">Contact:</p>
+              <p className="text-sm sm:text-base font-medium">{item.contactDetails}</p>
             </div>
           </div>
 
           {/* LOCATION + TIME */}
-          <div className="mt-4 space-y-2">
-            <p className="flex items-center gap-2 text-sm">
-              <MapPin size={18} className="text-red-500" />{" "}
-              {item.locationDetails}
-            </p>
+          <div className="space-y-3 mt-3">
 
-            <p className="flex items-center gap-2 text-sm">
-              <Clock size={18} className="text-black" />
-              {/* This is the Date Lost/Found, separate from Posted Time */}
-              {new Date(item.dateLostOrFound).toLocaleString("en-US", {
-                hour: "numeric",
-                minute: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </p>
-          </div>
+  <div className="bg-[#EFF6FF] px-4 py-2 rounded-lg flex items-center gap-2">
+    <MapPin className="text-red-500 w-5 h-5" />
+    <div>
+      <p className="text-xs text-gray-600">Location:</p>
+      <p className="font-medium">{item.locationDetails}</p>
+    </div>
+  </div>
+
+  <div className="bg-[#EFF6FF] px-4 py-2 rounded-lg flex items-center gap-2">
+    <Clock className="w-5 h-5" />
+    <div>
+      <p className="text-xs text-gray-600">Date:</p>
+      <p className="font-medium">
+        {new Date(item.dateLostOrFound).toLocaleString("en-US", {
+          hour: "numeric",
+          minute: "numeric",
+          month: "short",
+          day: "numeric",
+        })}
+      </p>
+    </div>
+  </div>
+
+</div>
 
           {/* FOOTER */}
-          <div className="flex items-center justify-between text-gray-600 mt-5 border-t pt-3 text-sm">
-            <button
-              onClick={() => handleWitnessClick(item._id)}
-              className="flex items-center gap-1 cursor-pointer hover:text-blue-600 transition text-gray-600"
-            >
-              <Eye
-                size={16}
-                fill={witnessClicks.has(item._id) ? "currentColor" : "none"}
-                style={{
-                  color: witnessClicks.has(item._id) ? "#fbbf24" : "inherit",
-                }}
-              />{" "}
-              {item.witnesses?.length || 0} Witness
-            </button>
+<div className="flex items-center justify-between mt-6 border-t pt-4 text-sm text-gray-600">
 
-            <button
-              onClick={() => handleCommentClick(item.comments)}
-              className="flex items-center gap-1 cursor-pointer hover:text-blue-600 transition"
-            >
-              <MessageCircle size={16} /> {item.comments?.length || 0} comments
-            </button>
+  {/* WITNESS */}
+  <button
+    onClick={() => handleWitnessClick(item._id)}
+    className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition"
+  >
+    <Eye
+      size={20}
+      className={witnessClicks.has(item._id) ? "text-yellow-500" : ""}
+    />
+    <span className="text-sm mt-1 font-semibold">
+      {item.witnesses?.length || 0} Witness
+    </span>
+  </button>
 
-            <button
-              onClick={() => handleSaveClick(item._id)}
-              className={`flex items-center gap-1 transition ${
-                savedItems.has(item._id)
-                  ? "text-yellow-500"
-                  : "text-gray-600 hover:text-yellow-600"
-              }`}
-            >
-              {savedItems.has(item._id) ? (
-                <>
-                  <BookmarkCheck size={16} fill="currentColor" /> Saved
-                </>
-              ) : (
-                <>
-                  <Bookmark size={16} /> Save
-                </>
-              )}
-            </button>
-          </div>
+  {/* COMMENTS */}
+  <button
+    onClick={() => handleCommentClick(item.comments)}
+    className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition"
+  >
+    <MessageCircle size={20} />
+    <span className="text-sm mt-1 font-semibold">
+      {item.comments?.length || 0} Comments
+    </span>
+  </button>
+
+  {/* SAVE */}
+  <button
+    onClick={() => handleSaveClick(item._id)}
+    className={`flex flex-col items-center transition ${
+      savedItems.has(item._id)
+        ? "text-yellow-500"
+        : "text-gray-600 hover:text-blue-600"
+    }`}
+  >
+    {savedItems.has(item._id) ? (
+      <BookmarkCheck size={20} />
+    ) : (
+      <Bookmark size={20} />
+    )}
+
+    <span className="text-sm mt-1 font-semibold">
+      {savedItems.has(item._id) ? "Saved" : "Save"}
+    </span>
+  </button>
+</div>
+
         </div>
       ))}
 
