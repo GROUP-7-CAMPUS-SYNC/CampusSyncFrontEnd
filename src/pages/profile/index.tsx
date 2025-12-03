@@ -6,6 +6,7 @@ import {
   Eye,
   MessageCircle,
   Bookmark,
+  BookmarkCheck,
   CalendarDays,
   Briefcase,
   GraduationCap,
@@ -31,6 +32,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null); 
+  const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
 
   const fetchUserPosts = async () => {
     try {
@@ -51,6 +53,16 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchUserPosts();
   }, []);
+
+  const handleSaveClick = (itemId: string) => {
+    setSavedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) newSet.delete(itemId);
+      else newSet.add(itemId);
+      return newSet;
+    });
+  };
+
 
   // --- RENDERERS ---
   const renderReportItem = (item: any) => (
@@ -129,16 +141,33 @@ export default function ProfilePage() {
   };
 
   const renderAcademicItem = (item: any) => {
+    // ✅ This variable is now used below
     const orgName = item.organization?.organizationName || "General Academic";
+
     return (
       <div key={item._id} className="bg-white rounded-xl shadow-md border border-gray-200 p-5 mb-6">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex flex-col">
-             <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Academic</span>
-             <span className="text-xs text-gray-500">{timeAgo(item.createdAt)}</span>
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border border-gray-100">
+              {item.organization?.profileLink ? (
+                <img src={item.organization.profileLink} alt="org" className="w-full h-full object-cover" />
+              ) : (
+                <User className="text-gray-400" size={24} />
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <h3 className="font-bold text-gray-900 leading-tight">
+                {orgName}
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Posted by {item.postedBy?.firstname} {item.postedBy?.lastname} • {timeAgo(item.createdAt)}
+              </p>
+            </div>
           </div>
-          <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
-            {orgName}
+
+          <span className="bg-blue-400 text-white text-sm font-semibold px-3 py-1 rounded-lg">
+            Academic
           </span>
         </div>
 
@@ -151,15 +180,22 @@ export default function ProfilePage() {
           </div>
         )}
 
-        <div className="flex justify-end pt-2 border-t border-gray-100">
-             <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition text-sm">
-                <MessageCircle size={16} /> {item.comments?.length || 0} Comments
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
+            <MessageCircle size={18} />
+            <span>{item.comments?.length || 0} comments</span>
+          </button>
+           <button
+              onClick={() => handleSaveClick(item._id)}
+              className={`flex items-center gap-2 cursor-pointer ${savedItems.has(item._id) ? "text-yellow-500" : "text-gray-600"}`}
+            >
+              {savedItems.has(item._id) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+              <span>Save</span>
             </button>
         </div>
       </div>
     );
   };
-
   // --- MAIN UI ---
   return (
     <div className="w-full max-w-4xl mx-auto pb-10">
