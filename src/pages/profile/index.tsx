@@ -28,9 +28,33 @@ const timeAgo = (dateString: string) => {
 };
 
 export default function ProfilePage() {
+  const [openComments, setOpenComments] = useState<string | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null); 
+  const [witnessActive, setWitnessActive] = useState<Set<string>>(new Set());
+  const [saveActive, setSaveActive] = useState<Set<string>>(new Set());
+
+  const handleCommentClick = (comments: any[], id: string) => {
+  setOpenComments(prev => (prev === id ? null : id));
+};
+
+
+  const toggleWitness = (id: string) => {
+  setWitnessActive(prev => {
+    const newSet = new Set(prev);
+    newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+    return newSet;
+  });
+};
+
+  const toggleSave = (id: string) => {
+  setSaveActive(prev => {
+    const newSet = new Set(prev);
+    newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+    return newSet;
+  });
+};
 
   const fetchUserPosts = async () => {
     try {
@@ -54,37 +78,135 @@ export default function ProfilePage() {
 
   // --- RENDERERS ---
   const renderReportItem = (item: any) => (
-    <div key={item._id} className="w-full bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Report Item</span>
-                <p className="text-xs text-gray-500">{timeAgo(item.createdAt)}</p>
-            </div>
+  <div
+    key={item._id}
+    className="w-full bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-200"
+  >
+    {/* HEADER */}
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col">
+          <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
+            Report Item
+          </span>
+          <p className="text-xs text-gray-500">{timeAgo(item.createdAt)}</p>
         </div>
-        <span className={`px-3 py-1 rounded-lg text-sm text-white ${item.reportType === "Lost" ? "bg-red-400" : "bg-green-400"}`}>
-          {item.reportType}
-        </span>
       </div>
 
-      <div className="w-full h-56 bg-gray-200 rounded-lg mt-4 mb-4 flex items-center justify-center overflow-hidden">
-        <img src={item.image} alt="item" className="w-full h-full object-cover" />
-      </div>
+      <span
+        className={`px-3 py-1 rounded-lg text-sm text-white ${
+          item.reportType === "Lost" ? "bg-red-400" : "bg-green-400"
+        }`}
+      >
+        {item.reportType}
+      </span>
+    </div>
 
-      <div className="space-y-2">
-        <p className="font-bold text-lg text-black">{item.itemName}</p>
-        <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
-      </div>
+    {/* IMAGE */}
+    <div className="w-full h-56 bg-gray-200 rounded-lg mt-4 mb-4 flex items-center justify-center overflow-hidden">
+      <img src={item.image} alt="item" className="w-full h-full object-cover" />
+    </div>
 
-      <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
-        <span className="flex items-center gap-1"><MapPin size={14} /> {item.locationDetails}</span>
-        <div className="flex gap-4">
-             <span className="flex items-center gap-1"><Eye size={14} /> {item.witnesses?.length || 0}</span>
-             <span className="flex items-center gap-1"><MessageCircle size={14} /> {item.comments?.length || 0}</span>
-        </div>
+    {/* DESCRIPTION */}
+    <div className="space-y-2">
+      <p className="font-bold text-lg text-black">{item.itemName}</p>
+      <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
+    </div>
+
+    {/* ACTION BAR */}
+    <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-600">
+
+      {/* LOCATION */}
+      <span className="flex items-center gap-1">
+        <MapPin size={14} className="text-red-500" />
+        {item.locationDetails}
+      </span>
+
+      {/* ACTION BUTTONS */}
+      <div className="flex gap-4">
+
+        {/* WITNESS BUTTON */}
+        <button
+          onClick={() => toggleWitness(item._id)}
+          className={`flex items-center gap-1 transition ${
+            witnessActive.has(item._id)
+              ? "text-yellow-500"
+              : "hover:text-blue-600"
+          }`}
+        >
+          <Eye size={14} />
+          <span>{item.witnesses?.length || 0}</span>
+        </button>
+
+        {/* COMMENT BUTTON */}
+        <button
+          onClick={() => { handleCommentClick(item.comments || [], item._id); }}
+          className="flex items-center gap-1 hover:text-blue-600 transition"
+        >
+          <MessageCircle size={14} />
+          <span>{item?.comments?.length || 0}</span>
+        </button>
+
+        {/* SAVE BUTTON */}
+        <button
+          onClick={() => toggleSave(item._id)}
+          className={`flex items-center gap-1 transition ${
+            saveActive.has(item._id)
+              ? "text-yellow-500"
+              : "hover:text-blue-600"
+          }`}
+        >
+          <Bookmark size={14} />
+        </button>
       </div>
     </div>
-  );
+
+    {/* COMMENTS PANEL (Modal-like) */}
+   {/* COMMENTS PANEL (Compact floating box) */}
+{openComments === item._id && (
+  <>
+    {/* Backdrop */}
+    <div
+      className="fixed inset-0 bg-black/20 z-40"
+      onClick={() => setOpenComments(null)}
+    />
+
+    {/* SMALL FLOATING BOX */}
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24">
+      <div className="w-[320px] bg-white rounded-md shadow-lg border border-gray-300">
+
+        {/* HEADER */}
+        <div className="flex items-center justify-between px-3 py-2 border-b border-gray-300">
+          <h3 className="text-sm font-medium text-gray-900">Comments</h3>
+          <button
+            onClick={() => setOpenComments(null)}
+            className="p-1 hover:bg-gray-100 rounded"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* BODY */}
+        <div className="p-4">
+          {item.comments?.length > 0 ? (
+            <p className="text-gray-700 text-sm">Comments will be shown here.</p>
+          ) : (
+            <p className="text-gray-500 text-sm text-center italic">
+              No comments yet
+            </p>
+          )}
+        </div>
+
+      </div>
+    </div>
+  </>
+)}
+  </div>
+);
+
+
 
   const renderEventItem = (item: any) => {
     const hasOrg = !!item.organization;
