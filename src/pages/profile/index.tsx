@@ -1,45 +1,98 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 import {
-  User,
-  MapPin,
-  Eye,
-  MessageCircle,
-  Bookmark,
-  BookmarkCheck,
-  CalendarDays,
   Briefcase,
   GraduationCap,
-  Mail
+  Bookmark,
+  X
 } from "lucide-react";
 
-// --- HELPERS (Reused) ---
-const timeAgo = (dateString: string) => {
-  const now = new Date();
-  const past = new Date(dateString);
-  const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
-  if (diffInSeconds < 60) return "Just now";
-  const minutes = Math.floor(diffInSeconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-  return past.toLocaleDateString();
-};
+// --- Import Reusable Cards & Types ---
+
+import EventCard, { type EventPost } from "../../components/contentDisplaySection/eventContent";
+import AcademicCard, { type AcademicPost } from "../../components/contentDisplaySection/academicContent";
+import LostFoundCard, { type ReportItem } from "../../components/contentDisplaySection/lostfoundContent";
+import CommentModal from "../event/commentModal"; 
+
+// --- Types ---
+type FeedItem = 
+  | (EventPost & { feedType: "event" })
+  | (AcademicPost & { feedType: "academic" })
+  | (ReportItem & { feedType: "report" });
 
 export default function ProfilePage() {
-  const [posts, setPosts] = useState<any[]>([]);
+  const [posts, setPosts] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null); 
+  
+  // --- Interaction States ---
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+  const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
+  const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
+  const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
+  // --- Modal State ---
+  const [activeModal, setActiveModal] = useState<{
+    type: "comment_api" | "comment_list"; 
+    id: string;
+    data?: any; 
+    postedBy?: any; 
+  } | null>(null);
+
+  // --- Handlers ---
+  const handleToggleSave = (id: string) => {
+    setSavedItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleToggleNotify = (id: string) => {
+    setNotifyItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleToggleWitness = (id: string) => {
+    setWitnessItems((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) newSet.delete(id); else newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleOpenCommentForm = (id: string, postedBy: any) => {
+    setActiveModal({ type: "comment_api", id, postedBy });
+    setCommentOpenItems(prev => new Set(prev).add(id));
+  };
+
+  const handleViewComments = (comments: any[]) => {
+    setActiveModal({ type: "comment_list", id: "", data: comments });
+  };
+
+  const closeModal = () => {
+    if (activeModal?.type === "comment_api") {
+       setCommentOpenItems(prev => {
+           const newSet = new Set(prev);
+           newSet.delete(activeModal.id);
+           return newSet;
+       });
+    }
+    setActiveModal(null);
+  };
+
+  // --- Fetch Data ---
   const fetchUserPosts = async () => {
     try {
       setLoading(true);
       const response = await api.get("/profile/my-posts"); 
       setPosts(response.data);
       
+      // If we have posts, grab the user info from the first one 
+      // (Assuming the backend populates postedBy on these items)
       if (response.data.length > 0 && response.data[0].postedBy) {
         setUserInfo(response.data[0].postedBy);
       }
@@ -54,153 +107,11 @@ export default function ProfilePage() {
     fetchUserPosts();
   }, []);
 
-  const handleSaveClick = (itemId: string) => {
-    setSavedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) newSet.delete(itemId);
-      else newSet.add(itemId);
-      return newSet;
-    });
-  };
-
-
-  // --- RENDERERS ---
-  const renderReportItem = (item: any) => (
-    <div key={item._id} className="w-full bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-            <div className="flex flex-col">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Report Item</span>
-                <p className="text-xs text-gray-500">{timeAgo(item.createdAt)}</p>
-            </div>
-        </div>
-        <span className={`px-3 py-1 rounded-lg text-sm text-white ${item.reportType === "Lost" ? "bg-red-400" : "bg-green-400"}`}>
-          {item.reportType}
-        </span>
-      </div>
-
-      <div className="w-full h-56 bg-gray-200 rounded-lg mt-4 mb-4 flex items-center justify-center overflow-hidden">
-        <img src={item.image} alt="item" className="w-full h-full object-cover" />
-      </div>
-
-      <div className="space-y-2">
-        <p className="font-bold text-lg text-black">{item.itemName}</p>
-        <p className="text-gray-600 text-sm line-clamp-2">{item.description}</p>
-      </div>
-
-      <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center text-sm text-gray-500">
-        <span className="flex items-center gap-1"><MapPin size={14} /> {item.locationDetails}</span>
-        <div className="flex gap-4">
-             <span className="flex items-center gap-1"><Eye size={14} /> {item.witnesses?.length || 0}</span>
-             <span className="flex items-center gap-1"><MessageCircle size={14} /> {item.comments?.length || 0}</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderEventItem = (item: any) => {
-    const hasOrg = !!item.organization;
-    const displayTitle = hasOrg ? item.organization?.organizationName : "Personal Event";
-
-    return (
-      <div key={item._id} className="mb-6 flex flex-col gap-4 border border-black/10 bg-white p-5 rounded-xl shadow-md">
-         <div className="flex justify-between items-center">
-            <div className="flex flex-col">
-                <span className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Event Post</span>
-                <span className="text-xs text-gray-500">{timeAgo(item.createdAt)}</span>
-            </div>
-            <span className="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">
-                {displayTitle}
-            </span>
-         </div>
-
-        <h3 className="text-xl font-bold">{item.eventName}</h3>
-
-        <div className="w-full rounded-lg overflow-hidden bg-gray-200 h-48">
-          <img src={item.image} alt="event" className="w-full h-full object-cover" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 text-sm">
-           <div className="flex items-center gap-2 text-gray-700">
-              <CalendarDays size={16} className="text-blue-500" />
-              <span>{new Date(item.startDate).toLocaleDateString()}</span>
-           </div>
-           <div className="flex items-center gap-2 text-gray-700">
-              <MapPin size={16} className="text-red-500" />
-              <span className="truncate">{item.location}</span>
-           </div>
-        </div>
-
-        <div className="pt-2 border-t border-gray-100 flex justify-end">
-            <button className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition text-sm">
-                <MessageCircle size={16} /> {item.comments?.length || 0} Comments
-            </button>
-        </div>
-      </div>
-    );
-  };
-
-  const renderAcademicItem = (item: any) => {
-    // ✅ This variable is now used below
-    const orgName = item.organization?.organizationName || "General Academic";
-
-    return (
-      <div key={item._id} className="bg-white rounded-xl shadow-md border border-gray-200 p-5 mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border border-gray-100">
-              {item.organization?.profileLink ? (
-                <img src={item.organization.profileLink} alt="org" className="w-full h-full object-cover" />
-              ) : (
-                <User className="text-gray-400" size={24} />
-              )}
-            </div>
-
-            <div className="flex flex-col">
-              <h3 className="font-bold text-gray-900 leading-tight">
-                {orgName}
-              </h3>
-              <p className="text-xs text-gray-500 mt-0.5">
-                Posted by {item.postedBy?.firstname} {item.postedBy?.lastname} • {timeAgo(item.createdAt)}
-              </p>
-            </div>
-          </div>
-
-          <span className="bg-blue-400 text-white text-sm font-semibold px-3 py-1 rounded-lg">
-            Academic
-          </span>
-        </div>
-
-        <h4 className="font-bold text-lg text-gray-900 mb-2">{item.title}</h4>
-        <p className="text-gray-700 text-sm line-clamp-3 mb-3">{item.content}</p>
-
-        {item.image && (
-          <div className="w-full bg-gray-100 rounded-lg overflow-hidden mb-3 h-40">
-            <img src={item.image} alt="attachment" className="w-full h-full object-cover" />
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
-            <MessageCircle size={18} />
-            <span>{item.comments?.length || 0} comments</span>
-          </button>
-           <button
-              onClick={() => handleSaveClick(item._id)}
-              className={`flex items-center gap-2 cursor-pointer ${savedItems.has(item._id) ? "text-yellow-500" : "text-gray-600"}`}
-            >
-              {savedItems.has(item._id) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-              <span>Save</span>
-            </button>
-        </div>
-      </div>
-    );
-  };
-  // --- MAIN UI ---
+  // --- RENDER ---
   return (
     <div className="w-full max-w-4xl mx-auto pb-10">
       
-      {/* 1. PROFILE HEADER */}
+      {/* 1. PROFILE HEADER (Preserved Design) */}
       <div className="bg-white shadow-lg rounded-2xl overflow-hidden mb-8 border border-gray-200">
         {/* Cover Image */}
         <div className="h-32 bg-linear-to-r from-blue-600 to-indigo-600"></div>
@@ -209,15 +120,15 @@ export default function ProfilePage() {
             {/* Avatar - Absolute Positioned */}
             <div className="absolute -top-12 left-6 border-4 border-white rounded-full bg-white z-10">
                 <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                     <User size={40} className="text-gray-400"/>
+                     <img
+                      src={`${localStorage.getItem("profileLink")}`}
+                     />
+
+                     
                 </div>
             </div>
 
             {/* Info Section - Adjusted Spacing */}
-            {/* pt-14: Pushes text down on mobile so it doesn't hide behind centered avatar (if stacked).
-                sm:pt-2: On desktop, we want the name higher up, next to the avatar.
-                sm:pl-28: Adds left padding equal to Avatar Width + Gap so text doesn't overlap.
-            */}
             <div className="pt-14 sm:pt-2 sm:pl-28 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 leading-tight">
@@ -252,23 +163,10 @@ export default function ProfilePage() {
       {/* 2. FEED SECTION */}
       <div className="flex flex-col lg:flex-row gap-6">
         
-        {/* Sidebar */}
-        <div className="w-full lg:w-1/3 space-y-4">
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
-                <h3 className="font-bold text-gray-800 mb-4">About</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                    Member of the university community. Active in various organizations and academic events.
-                </p>
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Mail size={16} />
-                    <span>contact@email.com</span>
-                </div>
-            </div>
-        </div>
-
         {/* Main Feed */}
-        <div className="w-full lg:w-2/3">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Activity History</h2>
+        <div className="w-full lg:w-2/3 mx-auto">
+            {/* Renamed "Activity History" to "My Posts" */}
+            <h2 className="text-xl font-bold text-gray-800 mb-4">My Posts</h2>
             
             {loading ? (
                  <div className="text-center py-10 text-gray-500 bg-white rounded-xl border border-gray-200">
@@ -283,17 +181,93 @@ export default function ProfilePage() {
                     <p className="text-gray-500 text-sm">Posts you create will appear here.</p>
                 </div>
             ) : (
-                <div>
+                <div className="flex flex-col gap-6">
                     {posts.map((item) => {
-                        if (item.feedType === "report") return renderReportItem(item);
-                        if (item.feedType === "event") return renderEventItem(item);
-                        if (item.feedType === "academic") return renderAcademicItem(item);
-                        return null;
+                        switch (item.feedType) {
+                            case "event":
+                                return (
+                                    <EventCard
+                                        key={item._id}
+                                        post={item as EventPost}
+                                        isSaved={savedItems.has(item._id)}
+                                        isNotify={notifyItems.has(item._id)}
+                                        isCommentOpen={commentOpenItems.has(item._id)}
+                                        commentCount={3000}
+                                        onToggleSave={handleToggleSave}
+                                        onToggleNotify={handleToggleNotify}
+                                        onCommentClick={handleOpenCommentForm}
+                                    />
+                                );
+                            case "academic":
+                                return (
+                                    <AcademicCard
+                                        key={item._id}
+                                        post={item as AcademicPost}
+                                        isSaved={savedItems.has(item._id)}
+                                        isCommentOpen={commentOpenItems.has(item._id)}
+                                        onToggleSave={handleToggleSave}
+                                        onCommentClick={handleOpenCommentForm}
+                                    />
+                                );
+                            case "report": // Lost & Found
+                                return (
+                                    <LostFoundCard
+                                        key={item._id}
+                                        item={item as ReportItem}
+                                        isSaved={savedItems.has(item._id)}
+                                        isWitnessed={witnessItems.has(item._id)}
+                                        // Removed commentCount prop as per previous fix
+                                        onToggleSave={handleToggleSave}
+                                        onToggleWitness={handleToggleWitness}
+                                        onCommentClick={handleViewComments}
+                                    />
+                                );
+                            default:
+                                return null;
+                        }
                     })}
                 </div>
             )}
         </div>
       </div>
+
+      {/* --- MODALS --- */}
+      
+      {/* 1. Modal for Adding Comments (Event/Academic) */}
+      {activeModal?.type === "comment_api" && (
+        <CommentModal
+          postId={activeModal.id}
+          postedBy={activeModal.postedBy}
+          onClose={closeModal}
+        />
+      )}
+
+      {/* 2. Modal for Viewing Comments List (Lost & Found) */}
+      {activeModal?.type === "comment_list" && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-96 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Comments</h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4">
+              {activeModal.data && activeModal.data.length > 0 ? (
+                <div className="space-y-3">
+                  {activeModal.data.map((c: any, index: number) => (
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-700">{JSON.stringify(c)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 text-sm py-8">No comments yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
