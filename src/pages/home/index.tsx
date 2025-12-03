@@ -3,16 +3,19 @@ import api from "../../api/api"; // Ensure this path is correct
 import {
   User,
   MapPin,
+  Clock,
   Eye,
   MessageCircle,
   Bookmark,
   BookmarkCheck,
   CalendarDays,
   Calendar,
+  X,
 } from "lucide-react";
 
 // --- UTILITIES ---
 const timeAgo = (dateString: string) => {
+  if (!dateString) return "Just now";
   const now = new Date();
   const past = new Date(dateString);
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
@@ -27,24 +30,40 @@ const timeAgo = (dateString: string) => {
 };
 
 const formatDateTime = (dateString: string) => {
+  if (!dateString) return "";
   const date = new Date(dateString);
-  return `${date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} · ${date.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric" })}`;
+  return `${date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })} · ${date.toLocaleTimeString("en-US", { hour: "numeric", minute: "numeric" })}`;
 };
 
 export default function HomeFeed() {
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Simple state trackers for UI interaction (mock logic)
+  // UI interaction state
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
+  const [witnessClicks, setWitnessClicks] = useState<Set<string>>(new Set());
+  const [selectedModal, setSelectedModal] = useState<{
+    type: "comments";
+    itemId: string;
+  } | null>(null);
+  const [modalData, setModalData] = useState<any[]>([]);
 
   const fetchHomeFeed = async () => {
     try {
       setLoading(true);
       const response = await api.get("/dashboard/home");
-      setFeedItems(response.data);
+      // If response.data may not be an array, guard:
+      const data = Array.isArray(response.data) ? response.data : [];
+      // optional: sort by newest
+      data.sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+      setFeedItems(data);
     } catch (error) {
       console.error("Error fetching feed:", error);
+      setFeedItems([]);
     } finally {
       setLoading(false);
     }
@@ -63,69 +82,169 @@ export default function HomeFeed() {
     });
   };
 
+  const handleWitnessClick = (itemId: string) => {
+    setWitnessClicks((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) newSet.delete(itemId);
+      else newSet.add(itemId);
+      return newSet;
+    });
+    // Optional: you could call backend here to register witness; omitted for now.
+  };
+
+  const handleCommentClick = (comments: any[], itemId?: string) => {
+    setModalData(comments || []);
+    setSelectedModal({ type: "comments", itemId: itemId || "" });
+  };
+
+  const closeModal = () => {
+    setSelectedModal(null);
+    setModalData([]);
+  };
+
   // --- RENDERERS ---
 
   // 1. REPORT ITEM CARD (Lost & Found)
-  const renderReportItem = (item: any) => (
-    <div key={item._id} className="w-full bg-white shadow-md rounded-xl p-5 mb-6 border border-gray-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
-            {item.image ? (
-              <img src={item.image} className="w-full h-full object-cover" alt="avatar" />
-            ) : (
-              <User size={20} className="text-white" />
-            )}
-          </div>
-          <div>
-            <p className="font-semibold">
-              {item.postedBy ? `${item.postedBy.firstname} ${item.postedBy.lastname}` : "Unknown User"}
-            </p>
-            <p className="text-xs text-gray-500">{timeAgo(item.createdAt)}</p>
-          </div>
+const renderReportItem = (item: any) => (
+  <div
+    key={item._id}
+    className="w-full bg-white shadow-md rounded-xl mb-6 border border-gray-200 overflow-hidden"
+  >
+    {/* HEADER */}
+    <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center gap-3">
+        <div className="w-9 h-9 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+          {item.postedBy?.profileImage ? (
+            <img
+              src={item.postedBy.profileImage}
+              className="w-full h-full object-cover"
+              alt="avatar"
+            />
+          ) : (
+            <User size={18} className="text-white" />
+          )}
         </div>
-        <span className={`px-3 py-1 rounded-lg text-sm text-white ${item.reportType === "Lost" ? "bg-red-400" : "bg-green-400"}`}>
-          {item.reportType}
-        </span>
-      </div>
 
-      <div className="w-full h-56 bg-gray-200 rounded-lg mt-4 mb-4 flex items-center justify-center overflow-hidden">
-        <img src={item.image} alt="item" className="w-full h-full object-cover" />
-      </div>
-
-      <div className="space-y-3">
-        <div>
-          <p className="text-gray-500 text-sm font-medium">Item name:</p>
-          <p className="font-medium text-lg text-black">{item.itemName}</p>
-        </div>
-        <div>
-          <p className="text-gray-500 text-sm font-medium">Description:</p>
-          <p className="text-base text-black">{item.description}</p>
+        <div className="leading-tight">
+          <p className="font-semibold text-sm text-gray-800">
+            {item.postedBy
+              ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
+              : "Unknown User"}
+          </p>
+          <p className="text-xs text-gray-500">
+            {item.createdAt ? timeAgo(item.createdAt) : "Just now"}
+          </p>
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <p className="flex items-center gap-2 text-sm">
-          <MapPin size={18} className="text-red-500" /> {item.locationDetails}
+      <span
+        className={`px-3 py-1 rounded-md text-xs font-semibold text-white ${
+          item.reportType === "Lost" ? "bg-red-500" : "bg-green-500"
+        }`}
+      >
+        {item.reportType}
+      </span>
+    </div>
+
+    {/* IMAGE */}
+    <div className="w-full h-56 bg-gray-200 flex items-center justify-center">
+      {item.image ? (
+        <img
+          src={item.image}
+          alt="item"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="text-gray-500 text-sm">No Image</div>
+      )}
+    </div>
+
+    {/* DETAILS (BLUE BOX STYLE LIKE IMAGE) */}
+    <div className="px-4 py-4 space-y-2">
+      <div className="bg-blue-50 rounded-md px-3 py-2">
+        <p className="text-xs text-gray-500 font-semibold">Item name:</p>
+        <p className="text-sm font-medium text-gray-900 font-semibold">
+          {item.itemName || "—"}
         </p>
       </div>
 
-      <div className="flex items-center justify-between text-gray-600 mt-5 border-t pt-3 text-sm">
-        <button className="flex items-center gap-1 hover:text-blue-600 transition">
-           <Eye size={16} /> {item.witnesses?.length || 0} Witness
-        </button>
-        <button className="flex items-center gap-1 hover:text-blue-600 transition">
-          <MessageCircle size={16} /> {item.comments?.length || 0} comments
-        </button>
+      <div className="bg-blue-50 rounded-md px-3 py-2">
+        <p className="text-xs text-gray-500 font-semibold">Description:</p>
+        <p className="text-sm text-gray-800 font-semibold">
+          {item.description || "—"}
+        </p>
       </div>
+
+      <div className="bg-blue-50 rounded-md px-3 py-2">
+        <p className="text-xs text-gray-500 font-semibold">Location:</p>
+        <p className="text-sm text-gray-800 flex items-center gap-1 font-semibold">
+          <MapPin size={14} className="text-red-500" />
+          {item.locationDetails || "—"}
+        </p>
+      </div>
+
+      <div className="bg-blue-50 rounded-md px-3 py-2">
+  <p className="text-xs text-gray-500 font-semibold">Date:</p>
+
+  <div className="flex items-center gap-2 font-semibold">
+    <Clock className="w-4 h-4 text-black-600 font-semibold" />
+    <p className="text-sm text-gray-800">
+      {formatDateTime(item.createdAt)}
+    </p>
+  </div>
+</div>
+
     </div>
-  );
+
+    {/* FOOTER */}
+    <div className="flex items-center justify-between px-4 py-3 border-t text-sm text-gray-600">
+      <button
+  onClick={() => handleWitnessClick(item._id)}
+  className="flex items-center gap-1 hover:text-blue-600 transition"
+>
+  <Eye
+    size={16}
+    className={witnessClicks.has(item._id) ? "text-yellow-500" : ""}
+  />
+  <span>
+    {item.witnesses?.length || 0} Witness
+  </span>
+</button>
+
+
+      <button
+        onClick={() => handleCommentClick(item.comments || [], item._id)}
+        className="flex items-center gap-1 hover:text-blue-600"
+      >
+        <MessageCircle size={16} />
+        {item.comments?.length || 0} Comments
+      </button>
+
+      <button
+        onClick={() => handleSaveClick(item._id)}
+        className={`flex items-center gap-1 ${
+          savedItems.has(item._id)
+            ? "text-yellow-500"
+            : "hover:text-blue-600"
+        }`}
+      >
+        {savedItems.has(item._id) ? (
+          <BookmarkCheck size={16} />
+        ) : (
+          <Bookmark size={16} />
+        )}
+        Save
+      </button>
+    </div>
+  </div>
+);
+
 
   // 2. EVENT ITEM CARD
   const renderEventItem = (item: any) => {
     const hasOrg = !!item.organization;
     const avatarSrc = hasOrg ? item.organization?.profileLink : null;
-    const displayTitle = hasOrg ? item.organization?.organizationName : `${item.postedBy?.firstname} ${item.postedBy?.lastname}`;
+    const displayTitle = hasOrg ? item.organization?.organizationName : `${item.postedBy?.firstname || ""} ${item.postedBy?.lastname || ""}`;
 
     return (
       <div key={item._id} className="mb-6 flex flex-col gap-5 border border-black/20 bg-white p-4 rounded-lg shadow-md">
@@ -151,7 +270,11 @@ export default function HomeFeed() {
         </div>
 
         <div className="w-full rounded-lg overflow-hidden bg-gray-200">
-          <img src={item.image} alt="event" className="w-full h-auto object-contain max-h-[400px]" />
+          {item.image ? (
+            <img src={item.image} alt="event" className="w-full h-auto object-contain max-h-[400px]" />
+          ) : (
+            <div className="p-6 text-center text-gray-500">No image</div>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -163,7 +286,7 @@ export default function HomeFeed() {
               </div>
               <div className="flex items-center gap-2 bg-blue-50 p-2 rounded">
                  <MapPin className="text-red-500 w-5 h-5" />
-                 <span className="text-sm font-medium">{item.location}</span>
+                 <span className="text-sm font-medium">{item.location || "No location"}</span>
               </div>
            </div>
         </div>
@@ -174,7 +297,9 @@ export default function HomeFeed() {
             <button className="flex flex-row items-center gap-2 cursor-pointer text-gray-600 hover:text-blue-600">
                 <Calendar size={20} /> <span className="text-sm font-medium">Notify Me</span>
             </button>
-            <button className="flex flex-row items-center gap-2 cursor-pointer text-gray-600 hover:text-blue-600">
+            <button className="flex flex-row items-center gap-2 cursor-pointer text-gray-600 hover:text-blue-600"
+              onClick={() => handleCommentClick(item.comments || [], item._id)}
+            >
                 <MessageCircle size={20} /> <span className="text-sm font-medium">Comment</span>
             </button>
              <button
@@ -228,17 +353,20 @@ export default function HomeFeed() {
         )}
 
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium">
+          <button
+            onClick={() => handleCommentClick(item.comments || [], item._id)}
+            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium"
+          >
             <MessageCircle size={18} />
             <span>{item.comments?.length || 0} comments</span>
           </button>
-           <button
-              onClick={() => handleSaveClick(item._id)}
-              className={`flex items-center gap-2 cursor-pointer ${savedItems.has(item._id) ? "text-yellow-500" : "text-gray-600"}`}
-            >
-              {savedItems.has(item._id) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
-              <span>Save</span>
-            </button>
+          <button
+            onClick={() => handleSaveClick(item._id)}
+            className={`flex items-center gap-2 cursor-pointer ${savedItems.has(item._id) ? "text-yellow-500" : "text-gray-600"}`}
+          >
+            {savedItems.has(item._id) ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
+            <span>Save</span>
+          </button>
         </div>
       </div>
     );
@@ -261,6 +389,34 @@ export default function HomeFeed() {
             if (item.feedType === "academic") return renderAcademicItem(item);
             return null;
           })}
+        </div>
+      )}
+
+      {/* COMMENTS MODAL */}
+      {selectedModal && selectedModal.type === "comments" && (
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-96 overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Comments</h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="overflow-y-auto flex-1 p-4">
+              {modalData.length > 0 ? (
+                <div className="space-y-3">
+                  {modalData.map((c: any, i: number) => (
+                    <div key={i} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      {/* Replace with proper comment structure if available */}
+                      <p className="text-sm text-gray-700">{typeof c === "string" ? c : JSON.stringify(c)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-center text-gray-500 text-sm py-8">No comments yet</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
