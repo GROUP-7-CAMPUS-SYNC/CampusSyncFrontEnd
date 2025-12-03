@@ -11,7 +11,7 @@ import {
   X,
 } from "lucide-react";
 
-// Helper function (unchanged)
+// --- Helper: Format Time ---
 const timeAgo = (dateString: string) => {
   const now = new Date();
   const past = new Date(dateString);
@@ -64,15 +64,11 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
   const [modalData, setModalData] = useState<any[]>([]);
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [witnessClicks, setWitnessClicks] = useState<Set<string>>(new Set());
-  
-  // New State for handling search empty/error
   const [searchError, setSearchError] = useState<boolean>(false);
 
+  // ✅ 3. Fetch Logic with Dynamic Search URL
   const fetchLostAndFoundContent = async () => {
     try {
-      // ✅ 3. Dynamic URL Construction based on Search Query
-      // NOTE: Ensure your backend endpoint '/report_types/getPosts/reportItems' 
-      // is updated to handle `req.query.search` using regex ($or: [itemName, description, location...])
       const url = searchQuery
         ? `/report_types/getPosts/reportItems?search=${encodeURIComponent(searchQuery)}`
         : "/report_types/getPosts/reportItems";
@@ -88,20 +84,20 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
       }
     } catch (error) {
       console.log(error);
-      setSearchError(true); // Show error if search fails or returns 404
+      setSearchError(true);
     }
   };
 
-  // ✅ 4. UseEffect trigger on searchQuery change
+  // ✅ 4. Trigger Fetch on Search Query Change (with debounce)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchLostAndFoundContent();
-    }, 500); // 500ms debounce
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Handlers (Unchanged)
+  // --- Handlers ---
   const handleWitnessClick = (itemId: string) => {
     setWitnessClicks((prev) => {
       const newSet = new Set(prev);
@@ -130,7 +126,8 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      {/* Handle Empty Search State */}
+      
+      {/* Search Feedback */}
       {searchError || (searchQuery && reportItems.length === 0) ? (
         <div className="flex justify-center py-10">
           <p className="font-semibold text-gray-500">No items found matching "{searchQuery}".</p>
@@ -177,7 +174,7 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
                 </span>
               </div>
 
-              {/* IMAGE */}
+              {/* MAIN IMAGE */}
               <div className="w-full h-56 bg-gray-200 rounded-lg mt-4 mb-4 flex items-center justify-center">
                 {item.image ? (
                   <img
@@ -190,82 +187,94 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
                 )}
               </div>
 
-              {/* DETAILS */}
+              {/* --- DETAILS (Classmate's Design) --- */}
               <div className="space-y-3">
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">Item name:</p>
-                  <p className="font-medium text-lg text-black">{item.itemName}</p>
+                <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+                  <p className="text-[#4B4D51] text-sm font-semibold">Item name:</p>
+                  <p className="text-sm sm:text-base font-medium">{item.itemName}</p>
                 </div>
 
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">Description:</p>
-                  <p className="text-base text-black">{item.description}</p>
+                <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+                  <p className="text-[#4B4D51] text-sm font-semibold">Description:</p>
+                  <p className="text-sm sm:text-base font-medium">{item.description}</p>
                 </div>
 
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">Contact:</p>
-                  <p className="text-base text-black">{item.contactDetails}</p>
+                <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+                  <p className="text-[#4B4D51] text-sm font-semibold">Contact:</p>
+                  <p className="text-sm sm:text-base font-medium">{item.contactDetails}</p>
                 </div>
               </div>
 
-              {/* LOCATION + TIME */}
-              <div className="mt-4 space-y-2">
-                <p className="flex items-center gap-2 text-sm">
-                  <MapPin size={18} className="text-red-500" />{" "}
-                  {item.locationDetails}
-                </p>
+              {/* --- LOCATION + TIME (Classmate's Design) --- */}
+              <div className="space-y-3 mt-3">
+                <div className="bg-[#EFF6FF] px-4 py-2 rounded-lg flex items-center gap-2">
+                  <MapPin className="text-red-500 w-5 h-5" />
+                  <div>
+                    <p className="text-xs text-gray-600">Location:</p>
+                    <p className="font-medium">{item.locationDetails}</p>
+                  </div>
+                </div>
 
-                <p className="flex items-center gap-2 text-sm">
-                  <Clock size={18} className="text-black" />
-                  {new Date(item.dateLostOrFound).toLocaleString("en-US", {
-                    hour: "numeric",
-                    minute: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </p>
+                <div className="bg-[#EFF6FF] px-4 py-2 rounded-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
+                  <div>
+                    <p className="text-xs text-gray-600">Date:</p>
+                    <p className="font-medium">
+                      {new Date(item.dateLostOrFound).toLocaleString("en-US", {
+                        hour: "numeric",
+                        minute: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* FOOTER */}
-              <div className="flex items-center justify-between text-gray-600 mt-5 border-t pt-3 text-sm">
+              {/* --- FOOTER (Classmate's Design) --- */}
+              <div className="flex items-center justify-between mt-6 border-t pt-4 text-sm text-gray-600">
+                {/* WITNESS */}
                 <button
                   onClick={() => handleWitnessClick(item._id)}
-                  className="flex items-center gap-1 cursor-pointer hover:text-blue-600 transition text-gray-600"
+                  className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition"
                 >
                   <Eye
-                    size={16}
-                    fill={witnessClicks.has(item._id) ? "currentColor" : "none"}
-                    style={{
-                      color: witnessClicks.has(item._id) ? "#fbbf24" : "inherit",
-                    }}
-                  />{" "}
-                  {item.witnesses?.length || 0} Witness
+                    size={20}
+                    className={witnessClicks.has(item._id) ? "text-yellow-500" : ""}
+                  />
+                  <span className="text-sm mt-1 font-semibold">
+                    {item.witnesses?.length || 0} Witness
+                  </span>
                 </button>
 
+                {/* COMMENTS */}
                 <button
                   onClick={() => handleCommentClick(item.comments)}
-                  className="flex items-center gap-1 cursor-pointer hover:text-blue-600 transition"
+                  className="flex flex-col items-center text-gray-600 hover:text-blue-600 transition"
                 >
-                  <MessageCircle size={16} /> {item.comments?.length || 0} comments
+                  <MessageCircle size={20} />
+                  <span className="text-sm mt-1 font-semibold">
+                    {item.comments?.length || 0} Comments
+                  </span>
                 </button>
 
+                {/* SAVE */}
                 <button
                   onClick={() => handleSaveClick(item._id)}
-                  className={`flex items-center gap-1 transition ${
+                  className={`flex flex-col items-center transition ${
                     savedItems.has(item._id)
                       ? "text-yellow-500"
-                      : "text-gray-600 hover:text-yellow-600"
+                      : "text-gray-600 hover:text-blue-600"
                   }`}
                 >
                   {savedItems.has(item._id) ? (
-                    <>
-                      <BookmarkCheck size={16} fill="currentColor" /> Saved
-                    </>
+                    <BookmarkCheck size={20} />
                   ) : (
-                    <>
-                      <Bookmark size={16} /> Save
-                    </>
+                    <Bookmark size={20} />
                   )}
+                  <span className="text-sm mt-1 font-semibold">
+                    {savedItems.has(item._id) ? "Saved" : "Save"}
+                  </span>
                 </button>
               </div>
             </div>
