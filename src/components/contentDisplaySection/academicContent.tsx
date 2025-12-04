@@ -1,4 +1,5 @@
-import { MessageCircle, Bookmark, BookmarkCheck, User } from "lucide-react";
+import { MessageCircle, User } from "lucide-react";
+import SaveButton from "./saveButton";
 
 // --- Types ---
 export interface AcademicPost {
@@ -129,19 +130,10 @@ export default function AcademicCard({
                     </span>
                 </button>
 
-                <button
-                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors text-sm font-medium"
+                <SaveButton
+                    isSaved={isSaved}
                     onClick={() => onToggleSave?.(post._id)}
-                >
-                    {isSaved ? (
-                        <BookmarkCheck size={18} className="text-[#F9BF3B]" />
-                    ) : (
-                        <Bookmark size={18} />
-                    )}
-                    <span className={`${isSaved ? "text-[#F9BF3B]" : ""}`}>
-                        {isSaved ? "Saved" : "Save"}
-                    </span>
-                </button>
+                />
             </div>
         </div>
     );

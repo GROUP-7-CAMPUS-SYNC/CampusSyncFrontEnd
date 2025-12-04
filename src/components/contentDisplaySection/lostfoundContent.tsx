@@ -1,4 +1,6 @@
-import { User, MapPin, Clock, Eye, MessageCircle, Bookmark, BookmarkCheck } from "lucide-react";
+import { User, MapPin, Clock, Eye, MessageCircle } from "lucide-react";
+import SaveButton from "./saveButton";
+
 
 // --- Helper: Format Time ---
 const timeAgo = (dateString: string) => {
@@ -183,19 +185,10 @@ export default function LostFoundCard({
         </button>
 
         {/* SAVE */}
-        <button
-          onClick={() => onToggleSave?.(item._id)}
-          className="flex flex-col items-center group transition"
-        >
-          {isSaved ? (
-            <BookmarkCheck size={20} className="text-yellow-500 transition" />
-          ) : (
-            <Bookmark size={20} className="text-gray-500 group-hover:text-blue-500 transition" />
-          )}
-          <span className={`text-xs mt-1 font-semibold ${isSaved ? "text-yellow-600" : "text-gray-500"}`}>
-            {isSaved ? "Saved" : "Save"}
-          </span>
-        </button>
+        <SaveButton
+            isSaved={isSaved}
+            onClick={() => onToggleSave?.(item._id)}
+        />
       </div>
     </div>
   );
