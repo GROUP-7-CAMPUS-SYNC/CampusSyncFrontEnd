@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { X, Loader2 } from "lucide-react";
+import api from "../../api/api"; 
 
-// --- Import Reusable Cards & Types ---
+// Import Reusable Cards
 import EventCard, { type EventPost } from "../contentDisplaySection/eventContent";
 import AcademicCard, { type AcademicPost } from "../contentDisplaySection/academicContent";
 import LostFoundCard, { type ReportItem } from "../contentDisplaySection/lostfoundContent";
-import CommentModal from "../../pages/event/commentModal"; 
 
-// --- Define Union Type ---
+// ✅ Import the Shared Comment Modal
+import CommentModal from "../contentDisplaySection/comment"; 
+
 type FeedItem = 
   | (EventPost & { feedType: "event" })
   | (AcademicPost & { feedType: "academic" })
@@ -22,41 +24,63 @@ interface GlobalSearchModalProps {
 }
 
 export default function GlobalSearchModal({ isOpen, onClose, results, loading, searchQuery }: GlobalSearchModalProps) {
-    // --- Interaction States (Local to this modal) ---
+    // Interaction States
     const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
     const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
     const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
     const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
-    // --- Modal State ---
+    // Modal State
     const [activeModal, setActiveModal] = useState<{
-        type: "comment_api" | "comment_list";
         id: string;
+        feedType?: "event" | "academic" | "report";
         data?: any;
         postedBy?: any;
     } | null>(null);
 
+    // --- Handle Adding Comment ---
+    const handleAddComment = async (text: string) => {
+        if (!activeModal || !activeModal.id || !activeModal.feedType) return;
+
+        try {
+            let endpoint = "";
+            if (activeModal.feedType === "event") endpoint = `/events/${activeModal.id}/comments`;
+            else if (activeModal.feedType === "academic") endpoint = `/academic/${activeModal.id}/comments`;
+            else if (activeModal.feedType === "report") endpoint = `/report_types/${activeModal.id}/comments`;
+            
+            const response = await api.post(endpoint, { text });
+
+            if (response.status === 200) {
+                const updatedComments = response.data;
+                // Update the Modal's internal data to show the new comment immediately
+                setActiveModal(prev => prev ? { ...prev, data: updatedComments } : null);
+            }
+        } catch (error) {
+            console.error("Failed to add comment:", error);
+        }
+    };
+
     if (!isOpen) return null;
 
-    // --- Handlers (Identical to Dashboard) ---
-    const handleToggleSave = (id: string) => {
-        setSavedItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
-    };
-    const handleToggleNotify = (id: string) => {
-        setNotifyItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
-    };
-    const handleToggleWitness = (id: string) => {
-        setWitnessItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
-    };
-    const handleOpenCommentForm = (id: string, postedBy: any) => {
-        setActiveModal({ type: "comment_api", id, postedBy });
+    // --- Card Handlers ---
+    const handleToggleSave = (id: string) => { setSavedItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
+    const handleToggleNotify = (id: string) => { setNotifyItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
+    const handleToggleWitness = (id: string) => { setWitnessItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
+    
+    // Unified Handler for Opening Comment Modal (Event/Academic)
+    const handleOpenCommentForm = (id: string, postedBy: any, feedType: "event" | "academic") => {
+        const item = results.find(r => r._id === id);
+        setActiveModal({ 
+            id, 
+            postedBy, 
+            feedType,
+            data: item?.comments || [] 
+        });
         setCommentOpenItems(prev => new Set(prev).add(id));
     };
-    const handleViewComments = (comments: any[]) => {
-        setActiveModal({ type: "comment_list", id: "", data: comments });
-    };
+
     const closeModal = () => {
-        if (activeModal?.type === "comment_api") {
+        if (activeModal) {
            setCommentOpenItems(prev => { const newSet = new Set(prev); newSet.delete(activeModal.id); return newSet; });
         }
         setActiveModal(null);
@@ -76,7 +100,7 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                     </button>
                 </div>
 
-                {/* Content Area */}
+                {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-500">
@@ -87,7 +111,6 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                         <div className="flex flex-col items-center justify-center h-64 text-gray-500 gap-3">
                             <SearchIconPlaceholder />
                             <p className="font-medium">No results found.</p>
-                            <p className="text-sm">Try using different keywords or check spelling.</p>
                         </div>
                     ) : (
                         <div className="flex flex-col gap-6">
@@ -101,10 +124,10 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                                                 isSaved={savedItems.has(item._id)}
                                                 isNotify={notifyItems.has(item._id)}
                                                 isCommentOpen={commentOpenItems.has(item._id)}
-                                                commentCount={3000}
+                                                commentCount={item.comments?.length || 0}
                                                 onToggleSave={handleToggleSave}
                                                 onToggleNotify={handleToggleNotify}
-                                                onCommentClick={handleOpenCommentForm}
+                                                onCommentClick={(id, postedBy) => handleOpenCommentForm(id, postedBy, "event")}
                                             />
                                         );
                                     case "academic":
@@ -115,7 +138,7 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                                                 isSaved={savedItems.has(item._id)}
                                                 isCommentOpen={commentOpenItems.has(item._id)}
                                                 onToggleSave={handleToggleSave}
-                                                onCommentClick={handleOpenCommentForm}
+                                                onCommentClick={(id, postedBy) => handleOpenCommentForm(id, postedBy, "academic")}
                                             />
                                         );
                                     case "report":
@@ -127,7 +150,14 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                                                 isWitnessed={witnessItems.has(item._id)}
                                                 onToggleSave={handleToggleSave}
                                                 onToggleWitness={handleToggleWitness}
-                                                onCommentClick={handleViewComments}
+                                                onCommentClick={(comments) => {
+                                                    setActiveModal({
+                                                        id: item._id,
+                                                        feedType: "report",
+                                                        data: comments,
+                                                        postedBy: null // Reports might not need "Reply to X"
+                                                    });
+                                                }}
                                             />
                                         );
                                     default: return null;
@@ -137,33 +167,16 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                     )}
                 </div>
 
-                {/* --- Internal Modal for Comments (Nested) --- */}
-                {activeModal?.type === "comment_api" && (
+                {/* --- Unified Comment Modal --- */}
+                {/* Now uses the EXACT same component as LostAndFound page */}
+                {activeModal && (
                     <CommentModal
                         postId={activeModal.id}
                         postedBy={activeModal.postedBy}
+                        comments={activeModal.data}
                         onClose={closeModal}
+                        onAddComment={handleAddComment} 
                     />
-                )}
-
-                {activeModal?.type === "comment_list" && (
-                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-[500px] flex flex-col">
-                            <div className="flex items-center justify-between p-4 border-b">
-                                <h3 className="font-bold">Comments</h3>
-                                <button onClick={closeModal}><X size={20} /></button>
-                            </div>
-                            <div className="p-4 overflow-y-auto">
-                                {activeModal.data?.length > 0 ? (
-                                    activeModal.data.map((c:any, i:number) => (
-                                        <div key={i} className="p-2 mb-2 bg-gray-100 rounded text-sm text-black">
-                                            {JSON.stringify(c)}
-                                        </div>
-                                    ))
-                                ) : <p className="text-center text-gray-500">No comments.</p>}
-                            </div>
-                        </div>
-                    </div>
                 )}
             </div>
         </div>

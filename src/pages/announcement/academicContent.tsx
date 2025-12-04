@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
-import CommentModal from "./commentModal";
-// ✅ Import the new Card component and Type
+import CommentModal from "../../components/contentDisplaySection/comment";
 import AcademicCard, { type AcademicPost } from "../../components/contentDisplaySection/academicContent";
 
 interface AcademicContentProps {
@@ -23,27 +22,20 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
     // --- Handlers ---
 
     const handleToggleSave = (id: string) => {
-        setSavePostClicked((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+        setSavePostClicked((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
     const handleCommentClick = (id: string, postedBy: any) => {
         setActivePostId(id);
         setActiveUser(postedBy);
-        setCommentClicked((prev) => ({
-            ...prev,
-            [id]: !prev[id],
-        }));
+        setCommentClicked((prev) => ({ ...prev, [id]: !prev[id] }));
     };
 
     const closeCommentModal = () => {
         setActivePostId(null);
     };
 
-    // --- API Logic ---
-
+    // --- API Logic: Fetch ---
     const fetchAcademicPosts = async () => {
         try {
             const url = searchQuery
@@ -65,6 +57,28 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
         }
     };
 
+    // --- API Logic: Add Comment ---
+    const handleAddComment = async (text: string) => {
+        if (!activePostId) return;
+
+        try {
+            const response = await api.post(`/academic/${activePostId}/comments`, { text });
+
+            if (response.status === 200) {
+                const updatedComments = response.data;
+                
+                // Update local state instantly
+                setPosts(prevPosts => prevPosts.map(post => 
+                    post._id === activePostId 
+                        ? { ...post, comments: updatedComments } 
+                        : post
+                ));
+            }
+        } catch (error) {
+            console.error("Failed to add comment:", error);
+        }
+    };
+
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             fetchAcademicPosts();
@@ -73,7 +87,8 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
 
-    // --- Render ---
+    // Helper: Find Active Post Data
+    const activePostData = posts.find(p => p._id === activePostId);
 
     return (
         <div className="flex flex-col w-full max-w-4xl mx-auto pb-10">
@@ -102,7 +117,9 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
                 <CommentModal
                     postId={activePostId}
                     postedBy={activeUser}
+                    comments={activePostData?.comments || []} // ✅ Pass real comments
                     onClose={closeCommentModal}
+                    onAddComment={handleAddComment} // ✅ Connect handler
                 />
             )}
         </div>
