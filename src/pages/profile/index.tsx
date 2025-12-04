@@ -124,7 +124,6 @@ export default function ProfilePage() {
                 </div>
                 <div className="flex gap-6 text-center">
                     <div> <p className="font-bold text-gray-900 text-lg">{posts.length}</p> <p className="text-xs text-gray-500 uppercase tracking-wide">Posts</p> </div>
-                    <div> <p className="font-bold text-gray-900 text-lg">0</p> <p className="text-xs text-gray-500 uppercase tracking-wide">Following</p> </div>
                 </div>
             </div>
         </div>
