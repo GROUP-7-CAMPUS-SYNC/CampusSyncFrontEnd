@@ -2,29 +2,46 @@ import { useState } from "react";
 import type { SearchBarProps } from "../types/searchBar";
 import { Search } from "lucide-react";
 
+interface ExtendedSearchBarProps extends SearchBarProps {
+  onSearch?: (term: string) => void;
+}
+
 export default function SearchBar({
   searchBarContainerDesign = "relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh]  w-[30vw]",
   value,
   onChange,
+  onSearch,
   searchBarDesign = "bg-transparent focus:outline-none w-full placeholder:text-gray-600",
   placeholder,
   disable,
   searchResultHeight = "max-h-60",
-  recentSearch,
-}: SearchBarProps) {
+  recentSearch = [], // Default to empty array
+}: ExtendedSearchBarProps) {
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [recentSearches] = useState<string[]>(recentSearch);
+
+  // ❌ REMOVED: const [recentSearches] = useState<string[]>(recentSearch);
+  // Reason: useState only runs once. We need to filter the 'recentSearch' prop directly
+  // so that when the API loads, this list updates automatically.
 
   const handleRecentSearchClick = (term: string) => {
     const syntheticEvent = {
       target: { value: term },
     } as React.ChangeEvent<HTMLInputElement>;
-
     onChange(syntheticEvent);
     setIsFocused(false);
+
+    if (onSearch) onSearch(term);
   };
 
-  const filteredSearches = recentSearches.filter((s) =>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && onSearch) {
+        onSearch(value);
+        setIsFocused(false);
+    }
+  };
+
+  // ✅ FIX: Filter the 'recentSearch' PROP directly
+  const filteredSearches = recentSearch.filter((s) =>
     s.toLowerCase().includes(value ? value.toLowerCase() : "")
   );
 
@@ -39,6 +56,7 @@ export default function SearchBar({
         className={searchBarDesign}
         value={value}
         onChange={onChange}
+        onKeyDown={handleKeyDown}
         placeholder={placeholder}
         disabled={disable}
         type="text"
@@ -48,7 +66,6 @@ export default function SearchBar({
 
       {/* --- Recent Searches Dropdown --- */}
       {isFocused && filteredSearches.length > 0 && !disable && (
-        // MODIFIED: Replaced rounded-b-md with rounded-b-[5px] for pixel alignment
         <div
           className={`absolute top-full overflow-y-auto left-0 w-full bg-white shadow-lg rounded-b-[5px] border border-gray-200 z-50 no-scrollbar ${searchResultHeight}`}
         >
