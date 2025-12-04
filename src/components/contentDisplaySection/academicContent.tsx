@@ -130,9 +130,12 @@ export default function AcademicCard({
                     </span>
                 </button>
 
+                {/* UPDATED SAVE BUTTON */}
                 <SaveButton
-                    isSaved={isSaved}
-                    onClick={() => onToggleSave?.(post._id)}
+                    postId={post._id}
+                    postType="academic"
+                    initialIsSaved={isSaved}
+                    onToggle={() => onToggleSave?.(post._id)}
                 />
             </div>
         </div>

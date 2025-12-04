@@ -171,10 +171,12 @@ export default function EventCard({
             <span className="sm:block hidden font-medium">Comment</span>
           </button>
 
-          {/* Save */}
+          {/* UPDATED SAVE BUTTON */}
           <SaveButton
-              isSaved={isSaved}
-              onClick={() => onToggleSave?.(post._id)}
+              postId={post._id}
+              postType="event"
+              initialIsSaved={isSaved}
+              onToggle={() => onToggleSave?.(post._id)}
           />
         </div>
       </div>

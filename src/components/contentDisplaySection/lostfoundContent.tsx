@@ -184,10 +184,12 @@ export default function LostFoundCard({
           </span>
         </button>
 
-        {/* SAVE */}
+        {/* UPDATED SAVE BUTTON */}
         <SaveButton
-            isSaved={isSaved}
-            onClick={() => onToggleSave?.(item._id)}
+            postId={item._id}
+            postType="report"
+            initialIsSaved={isSaved}
+            onToggle={() => onToggleSave?.(item._id)}
         />
       </div>
     </div>
