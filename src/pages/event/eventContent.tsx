@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
-import CommentModal from "./commentModal";
-
-// ✅ FIX: Added 'type' keyword to EventPost import
+import CommentModal from "../../components/contentDisplaySection/comment";
 import EventCard, { type EventPost } from "../../components/contentDisplaySection/eventContent"; 
 
 interface EventContentProps {
@@ -21,9 +19,6 @@ export default function EventContent({ searchQuery }: EventContentProps) {
   // Modal States
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activeUser, setActiveUser] = useState<any>(null);
-
-  // Constants
-  const commentCount = 3000;
 
   // --- Handlers ---
 
@@ -45,8 +40,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     setActivePostId(null);
   };
 
-  // --- API Logic ---
-
+  // --- API Logic: Fetch Posts ---
   const fetchEventPosts = async () => {
     try {
       const url = searchQuery
@@ -67,6 +61,30 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     }
   };
 
+  // --- API Logic: Add Comment ---
+  const handleAddComment = async (text: string) => {
+    if (!activePostId) return;
+
+    try {
+      const response = await api.post(`/events/${activePostId}/comments`, { text });
+
+      if (response.status === 200) {
+        const updatedComments = response.data;
+
+        // Update local state instantly
+        setEventPosts((prevPosts) =>
+          prevPosts.map((post) =>
+            post._id === activePostId
+              ? { ...post, comments: updatedComments } 
+              : post
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error adding comment:", error);
+    }
+  };
+
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       fetchEventPosts();
@@ -74,6 +92,9 @@ export default function EventContent({ searchQuery }: EventContentProps) {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
+
+  // Helper: Find Active Post Data
+  const activePostData = eventPosts.find((p) => p._id === activePostId);
 
   return (
     <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl mx-auto">
@@ -92,7 +113,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               isSaved={savePostClicked[post._id] || false}
               isNotify={notifyClicked[post._id] || false}
               isCommentOpen={commentClicked[post._id] || false}
-              commentCount={commentCount}
+              commentCount={post.comments?.length || 0} // ✅ Use real count
               onToggleSave={handleToggleSave}
               onToggleNotify={handleToggleNotify}
               onCommentClick={handleCommentClick}
@@ -104,6 +125,8 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               postId={activePostId}
               postedBy={activeUser}
               onClose={closeCommentModal}
+              comments={activePostData?.comments || []} // ✅ Pass real comments
+              onAddComment={handleAddComment} // ✅ Connect handler
             />
           )}
         </>
