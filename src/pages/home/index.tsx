@@ -2,34 +2,40 @@ import { useEffect, useState } from "react";
 import api from "../../api/api";
 import { X } from "lucide-react";
 
+
 // --- Import Reusable Cards & Types ---
 // Update paths if necessary based on your folder structure
 import EventCard, { type EventPost } from "../../components/contentDisplaySection/eventContent";
 import AcademicCard, { type AcademicPost } from "../../components/contentDisplaySection/academicContent";
 import LostFoundCard, { type ReportItem } from "../../components/contentDisplaySection/lostfoundContent";
-import CommentModal from "../event/commentModal"; 
+import CommentModal from "../event/commentModal";
 
-type FeedItem = 
+
+type FeedItem =
   | (EventPost & { feedType: "event" })
   | (AcademicPost & { feedType: "academic" })
   | (ReportItem & { feedType: "report" });
+
 
 export default function DashboardContent() {
   const [feedData, setFeedData] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
 
+
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
   const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
   const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
+
   const [activeModal, setActiveModal] = useState<{
-    type: "comment_api" | "comment_list"; 
+    type: "comment_api" | "comment_list";
     id: string;
-    data?: any; 
-    postedBy?: any; 
+    data?: any;
+    postedBy?: any;
   } | null>(null);
+
 
   // --- Handlers ---
   const handleToggleSave = (id: string) => {
@@ -40,6 +46,7 @@ export default function DashboardContent() {
     });
   };
 
+
   const handleToggleNotify = (id: string) => {
     setNotifyItems((prev) => {
       const newSet = new Set(prev);
@@ -47,6 +54,7 @@ export default function DashboardContent() {
       return newSet;
     });
   };
+
 
   const handleToggleWitness = (id: string) => {
     setWitnessItems((prev) => {
@@ -56,14 +64,17 @@ export default function DashboardContent() {
     });
   };
 
+
   const handleOpenCommentForm = (id: string, postedBy: any) => {
     setActiveModal({ type: "comment_api", id, postedBy });
     setCommentOpenItems(prev => new Set(prev).add(id));
   };
 
+
   const handleViewComments = (comments: any[]) => {
     setActiveModal({ type: "comment_list", id: "", data: comments });
   };
+
 
   const closeModal = () => {
     if (activeModal?.type === "comment_api") {
@@ -76,12 +87,13 @@ export default function DashboardContent() {
     setActiveModal(null);
   };
 
+
   // --- Fetch Data ---
   useEffect(() => {
     const fetchHomeFeed = async () => {
       try {
         setLoading(true);
-        const response = await api.get("/dashboard/home"); 
+        const response = await api.get("/dashboard/home");
         if (response.status === 200) {
           setFeedData(response.data);
         }
@@ -93,11 +105,14 @@ export default function DashboardContent() {
       }
     };
 
+
     fetchHomeFeed();
   }, []);
 
+
   if (loading) return <div className="flex justify-center p-10">Loading feed...</div>;
   if (error) return <div className="flex justify-center p-10 text-red-500">Failed to load feed.</div>;
+
 
   return (
     <div className="flex flex-col w-full max-w-4xl mx-auto pb-10 gap-6">
@@ -111,12 +126,13 @@ export default function DashboardContent() {
                 isSaved={savedItems.has(item._id)}
                 isNotify={notifyItems.has(item._id)}
                 isCommentOpen={commentOpenItems.has(item._id)}
-                commentCount={3000} 
+                commentCount={3000}
                 onToggleSave={handleToggleSave}
                 onToggleNotify={handleToggleNotify}
                 onCommentClick={handleOpenCommentForm}
               />
             );
+
 
           case "academic":
             return (
@@ -130,7 +146,8 @@ export default function DashboardContent() {
               />
             );
 
-          case "report": 
+
+          case "report":
             return (
               <LostFoundCard
                 key={item._id}
@@ -144,10 +161,12 @@ export default function DashboardContent() {
               />
             );
 
+
           default:
             return null;
         }
       })}
+
 
       {/* --- MODALS --- */}
       {activeModal?.type === "comment_api" && (
@@ -157,6 +176,7 @@ export default function DashboardContent() {
           onClose={closeModal}
         />
       )}
+
 
       {activeModal?.type === "comment_list" && (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
@@ -186,3 +206,4 @@ export default function DashboardContent() {
     </div>
   );
 }
+
