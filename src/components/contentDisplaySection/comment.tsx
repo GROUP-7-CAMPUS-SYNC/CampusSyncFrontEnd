@@ -105,7 +105,7 @@ export default function CommentModal({
                         <div className="flex justify-between items-baseline mb-0.5">
                           <span className="text-xs font-bold text-gray-900 mr-2">{name}</span>
                         </div>
-                        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+                        <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap wrap-break-words">
                           {typeof comment === "object" ? comment.text : comment}
                         </p>
                       </div>
@@ -134,7 +134,7 @@ export default function CommentModal({
         <div className="shrink-0 p-3 border-t border-gray-100 bg-white">
           <div className="flex items-end gap-2 bg-gray-100 rounded-2xl p-2 border border-transparent focus-within:border-blue-300 focus-within:bg-white transition-all">
             <textarea
-              className="w-full bg-transparent text-sm text-gray-800 placeholder:text-gray-500 px-2 py-1 outline-none resize-none max-h-24 min-h-[24px]"
+              className="w-full bg-transparent text-sm text-gray-800 placeholder:text-gray-500 px-2 py-1 outline-none resize-none max-h-24 min-h-6"
               placeholder={`Comment as ${localStorage.getItem("firstName") || "User"}...`}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}

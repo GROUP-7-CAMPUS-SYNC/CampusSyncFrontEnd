@@ -1,4 +1,6 @@
-import { MapPin, CalendarDays, MessageCircle, Calendar, Bookmark, Users, User } from "lucide-react";
+import { MapPin, CalendarDays, MessageCircle, Calendar, Users, User } from "lucide-react";
+import SaveButton from "./saveButton";
+
 
 // --- Types ---
 export interface EventPost {
@@ -169,14 +171,13 @@ export default function EventCard({
             <span className="sm:block hidden font-medium">Comment</span>
           </button>
 
-          {/* Save */}
-          <button
-            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${isSaved ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"}`}
-            onClick={() => onToggleSave?.(post._id)}
-          >
-            <Bookmark className={isSaved ? "fill-[#F9BF3B] text-[#F9BF3B]" : ""} />
-            <span className="sm:block hidden font-medium">{isSaved ? "Saved" : "Save"}</span>
-          </button>
+          {/* UPDATED SAVE BUTTON */}
+          <SaveButton
+              postId={post._id}
+              postType="event"
+              initialIsSaved={isSaved}
+              onToggle={() => onToggleSave?.(post._id)}
+          />
         </div>
       </div>
     </div>
