@@ -5,7 +5,7 @@ import UploadPicture from "../../../components/uploadPicture";
 import { useState } from "react";
 import { Calendar } from "lucide-react";
 import api from "../../../api/api";
-
+import { CheckCircle, XCircleIcon } from "lucide-react"; // Optional icons for better UI
 
 interface CreatePostProps {
   onClose: () => void;
@@ -28,11 +28,10 @@ export default function index({onClose} : CreatePostProps) {
     const [step, setSteps] = useState<number>(1)
     const [dateError, setDateError] = useState<boolean>(false)
 
-
-
-
     const showContentError = formSubmitted && description.trim() === "";
 
+    const [cloudinaryError, setCloudinaryError] = useState<boolean>(false)
+    const [cloudinaryErrorMessage, setCloudinaryErrorMessage] = useState<string>("")
 
     const handleFirstStep = () => {
         setFormSubmitted(true)
@@ -44,17 +43,12 @@ export default function index({onClose} : CreatePostProps) {
             ( reportType === "Found" && turnedOver.trim() === "")
         ) return
 
-
         setFormSubmitted(false)
-
-
         setSteps(2)
     }
 
-
     const handleSecondStep = () => {
         setFormSubmitted(true)
-
 
         if (
             contact.trim() == "" ||
@@ -62,55 +56,82 @@ export default function index({onClose} : CreatePostProps) {
             timeDetails.trim() == ""
         ) return
 
-
         const foundItemTime = new Date(timeDetails)
         const today = new Date()
-
 
         if (foundItemTime > today) {
             setDateError(true)
             return
         }
 
-
         setFormSubmitted(false)
- 
         setSteps(3)
     }
-
-
-
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setFormSubmitted(true)
-
-
+        if (!image) return;
+        
         try
         {  
-            const payload = {
-                reportType,
-                itemName,
-                description,
-                locationDetails,
-                contactDetails: contact,
-                dateLostOrFound: timeDetails,
-                turnOver: turnedOver,
-                image: "https://res.cloudinary.com/dzbzkil3e/image/upload/v1762858878/Rectangle_4_zgkeds.png"
+            const signatureResponse = await api.get("/upload/generate_signature")
+
+            const {
+                timestamp,
+                signature,
+                folder,
+                apiKey,
+                cloudName
+            } = signatureResponse.data
+
+            // PREPARE FORM DATA FOR CLOUDINARY
+            const formData = new FormData()
+            formData.append("file", image)
+
+            // Essential Signed Upload Parameters
+            formData.append("api_key", apiKey); 
+            formData.append("timestamp", timestamp.toString());
+            formData.append("signature", signature);
+            formData.append("folder", folder);
+
+            // Upload to cloudunary Directly
+            const uploadResponse = await fetch(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, 
+                {
+                    method: "POST",
+                    body: formData
+                }
+            )
+            
+            const uploadData = await uploadResponse.json()
+
+            if(!uploadResponse.ok){
+                setCloudinaryError(true)
+                setCloudinaryErrorMessage(uploadData.error.message || "Unknown Error during upload imaage")
             }
-            const response = await api.post('/report_types/createPost', payload)
-            console.log(response)
+            else
+            {
+                const payload = {
+                    reportType,
+                    itemName,
+                    description,
+                    locationDetails,
+                    contactDetails: contact,
+                    dateLostOrFound: timeDetails,
+                    turnOver: turnedOver,
+                    image: uploadData.secure_url
+                }
+                const response = await api.post('/report_types/createPost', payload)
+                setSuccessfullySubmitted(true)
+                console.log(response)
+            }
         }
         catch(error)
         {
             console.log(error)
         }
-
-
-        console.log(turnedOver)
-        setSuccessfullySubmitted(true)
     }
-
 
   return (
     <Modal
@@ -120,7 +141,6 @@ export default function index({onClose} : CreatePostProps) {
             {step === 1 && (
                 <>
                     <h2 className="text-2xl font-bold mb-6">Lost & Found Report</h2>
-
 
                     <div className="flex flex-col gap-1">
                         <label className="text-sm text-gray-700" htmlFor="report-type">
@@ -144,7 +164,6 @@ export default function index({onClose} : CreatePostProps) {
                             <option value="Lost">Lost</option>
                             </select>
 
-
                             {/* 2. Add this block for the arrow icon */}
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
                             <svg
@@ -159,7 +178,6 @@ export default function index({onClose} : CreatePostProps) {
                         </div>
                     </div>
 
-
                     <StringTextField
                         value={itemName}
                         onChange={(e) => setItemName(e.target.value)}
@@ -168,7 +186,6 @@ export default function index({onClose} : CreatePostProps) {
                         errorMessage="Item name minimum of 3 characters"
                         showError={formSubmitted && itemName.trim() === ""}
                     />
-
 
                     <div className="flex flex-col gap-1">
                         {/* Label (using styles from your component) */}
@@ -199,7 +216,6 @@ export default function index({onClose} : CreatePostProps) {
                         </p>
                     </div>
 
-
                     {reportType === "Found" && (
                         <StringTextField
                             value={turnedOver}
@@ -211,7 +227,6 @@ export default function index({onClose} : CreatePostProps) {
                         />
                     )}                    
 
-
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
@@ -219,7 +234,6 @@ export default function index({onClose} : CreatePostProps) {
                         buttonText="Close"
                         onClick={onClose}
                         />
-
 
                         <Button
                         type="button"
@@ -230,13 +244,9 @@ export default function index({onClose} : CreatePostProps) {
                 </>
             )}
 
-
-
-
             {step === 2 && (
                <>
                     <h2 className="text-2xl font-bold mb-6">Item Details</h2>
-
 
                     <StringTextField
                         value={contact}
@@ -247,7 +257,6 @@ export default function index({onClose} : CreatePostProps) {
                         showError={formSubmitted && contact.trim() === ""}
                     />
 
-
                     <StringTextField
                         value={locationDetails}
                         onChange={(e) => setLocationDetails(e.target.value)}
@@ -257,8 +266,6 @@ export default function index({onClose} : CreatePostProps) {
                         showError={formSubmitted && locationDetails.trim() === ""}
                     />
 
-
-                   
                     <div className="mb-6">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                             Time details
@@ -277,7 +284,6 @@ export default function index({onClose} : CreatePostProps) {
                         )}
                     </div>
 
-
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
                         buttonContainerDesign = "bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
@@ -294,26 +300,20 @@ export default function index({onClose} : CreatePostProps) {
                         />
                     </div>
                </>
-
-
             )}
-
 
             {step === 3 && (
                 <>
                     <h2 className="text-2xl font-bold mb-6">Item Image</h2>
-
 
                     <UploadPicture
                         image={image}
                         setImage={setImage}
                     />
 
-
                     {formSubmitted && !image && (
                         <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
                     )}
-
 
                     <div className="flex flex-row gap-x-10 mt-2">
                         <Button
@@ -333,17 +333,38 @@ export default function index({onClose} : CreatePostProps) {
             )}
         </form>
 
-
         {successfullySubmitted && (
             <Modal>
-                <p>Successfully Submitted</p>
+                <div className="text-center flex flex-col items-center justify-center p-4">
+                <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Post Created!</h2>
+                <p className="text-gray-600 mb-6">Report Item post has been successfully published.</p>
                 <Button
                     type="button"
                     buttonText="Close"
                     onClick={onClose}
                 />
+                </div>
+            </Modal>
+        )}
+
+        {cloudinaryError && (
+            <Modal>
+                <div className="text-center flex flex-col items-center justify-center p-4">
+                <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+                <h2 className="text-xl font-bold text-gray-800 mb-2">Image Upload Failed</h2>
+                <p className="text-gray-600 mb-6">{cloudinaryErrorMessage}</p>
+                <Button
+                    type="button"
+                    buttonText="Close"
+                    onClick={onClose}
+                />
+                </div>
             </Modal>
         )}
     </Modal>
   )
 }
+
+
+

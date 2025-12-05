@@ -1,4 +1,4 @@
-import type { FullScreenOverlayProps } from "../types/fullScreenOverlay"
+import type { FullScreenOverlayProps } from "../types/fullScreenOverlay";
 
 /**
  * A reusable full-screen overlay component that covers the entire viewport.
@@ -8,9 +8,5 @@ export default function FullScreenOverlay({
   fullScreenOverlayDesign = "fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]",
   children,
 }: FullScreenOverlayProps) {
-  return (
-    <div className={fullScreenOverlayDesign}>
-      {children}
-    </div>
-  )
+  return <div className={fullScreenOverlayDesign}>{children}</div>;
 }

@@ -1,133 +1,136 @@
-import { useEffect, useState } from "react"
-import StringTextField from "../../components/stringTextField"
-import Button from "../../components/button"
-import { setLoginFlag } from "../../utils/setLogInFlag"
-import { useNavigate } from "react-router-dom"
-import api from "../../api/api" 
+import { useEffect, useState } from "react";
+import StringTextField from "../../components/stringTextField";
+import Button from "../../components/button";
+import { setLoginFlag } from "../../utils/setLogInFlag";
+import { useNavigate } from "react-router-dom";
+import api from "../../api/api";
 
 export default function login() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-    const [email, setEmail] = useState<string>("")
-    const [password, setPassword] = useState<string>("")
-    const [isLoading, setIsLoading] = useState<boolean>(false)
+  const navigation = useNavigate();
 
-    const navigation = useNavigate()
+  // 🔹 Track if form has been submitted
+  const [formSubmitted, setFormSubmitted] = useState<boolean>(false);
 
-    // 🔹 Track if form has been submitted
-    const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
 
-    useEffect(() => {
-        const checkAuth  = async () => {
-            const token = localStorage.getItem("authToken")
-            if(!token){
-                setIsLoading(false)
-                return
-            } 
+      try {
+        const response = await api.get("/auth/verify");
 
-            try
-            {
-                const response = await api.get('/auth/verify')
+        if (response.status === 200) {
+          setLoginFlag();
+          localStorage.setItem("firstName", response.data.user.firstname);
+          localStorage.setItem("lastName", response.data.user.lastname);
+          localStorage.setItem("course", response.data.user.course);
+          localStorage.setItem("email", response.data.user.email);
+          localStorage.setItem("profileLink", response.data.user.profileLink);
+          localStorage.setItem("role", response.data.user.role);
 
-                if(response.status === 200)
-                {
-                    setLoginFlag()
-                    localStorage.setItem("firstName", response.data.user.firstname)
-                    localStorage.setItem("lastName", response.data.user.lastname)
-                    localStorage.setItem("course", response.data.user.course)
-                    localStorage.setItem("email", response.data.user.email)
-                    localStorage.setItem("profileLink", response.data.user.profileLink)
-                    localStorage.setItem("role", response.data.user.role)
-
-                    if(response.data.user.role === "moderator")
-                    {   
-                        navigation("/moderator")
-                    }
-                    else
-                    {
-                        navigation("/home")
-                    }
-                }
-            }catch(error : any)
-            {
-                localStorage.clear()
-            }
+          if (response.data.user.role === "moderator") {
+            navigation("/moderator");
+          } else {
+            navigation("/home");
+          }
         }
+      } catch (error: any) {
+        localStorage.clear();
+      }
+    };
 
-        checkAuth()
-    }, [])
+    checkAuth();
+  }, []);
 
-    const handleSubmit = async (e : React.FormEvent) => {
-        e.preventDefault()
-        setFormSubmitted(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitted(true);
 
-        if(email.trim() === "" || password.trim() === "" ||   !email.endsWith("@1.ustp.edu.ph")) return
-        setLoginFlag()
+    if (
+      email.trim() === "" ||
+      password.trim() === "" ||
+      !email.endsWith("@1.ustp.edu.ph")
+    )
+      return;
+    setLoginFlag();
 
-        setIsLoading(true)
-        try
-        {
-            const payload = {
-                email,
-                password
-            }
+    setIsLoading(true);
+    try {
+      const payload = {
+        email,
+        password,
+      };
 
-            const response = await api.post("/auth/login", payload)
-            console.log("✅ Login successful:", response.data)
-            localStorage.setItem("authToken", response.data.token)
-            localStorage.setItem("firstName", response.data.user.firstname)
-            localStorage.setItem("lastName", response.data.user.lastname)
-            localStorage.setItem("course", response.data.user.course)
-            localStorage.setItem("email", response.data.user.email)
-            localStorage.setItem("profileLink", response.data.user.profileLink)
-            localStorage.setItem("role", response.data.user.role)
+      const response = await api.post("/auth/login", payload);
+      console.log("✅ Login successful:", response.data);
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("firstName", response.data.user.firstname);
+      localStorage.setItem("lastName", response.data.user.lastname);
+      localStorage.setItem("course", response.data.user.course);
+      localStorage.setItem("email", response.data.user.email);
+      localStorage.setItem("profileLink", response.data.user.profileLink);
+      localStorage.setItem("role", response.data.user.role);
 
-            if(response.data.user.role === "moderator")
-            {   
-                navigation("/moderator")
-            }
-            else
-            {
-                navigation("/home")
-            }
+      if (response.data.user.role === "moderator") {
+        navigation("/moderator");
+      } else {
+        navigation("/home");
+      }
+    } catch (error: any) {
+      console.error("❌ Registration failed:", error);
 
-        }catch(error : any)
-        {
-            console.error("❌ Registration failed:", error)
-            
-            // Extract error message from backend response
-            const errorMessage = error.response?.data?.message || "Something went wrong. Please try again."
-            alert(errorMessage) // Professional Tip: Replace with a toast notification later
-        }finally{
-            setIsLoading(false)
-        }
+      // Extract error message from backend response
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      alert(errorMessage); // Professional Tip: Replace with a toast notification later
+    } finally {
+      setIsLoading(false);
     }
+  };
 
   return (
-   <form  onSubmit={handleSubmit} action="" className="flex flex-col gap-y-2  max-w-md mx-auto">
+    <>
+      <h1 className="text-center font-semibold text-xl">Sign In</h1>
+      <form
+        onSubmit={handleSubmit}
+        action=""
+        className="flex flex-col justify-evenly h-[70%] max-w-md mx-auto"
+      >
+        <div className="text-lg">
+          <StringTextField
+            label="University Email"
+            placeholder="example@1.ustp.edu.ph"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            errorMessage="Please use your USTP student email"
+            showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
+          />
 
-    <StringTextField
-        label="University Email"
-        placeholder="example@1.ustp.edu.ph"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        errorMessage="Please use your USTP student email"
-        showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
-    />
+          <StringTextField
+            label="Password"
+            type="password"
+            placeholder="******"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            errorMessage="Please create a password"
+            showError={formSubmitted && password.trim() === ""}
+          />
+        </div>
 
-    <StringTextField 
-        label="password"
-        type="password"
-        placeholder="******"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        errorMessage="Please create a password"
-        showError={formSubmitted && password.trim() === ""}
-    />
-
-    <Button 
-        type="submit"
-        buttonText={`${isLoading ? "Logging In..." : "Log In"}`}
-        buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"    />
-   </form>
-  )
+        <Button
+          type="submit"
+          buttonText={`${isLoading ? "Logging In..." : "Log In"}`}
+          buttonContainerDesign="bg-[#1F1B4F] py-3 px-5 w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"
+        />
+      </form>
+    </>
+  );
 }

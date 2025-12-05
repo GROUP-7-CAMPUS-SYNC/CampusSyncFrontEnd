@@ -1,16 +1,8 @@
 import { Check, AlertCircle } from 'lucide-react';
-
-// Define the shape of a candidate strictly for this UI
-export interface HeadCandidate {
-    _id: string;
-    firstname: string;
-    lastname: string;
-    course: string;
-    email: string; 
-}
+import type { Candidate } from "../../../types/candidates"
 
 interface ChangeHeadSelectorProps {
-    candidates: HeadCandidate[];
+    candidates: Candidate[];
     selectedCandidateId: string | null;
     onSelect: (id: string) => void;
     onCancel: () => void;
@@ -63,13 +55,17 @@ export default function ChangeHeadSelector({
                         }`}
                     >
                         <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                                selectedCandidateId === user._id 
-                                    ? 'bg-indigo-200 text-indigo-700' 
-                                    : 'bg-gray-200 text-gray-600'
-                            }`}>
-                                {user.firstname[0]}{user.lastname[0]}
-                            </div>
+                                                            <div className={`w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold shadow-sm ${
+                                    selectedCandidateId === user._id 
+                                        ? 'bg-indigo-200 text-indigo-700' 
+                                        : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                    {user.profileLink ? (
+                                        <img src={user.profileLink} alt="avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span>{user.firstname[0]}{user.lastname[0]}</span>
+                                    )}
+                                </div>
                             <div>
                                 <p className={`text-sm font-medium ${
                                     selectedCandidateId === user._id ? 'text-indigo-900' : 'text-gray-900'

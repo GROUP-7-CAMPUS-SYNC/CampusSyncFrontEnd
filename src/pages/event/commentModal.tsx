@@ -1,4 +1,3 @@
-import React from "react";
 import { X, SendHorizontal } from "lucide-react";
 interface CommentProps {
   postId: string;
@@ -6,11 +5,7 @@ interface CommentProps {
   onClose: () => void;
 }
 
-export default function CommentModal({
-  postId,
-  onClose,
-  postedBy,
-}: CommentProps) {
+export default function CommentModal({ onClose, postedBy }: CommentProps) {
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
       <div className="bg-white p-4 rounded-xl w-[90%] max-w-md ">

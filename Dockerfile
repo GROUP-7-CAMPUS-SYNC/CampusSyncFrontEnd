@@ -7,6 +7,14 @@ COPY package*.json ./
 RUN npm install
 
 COPY . .
+
+# --- ADD THESE TWO LINES ---
+# 1. Catch the variable from Render
+ARG VITE_API_URL
+# 2. Make it available to the build command
+ENV VITE_API_URL=$VITE_API_URL
+# ---------------------------
+
 RUN npm run build
 
 # Stage 2: Serve with Nginx

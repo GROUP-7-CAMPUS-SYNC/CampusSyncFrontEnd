@@ -1,38 +1,31 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 import CommentModal from "../../components/contentDisplaySection/comment";
-import EventCard, {
-  type EventPost,
-} from "../../components/contentDisplaySection/eventContent";
+import AcademicCard, {
+  type AcademicPost,
+} from "../../components/contentDisplaySection/academicContent";
 
-interface EventContentProps {
+interface AcademicContentProps {
   searchQuery: string;
 }
 
-export default function EventContent({ searchQuery }: EventContentProps) {
-  const [eventPosts, setEventPosts] = useState<EventPost[]>([]);
+export default function AcademicContent({ searchQuery }: AcademicContentProps) {
+  const [posts, setPosts] = useState<AcademicPost[]>([]);
   const [searchError, setSearchError] = useState<boolean>(false);
 
-  // Interaction States
+  // Interaction State
   const [commentClicked, setCommentClicked] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [notifyClicked, setNotifyClicked] = useState<{
     [key: string]: boolean;
   }>({});
   const [savePostClicked, setSavePostClicked] = useState<{
     [key: string]: boolean;
   }>({});
 
-  // Modal States
+  // Modal State
   const [activePostId, setActivePostId] = useState<string | null>(null);
   const [activeUser, setActiveUser] = useState<any>(null);
 
   // --- Handlers ---
-
-  const handleToggleNotify = (id: string) => {
-    setNotifyClicked((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
 
   const handleToggleSave = (id: string) => {
     setSavePostClicked((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -48,23 +41,27 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     setActivePostId(null);
   };
 
-  // --- API Logic: Fetch Posts ---
-  const fetchEventPosts = async () => {
+  // --- API Logic: Fetch ---
+  const fetchAcademicPosts = async () => {
     try {
       const url = searchQuery
-        ? `/events/getPosts/event?search=${encodeURIComponent(searchQuery)}`
-        : `/events/getPosts/event`;
+        ? `/academic/getPosts/academic?search=${encodeURIComponent(
+            searchQuery
+          )}`
+        : "/academic/getPosts/academic";
+
       const response = await api.get(url);
 
       if (response.status === 200) {
         setSearchError(false);
         const sortedData = response.data.sort(
-          (a: EventPost, b: EventPost) =>
+          (a: AcademicPost, b: AcademicPost) =>
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
-        setEventPosts(sortedData);
+        setPosts(sortedData);
       }
     } catch (error) {
+      console.log("Error fetching academic posts:", error);
       setSearchError(true);
     }
   };
@@ -74,7 +71,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     if (!activePostId) return;
 
     try {
-      const response = await api.post(`/events/${activePostId}/comments`, {
+      const response = await api.post(`/academic/${activePostId}/comments`, {
         text,
       });
 
@@ -82,7 +79,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
         const updatedComments = response.data;
 
         // Update local state instantly
-        setEventPosts((prevPosts) =>
+        setPosts((prevPosts) =>
           prevPosts.map((post) =>
             post._id === activePostId
               ? { ...post, comments: updatedComments }
@@ -91,55 +88,52 @@ export default function EventContent({ searchQuery }: EventContentProps) {
         );
       }
     } catch (error) {
-      console.error("Error adding comment:", error);
+      console.error("Failed to add comment:", error);
     }
   };
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchEventPosts();
-    }, 1000);
+      fetchAcademicPosts();
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
   // Helper: Find Active Post Data
-  const activePostData = eventPosts.find((p) => p._id === activePostId);
+  const activePostData = posts.find((p) => p._id === activePostId);
 
   return (
-    <div className="flex flex-col w-full max-w-3xl mx-auto bg-gray-200 sm:bg-[#f1f3f7]">
-      {searchError || (searchQuery && eventPosts.length === 0) ? (
-        <div className="flex justify-center">
+    <div className="flex flex-col w-full max-w-3xl mx-auto  bg-gray-200 sm:bg-[#f1f3f7]">
+      {searchError || (searchQuery && posts.length === 0) ? (
+        <div className="flex justify-center py-10">
           <p className="font-semibold text-gray-500">
-            No items found matching "{searchQuery}".
+            No academic posts found matching "{searchQuery}".
           </p>
         </div>
       ) : (
         <>
-          {eventPosts.map((post) => (
-            <EventCard
+          {posts.map((post) => (
+            <AcademicCard
               key={post._id}
               post={post}
               isSaved={savePostClicked[post._id] || false}
-              isNotify={notifyClicked[post._id] || false}
               isCommentOpen={commentClicked[post._id] || false}
-              commentCount={post.comments?.length || 0} // ✅ Use real count
               onToggleSave={handleToggleSave}
-              onToggleNotify={handleToggleNotify}
               onCommentClick={handleCommentClick}
             />
           ))}
-
-          {activePostId && (
-            <CommentModal
-              postId={activePostId}
-              postedBy={activeUser}
-              onClose={closeCommentModal}
-              comments={activePostData?.comments || []} // ✅ Pass real comments
-              onAddComment={handleAddComment} // ✅ Connect handler
-            />
-          )}
         </>
+      )}
+
+      {activePostId && (
+        <CommentModal
+          postId={activePostId}
+          postedBy={activeUser}
+          comments={activePostData?.comments || []} // ✅ Pass real comments
+          onClose={closeCommentModal}
+          onAddComment={handleAddComment} // ✅ Connect handler
+        />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import NotificationLogo from "../../assets/notification-logo.svg"
+import NotificationLogo from "../../../assets/notification-logo.svg"
 
 interface NotificationProps {
   notificationDesign?: string

@@ -1,8 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import LandingPage from "./pages/landingPage"
 import { ProtectedRoute } from "./hooks/userIsLogIn"
-import Home from "./pages/index"
 import Moderator from "./pages/moderator"
+import Profile from "./pages/profile/renderSection"
+import Home from "./pages/home/renderSection"
+import LostAndFound from "./pages/lost&found/renderSection"
+import Event from "./pages/event/renderSection"
+import Academic from "./pages/announcement/renderSection"
+import Save from "./pages/save/renderSection"
 
 /**
  * PROTECTED ROUTE FUNCTIONS
@@ -21,8 +26,14 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage/>}/>
         {/* <Route path="/home" element={<Home/>}/> */}
-        <Route path="/home" element={<ProtectedRoute element={<Home/>}/>}/>
         <Route path="/moderator" element={<ProtectedRoute element={<Moderator/>}/>}/>
+        <Route path="/profile" element={<ProtectedRoute element={<Profile/>}/>}/>
+        <Route path="/home" element={<ProtectedRoute element={<Home/>}/>}/>
+        <Route path="/lost&found" element={<ProtectedRoute element={<LostAndFound/>}/>}/>
+        <Route path="/event" element={<ProtectedRoute element={<Event/>}/>}/>
+        <Route path="/academic" element={<ProtectedRoute element={<Academic/>}/>}/>
+        <Route path="/save" element={<ProtectedRoute element={<Save/>}/>}/>
+
       </Routes>
     </BrowserRouter>
   )

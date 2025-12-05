@@ -1,36 +1,71 @@
-import { useState } from 'react';
-import { X, Check, Plus, User } from 'lucide-react';
-
-// --- MOCK DATA FOR USER SELECTION ---
-// In a real app, this would come from an API call like api.get('/users/candidates')
-const MOCK_USERS = [
-    { _id: 'u1', firstname: 'Juan', lastname: 'Dela Cruz', email: 'juan.dc@student.edu', course: 'BS Information Technology' },
-    { _id: 'u2', firstname: 'Maria', lastname: 'Clara', email: 'maria.c@student.edu', course: 'BS Civil Engineering' },
-    { _id: 'u3', firstname: 'Jose', lastname: 'Rizal', email: 'jose.r@student.edu', course: 'BS Computer Science' },
-    { _id: 'u4', firstname: 'Andres', lastname: 'Bonifacio', email: 'andres.b@student.edu', course: 'BS Food Technology' },
-    { _id: 'u5', firstname: 'Apolinario', lastname: 'Mabini', email: 'pol.m@student.edu', course: 'BS Information Technology' },
-    { _id: 'u6', firstname: 'Gabriela', lastname: 'Silang', email: 'gab.s@student.edu', course: 'BS Civil Engineering' },
-];
+import { useState, useEffect } from 'react';
+import { X, Check, Plus, User, Loader2 } from 'lucide-react';
+import api from '../../api/api'; 
+import Modal from "../../components/modal"
+import Button from "../../components/button"
+import type { Candidate } from '../../types/candidates';
 
 interface CreateOrganizationModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: () => void; // Trigger refetch on parent
+    onSuccess: () => void;
 }
 
-export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: CreateOrganizationModalProps) {
-    const [formData, setFormData] = useState({
-        organizationName: '',
-        description: '',
-        course: 'BS Information Technology', // Default value from schema enum
-        organizationHeadID: '',
-        moderators: 'current-user-id' // Mocked ID representing the logged-in moderator
-    });
+interface FormDataState {
+    organizationName: string,
+    description: string,
+    course: string,
+    organizationHeadID: string,
+}
+
+const InitialFormData = {
+    organizationName: '',
+    description: '',
+    course: 'BS Information Technology',
+    organizationHeadID: '',
+}
+
+export default function CreateOrganizationModal({ isOpen, onClose }: CreateOrganizationModalProps) {
+    const [formData, setFormData] = useState<FormDataState>(InitialFormData);
     
+    const [candidates, setCandidates] = useState<Candidate[]>([]);
+    const [isLoadingCandidates, setIsLoadingCandidates] = useState(false);
     const [selectedHead, setSelectedHead] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    if (!isOpen) return null;
+    // Error Modal Message 
+    const [errorMessage, setErrorMessage] = useState<String>("")
+    const [handleButtonGotError, setHandleButtonGotError] = useState(false)
+
+    // Success Modal Message 
+    const [successMessage, setSuccessMessage] = useState<String>("")
+    const [handleButtonGotSuccess, setHandleButtonGotSuccess] = useState(false)
+
+    // Fetch users when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            fetchCandidates();
+        }
+    }, [isOpen]);
+
+    const fetchCandidates = async () => {
+        setIsLoadingCandidates(true);
+        try {
+            // Using the api instance (baseURL is already configured)
+            const response = await api.get('/moderator/get_all_users');
+            
+            // Axios places the body in response.data. 
+            // Based on your JSON, the array is in response.data.data
+            if (response.data && response.data.data) {
+                setCandidates(response.data.data);
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch candidates:", error);
+        } finally {
+            setIsLoadingCandidates(false);
+        }
+    };
 
     const handleSelectUser = (userId: string) => {
         setSelectedHead(userId);
@@ -42,24 +77,29 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
         setIsSubmitting(true);
         
         try {
-            // TODO: Replace with actual API call
-            // await api.post('/moderator/create_organization', formData);
+            const response = await api.post('/moderator/create_organization', formData);
             
-            console.log("PAYLOAD TO SEND:", formData);
+            if(response.status === 200)
+            {
+                setSuccessMessage(response.data.message || "Succesfully create organization")
+                setHandleButtonGotSuccess(true)
+            }
             
-            // Simulate network delay
-            setTimeout(() => {
-                alert("Organization created successfully (Mock)!");
-                onSuccess(); // Refresh parent data
-                onClose();
-                setIsSubmitting(false);
-            }, 1000);
-
-        } catch (error) {
-            console.error("Creation failed", error);
+        } 
+        catch (error: any) 
+        {
+            
+            const message = error.response.data.message || "Failed to create organization"
+            setErrorMessage(message)
+            setHandleButtonGotError(true)
+        } 
+        finally 
+        {
             setIsSubmitting(false);
         }
     };
+
+    if (!isOpen) return null;
 
     return (
         <div 
@@ -128,44 +168,55 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                     <div className="border-t border-gray-100 pt-4">
                         <label className="block text-sm font-semibold text-gray-700 mb-2">Assign Organization Head</label>
                         <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                                Select a candidate from the list
+                            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider flex justify-between items-center">
+                                <span>Select a candidate from the list</span>
+                                {isLoadingCandidates && <Loader2 size={14} className="animate-spin text-indigo-600"/>}
                             </div>
                             
                             {/* Scrollable User List */}
                             <div className="max-h-52 overflow-y-auto divide-y divide-gray-100 custom-scrollbar">
-                                {MOCK_USERS.map((user) => (
-                                    <div 
-                                        key={user._id}
-                                        onClick={() => handleSelectUser(user._id)}
-                                        className={`flex items-center justify-between p-3 cursor-pointer transition-colors duration-150 ${
-                                            selectedHead === user._id 
-                                                ? 'bg-indigo-50 border-l-4 border-indigo-600' 
-                                                : 'hover:bg-gray-50 border-l-4 border-transparent'
-                                        }`}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shadow-sm ${
+                                {isLoadingCandidates ? (
+                                    <div className="p-4 text-center text-sm text-gray-500">Loading candidates...</div>
+                                ) : candidates.length === 0 ? (
+                                    <div className="p-4 text-center text-sm text-gray-500">No users found.</div>
+                                ) : (
+                                    candidates.map((user) => (
+                                        <div 
+                                            key={user._id}
+                                            onClick={() => handleSelectUser(user._id)}
+                                            className={`flex items-center justify-between p-3 cursor-pointer transition-colors duration-150 ${
                                                 selectedHead === user._id 
-                                                    ? 'bg-indigo-200 text-indigo-700' 
-                                                    : 'bg-gray-200 text-gray-600'
-                                            }`}>
-                                                {user.firstname[0]}{user.lastname[0]}
+                                                    ? 'bg-indigo-50 border-l-4 border-indigo-600' 
+                                                    : 'hover:bg-gray-50 border-l-4 border-transparent'
+                                            }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold shadow-sm ${
+                                                    selectedHead === user._id 
+                                                        ? 'bg-indigo-200 text-indigo-700' 
+                                                        : 'bg-gray-200 text-gray-600'
+                                                }`}>
+                                                    {user.profileLink ? (
+                                                        <img src={user.profileLink} alt="avatar" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span>{user.firstname[0]}{user.lastname[0]}</span>
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <p className={`text-sm font-medium ${selectedHead === user._id ? 'text-indigo-900' : 'text-gray-900'}`}>
+                                                        {user.firstname} {user.lastname}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{user.course}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className={`text-sm font-medium ${selectedHead === user._id ? 'text-indigo-900' : 'text-gray-900'}`}>
-                                                    {user.firstname} {user.lastname}
-                                                </p>
-                                                <p className="text-xs text-gray-500">{user.course}</p>
-                                            </div>
+                                            {selectedHead === user._id && (
+                                                <div className="bg-indigo-100 p-1 rounded-full">
+                                                    <Check size={16} className="text-indigo-600" />
+                                                </div>
+                                            )}
                                         </div>
-                                        {selectedHead === user._id && (
-                                            <div className="bg-indigo-100 p-1 rounded-full">
-                                                <Check size={16} className="text-indigo-600" />
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                    ))
+                                )}
                             </div>
                         </div>
                         {!selectedHead && <p className="text-xs text-red-500 mt-2 font-medium flex items-center gap-1">* <User size={12}/> Selection required</p>}
@@ -183,9 +234,9 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                         </button>
                         <button
                             type="submit"
-                            disabled={!selectedHead || !formData.organizationName || isSubmitting}
+                            disabled={!selectedHead || !formData.organizationName  || !formData.description || isSubmitting}
                             className={`px-5 py-2 text-white font-medium rounded-lg transition-all shadow-sm flex items-center gap-2 ${
-                                (!selectedHead || !formData.organizationName || isSubmitting) 
+                                (!selectedHead || !formData.organizationName || !formData.description  || isSubmitting) 
                                 ? 'bg-gray-300 cursor-not-allowed' 
                                 : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-md'
                             }`}
@@ -202,6 +253,53 @@ export default function CreateOrganizationModal({ isOpen, onClose, onSuccess }: 
                     </div>
                 </form>
             </div>
+
+            {handleButtonGotError && (
+                <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-red-500">Action Failed</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                {errorMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => window.location.reload()}
+                    />
+                </Modal>
+            )}
+
+            {handleButtonGotSuccess && (
+                    <Modal
+                    cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[85vw] max-w-md  mx-auto"
+                >
+                    <div
+                        className='mb-2'
+                    >
+                        <h3 className="text-lg leading-6 font-medium text-green-500">Success Update</h3>
+                        <div className="mt-2">
+                            <p className="text-sm text-gray-500 wrap-break-words self-center">
+                                { successMessage || "An unexpected error occurred."}
+                            </p>
+                        </div>
+                    </div>
+                    <Button
+                        type='button'
+                        buttonText='Close'
+                        onClick={() => {
+                            onClose();
+                            window.location.reload()
+                        }}
+                    />
+                </Modal>
+            )}
         </div>
     );
 }

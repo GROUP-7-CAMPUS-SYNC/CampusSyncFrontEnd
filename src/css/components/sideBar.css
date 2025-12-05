@@ -1,37 +1,33 @@
 @import "tailwindcss";
 
-
-@layer components{
-    .side-bar-container{
-        @apply fixed bottom-0 left-0 w-full bg-white   h-16 justify-center items-center p-2 /* --- Smaller Screens --- */
+@layer components {
+  .side-bar-container {
+    @apply fixed bottom-0 left-0 w-full bg-white h-16 flex sm:inline justify-center items-center p-2 /* --- Smaller Screens --- */
         sm:px-8
-        md:relative md:h-full md:justify-start md:p-4 md:w-56 /* Set fixed width (14rem) & full height */
-        shadow-[0_-8px_16px_rgba(0,0,0,0.1)]  md:shadow-[2px_0_8px_rgba(0,0,0,0.1)]
-    }
+        md:relative md:h-full md:justify-start md:p-4 md:w-70 /* Set fixed width (14rem) & full height */;
+  }
 
-    .list-item-container{
-        @apply flex flex-row justify-between w-full
-        md:flex-col md:gap-y-2 /* Tighter gap for sleeker look */
+  .list-item-container {
+    @apply flex flex-row justify-around  w-full
+        md:flex-col md:gap-y-2 /* Tighter gap for sleeker look */;
+  }
 
-    }
-
-    .logo-container{
-        @apply cursor-pointer flex flex-col justify-center items-center
+  .logo-container {
+    @apply cursor-pointer flex flex-col justify-center items-center
         md:flex-row md:w-full md:justify-start md:gap-x-3 /* Use full width and a larger gap */
-        md:p-3 md:rounded-lg /* Hover button styles */
-  
-    }
+        md:p-3 md:rounded-lg /* Hover button styles */;
+  }
 
-    .logo-container-current-page{
-        @apply md:bg-[#3A357A] md:text-white border-b-2 text-[#3A357A]
-    }
+  .logo-container-current-page {
+    @apply md:bg-[#3A357A] md:text-white border-b-2 text-[#3A357A];
+  }
 
-    .typograpy{
-        @apply text-sm      /* Standardized mobile text */
-        md:text-base      /* Standardized desktop text (16px) */
-    }
+  .typograpy {
+    @apply text-sm      /* Standardized mobile text */
+        md:text-base      /* Standardized desktop text (16px) */;
+  }
 
-    .logo-size{
-        @apply h-6 w-6; /* 24px is a clear, solid size for all breakpoints */
-    }
+  .logo-size {
+    @apply h-6 w-6; /* 24px is a clear, solid size for all breakpoints */
+  }
 }

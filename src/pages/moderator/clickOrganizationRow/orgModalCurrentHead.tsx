@@ -1,4 +1,4 @@
-import type { IOrganization } from './index';
+import type { IOrganization } from '../../../types/IOrganization';
 import { Mail } from 'lucide-react'; 
 
 
