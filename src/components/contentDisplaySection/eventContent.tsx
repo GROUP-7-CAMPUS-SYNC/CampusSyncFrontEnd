@@ -1,6 +1,7 @@
 import { MapPin, CalendarDays, MessageCircle, Calendar, Users, User } from "lucide-react";
 import SaveButton from "./saveButton";
-
+import api from "../../api/api";
+import { useEffect, useState } from "react";
 
 // --- Types ---
 export interface EventPost {
@@ -53,13 +54,54 @@ function timeAgo(dateString: string) {
 export default function EventCard({
   post,
   isSaved = false,
-  isNotify = false,
+  isNotify = false, // Default prop
   commentCount = 0,
   onToggleSave,
-  onToggleNotify,
+  onToggleNotify, // Now used inside handleToggleNotify
   onCommentClick,
 }: EventCardProps) {
-  
+
+  // 1. Local State for UI updates
+  const [localIsNotify, setLocalIsNotify] = useState(isNotify);
+
+  // 2. Fix: useEffect must be inside the component and take no arguments
+  useEffect(() => {
+    const fetchNotifyStatus = async () => {
+      try {
+        if (!post._id) return;
+        const response = await api.get(`/events/get_notify_status/${post._id}`);
+        // Assuming API returns { isSubscribed: boolean }
+        setLocalIsNotify(response.data.isSubscribed);
+      } catch (error) {
+        console.log("Error fetching notify status:", error);
+      }
+    };
+
+    fetchNotifyStatus();
+  }, [post._id]); // Dependency array ensures it runs when post changes
+
+  // 3. Fix: Handler moved inside component
+  const handleToggleNotify = async () => {
+    try {
+      // Optimistic UI Update
+      setLocalIsNotify(!localIsNotify);
+      
+      const response = await api.put(`/events/toggle_notify/${post._id}`);
+      console.log(response.data);
+
+      // Call the prop function to satisfy "unused variable" error
+      // and notify parent component if needed
+      if (onToggleNotify) {
+        onToggleNotify(post._id);
+      }
+
+    } catch (error) {
+      console.log(error);
+      // Revert on error
+      setLocalIsNotify(!localIsNotify);
+    }
+  };
+
   const hasOrg = !!post.organization;
   const avatarSrc = hasOrg ? post.organization?.profileLink : null;
   const postedByName = post.postedBy ? `${post.postedBy.firstname} ${post.postedBy.lastname}` : "Unknown";
@@ -154,11 +196,15 @@ export default function EventCard({
         <div className="flex flex-row justify-between sm:justify-around pt-2">
           {/* Notify */}
           <button
-            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${isNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"}`}
-            onClick={() => onToggleNotify?.(post._id)}
+            // Use localIsNotify for styling
+            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${localIsNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"}`}
+            onClick={handleToggleNotify}
           >
-            <Calendar className={isNotify ? "text-[#F9BF3B]" : ""} />
-            <span className="sm:block hidden font-medium">Notify Me</span>
+            {/* Fill icon if localIsNotify is true */}
+            <Calendar className={localIsNotify ? "text-[#F9BF3B] fill" : ""} />
+            <span className="sm:block hidden font-medium">
+              <p>Notify Me</p>
+            </span>
           </button>
 
           {/* Comment */}
