@@ -20,7 +20,6 @@ export default function DashboardContent() {
   // States
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
-  const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
   const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
   // Modal State (Unified)
@@ -37,9 +36,6 @@ export default function DashboardContent() {
   };
   const handleToggleNotify = (id: string) => {
     setNotifyItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
-  };
-  const handleToggleWitness = (id: string) => {
-    setWitnessItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
   };
 
   // Unified Handler for Opening Comment Modal
@@ -149,9 +145,7 @@ export default function DashboardContent() {
                 key={item._id}
                 item={item as ReportItem}
                 isSaved={savedItems.has(item._id)}
-                isWitnessed={witnessItems.has(item._id)}
                 onToggleSave={handleToggleSave}
-                onToggleWitness={handleToggleWitness}
                 // Use Unified Handler (Pass null for postedBy if not needed for placeholder)
                 onCommentClick={(comments) => handleOpenCommentModal(item._id, null, "report", comments)}
               />

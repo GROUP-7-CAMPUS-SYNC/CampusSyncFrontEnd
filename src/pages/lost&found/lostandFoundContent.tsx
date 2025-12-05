@@ -13,7 +13,6 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
 
   // Interaction States
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
-  const [witnessClicks, setWitnessClicks] = useState<Set<string>>(new Set());
   
   // Modal States
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -22,15 +21,6 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
   const [modalComments, setModalComments] = useState<any[]>([]);
 
   // --- Handlers ---
-
-  const handleWitnessClick = (itemId: string) => {
-    setWitnessClicks((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) { newSet.delete(itemId); } else { newSet.add(itemId); }
-      return newSet;
-    });
-  };
-
   const handleSaveClick = (itemId: string) => {
     setSavedItems((prev) => {
       const newSet = new Set(prev);
@@ -118,10 +108,7 @@ export default function LostAndFoundContent({ searchQuery }: LostAndFoundContent
               key={item._id}
               item={item}
               isSaved={savedItems.has(item._id)}
-              isWitnessed={witnessClicks.has(item._id)}
               onToggleSave={handleSaveClick}
-              onToggleWitness={handleWitnessClick}
-              // ✅ Modified to capture ID + Comments
               onCommentClick={(comments) => {
                   setActivePostId(item._id);
                   setModalComments(comments);

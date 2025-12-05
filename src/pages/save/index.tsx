@@ -19,11 +19,9 @@ export default function SavedContent() {
   const [loading, setLoading] = useState<boolean>(true);
   
   // --- Interaction States ---
-  // Note: We don't need 'savedItems' Set here because everything displayed IS saved.
-  // We manipulate the 'savedPosts' array directly for removals.
   const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
-  const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
   const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
+  // REMOVED: witnessItems state is no longer needed in the parent since the Card handles it individually.
 
   // --- Modal State ---
   const [activeModal, setActiveModal] = useState<{
@@ -46,9 +44,7 @@ export default function SavedContent() {
     setNotifyItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
   };
 
-  const handleToggleWitness = (id: string) => {
-    setWitnessItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; });
-  };
+  // REMOVED: handleToggleWitness function is no longer needed.
 
   // Unified Comment Modal Opener
   const handleOpenCommentModal = (id: string, postedBy: any, feedType: "event" | "academic" | "report", comments: any[]) => {
@@ -98,7 +94,6 @@ export default function SavedContent() {
     const fetchSavedFeed = async () => {
       try {
         setLoading(true);
-        // Hits your fixed controller: getSavedPosts
         const response = await api.get("/saved/all"); 
         
         if (response.status === 200) {
@@ -133,12 +128,10 @@ export default function SavedContent() {
               <EventCard
                 key={item._id}
                 post={item as EventPost}
-                // Always true because we are in the Saved section
                 isSaved={true} 
                 isNotify={notifyItems.has(item._id)}
                 isCommentOpen={commentOpenItems.has(item._id)}
                 commentCount={item.comments?.length || 0}
-                // "Toggle" here means Remove
                 onToggleSave={() => handleRemoveSaved(item._id)}
                 onToggleNotify={() => handleToggleNotify(item._id)}
                 onCommentClick={(id, postedBy) => handleOpenCommentModal(id, postedBy, "event", item.comments)}
@@ -163,9 +156,9 @@ export default function SavedContent() {
                 key={item._id}
                 item={item as ReportItem}
                 isSaved={true}
-                isWitnessed={witnessItems.has(item._id)}
+                // isWitnessed={/* Pass logic here based on current user ID check if needed, or rely on Card's default false */} 
                 onToggleSave={() => handleRemoveSaved(item._id)}
-                onToggleWitness={() => handleToggleWitness(item._id)}
+                // ERROR FIXED: Removed onToggleWitness
                 onCommentClick={(comments) => handleOpenCommentModal(item._id, null, "report", comments)}
               />
             );
