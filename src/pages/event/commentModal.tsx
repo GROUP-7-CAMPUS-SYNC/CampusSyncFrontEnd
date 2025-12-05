@@ -12,7 +12,7 @@ export default function CommentModal({
   postedBy,
 }: CommentProps) {
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center animate-fadeIn">
+    <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
       <div className="bg-white p-4 rounded-xl w-[90%] max-w-md ">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">Comments</h2>

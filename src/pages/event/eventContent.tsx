@@ -146,7 +146,7 @@ export default function EventContent() {
                   <p className="text-[#4B4D51] text-sm font-semibold">
                     Start Event:
                   </p>
-                  <p className="text-sm sm:text-base font-medium">
+                  <p className="text-sm         ">
                     {formatDateTime(post.startDate)}
                   </p>
                 </div>
