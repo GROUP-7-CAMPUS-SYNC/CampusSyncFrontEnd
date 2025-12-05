@@ -4,6 +4,8 @@ import WitnessButton from "./witness";
 import WitnessModal from "./witnessModal";
 import { useEffect, useState } from "react";
 import api from "../../api/api";
+import Modal from "../../components/modal";
+import Button from "../../components/button"
 
 // --- Helper: Format Time ---
 const timeAgo = (dateString: string) => {
@@ -80,6 +82,11 @@ export default function LostFoundCard({
   const [witnessCount, setWitnessCount] = useState(item.witnesses?.length || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Post owner witness himself 
+  const [userWitnessErrorModal, setUserWitnessErrorModal] = useState(false);
+  const [userWitnessErrorMessage, setUserWitnessErrorMessage] = useState("");
+
+
   // --- 1. CHECK WITNESS STATUS (User Specific) ---
   useEffect(() => {
     const checkWitnessStatus = async () => {
@@ -131,6 +138,14 @@ export default function LostFoundCard({
         setShowModal(false);
       }
     } catch (error: any) {
+
+      if(error.response?.status === 400 && error.response?.data?.message === "You cannot witness your own report.")
+        {
+          setUserWitnessErrorModal(true);
+          setUserWitnessErrorMessage("You cannot witness your own report");
+          return
+        }
+
       console.error("Witness submission failed:", error);
       alert(error.response?.data?.message || "Failed to submit witness statement.");
     } finally {
@@ -290,6 +305,22 @@ export default function LostFoundCard({
       {/* MODAL */}
       {showModal && (
         <WitnessModal onClose={() => setShowModal(false)} onProceed={handleWitnessSubmit} />
+      )}
+
+      {userWitnessErrorModal && (
+        <Modal>
+          {userWitnessErrorMessage}
+
+          <div
+            className="mt-2"
+          >
+            <Button 
+              type="button"
+              buttonText="Close"
+              onClick={() => setUserWitnessErrorModal(false)}
+            />
+          </div>
+        </Modal>
       )}
     </div>
   );
