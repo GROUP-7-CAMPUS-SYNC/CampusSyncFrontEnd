@@ -4,6 +4,7 @@ import Button from "../../components/button"
 import { setLoginFlag } from "../../utils/setLogInFlag"
 import { useNavigate } from "react-router-dom"
 import api from "../../api/api" 
+import Modal from "../../components/modal"
 
 export default function login() {
 
@@ -15,6 +16,11 @@ export default function login() {
 
     // 🔹 Track if form has been submitted
     const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
+
+    // Error State
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    const [authenticationError, setAuthenticationError] = useState<boolean>(false)
+
 
     useEffect(() => {
         const checkAuth  = async () => {
@@ -92,11 +98,8 @@ export default function login() {
 
         }catch(error : any)
         {
-            console.error("❌ Registration failed:", error)
-            
-            // Extract error message from backend response
-            const errorMessage = error.response?.data?.message || "Something went wrong. Please try again."
-            alert(errorMessage) // Professional Tip: Replace with a toast notification later
+            setAuthenticationError(true)
+            setErrorMessage(error.response?.data?.message || "Something went wrong. Please try again.")
         }finally{
             setIsLoading(false)
         }
@@ -127,7 +130,25 @@ export default function login() {
     <Button 
         type="submit"
         buttonText={`${isLoading ? "Logging In..." : "Log In"}`}
-        buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"    />
+        buttonContainerDesign="bg-[#1F1B4F] p-[10px] w-full text-white rounded-[6px] hover:bg-[#241F5B] transition-colors duration-200 hover:cursor-pointer"
+    />
+
+    {authenticationError && 
+    (
+        <Modal>
+            <div
+                className="flex justify-center items-center flex-col gap-2"
+            >
+                {errorMessage}
+
+                <Button
+                    type="button"
+                    buttonText="Close"
+                    onClick={() => setAuthenticationError(false)}
+                />
+            </div>
+        </Modal>
+    )}
    </form>
   )
 }
