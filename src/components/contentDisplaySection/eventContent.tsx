@@ -64,7 +64,6 @@ export default function EventCard({
   // 1. Local State for UI updates
   const [localIsNotify, setLocalIsNotify] = useState(isNotify);
 
-  // 2. Fix: useEffect must be inside the component and take no arguments
   useEffect(() => {
     const fetchNotifyStatus = async () => {
       try {
