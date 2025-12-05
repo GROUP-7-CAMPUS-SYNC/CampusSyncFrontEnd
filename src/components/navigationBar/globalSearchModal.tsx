@@ -27,7 +27,6 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
     // Interaction States
     const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
     const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
-    const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
     const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
     // Modal State
@@ -65,7 +64,6 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
     // --- Card Handlers ---
     const handleToggleSave = (id: string) => { setSavedItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
     const handleToggleNotify = (id: string) => { setNotifyItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
-    const handleToggleWitness = (id: string) => { setWitnessItems((prev) => { const newSet = new Set(prev); if(newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
     
     // Unified Handler for Opening Comment Modal (Event/Academic)
     const handleOpenCommentForm = (id: string, postedBy: any, feedType: "event" | "academic") => {
@@ -147,9 +145,7 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                                                 key={item._id}
                                                 item={item as ReportItem}
                                                 isSaved={savedItems.has(item._id)}
-                                                isWitnessed={witnessItems.has(item._id)}
                                                 onToggleSave={handleToggleSave}
-                                                onToggleWitness={handleToggleWitness}
                                                 onCommentClick={(comments) => {
                                                     setActiveModal({
                                                         id: item._id,
@@ -159,6 +155,8 @@ export default function GlobalSearchModal({ isOpen, onClose, results, loading, s
                                                     });
                                                 }}
                                             />
+
+                                            
                                         );
                                     default: return null;
                                 }

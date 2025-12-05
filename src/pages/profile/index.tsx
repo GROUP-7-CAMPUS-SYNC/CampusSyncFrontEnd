@@ -20,7 +20,6 @@ export default function ProfilePage() {
   // Interaction States
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
   const [notifyItems, setNotifyItems] = useState<Set<string>>(new Set());
-  const [witnessItems, setWitnessItems] = useState<Set<string>>(new Set());
   const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(new Set());
 
   // Unified Modal State
@@ -34,7 +33,6 @@ export default function ProfilePage() {
   // --- Handlers ---
   const handleToggleSave = (id: string) => { setSavedItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
   const handleToggleNotify = (id: string) => { setNotifyItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
-  const handleToggleWitness = (id: string) => { setWitnessItems((prev) => { const newSet = new Set(prev); if (newSet.has(id)) newSet.delete(id); else newSet.add(id); return newSet; }); };
 
   // ✅ Unified Handler for ALL types (Event, Academic, Report)
   const handleOpenCommentModal = (id: string, postedBy: any, feedType: "event" | "academic" | "report") => {
@@ -178,9 +176,7 @@ export default function ProfilePage() {
                                         key={item._id}
                                         item={item as ReportItem}
                                         isSaved={savedItems.has(item._id)}
-                                        isWitnessed={witnessItems.has(item._id)}
                                         onToggleSave={handleToggleSave}
-                                        onToggleWitness={handleToggleWitness}
                                         // ✅ Use Unified Handler (Matches Dashboard Logic)
                                         onCommentClick={() => handleOpenCommentModal(item._id, null, "report")}
                                     />
