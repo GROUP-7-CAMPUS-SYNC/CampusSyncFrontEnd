@@ -54,7 +54,6 @@ export default function EventCard({
   post,
   isSaved = false,
   isNotify = false,
-  isCommentOpen = false,
   commentCount = 0,
   onToggleSave,
   onToggleNotify,
@@ -164,10 +163,10 @@ export default function EventCard({
 
           {/* Comment */}
           <button
-            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${isCommentOpen ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"}`}
+            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors text-gray-600 hover:text-black`}
             onClick={() => onCommentClick?.(post._id, post.postedBy)}
           >
-            <MessageCircle className={isCommentOpen ? "text-[#F9BF3B]" : ""} />
+            <MessageCircle />
             <span className="sm:block hidden font-medium">Comment</span>
           </button>
 
