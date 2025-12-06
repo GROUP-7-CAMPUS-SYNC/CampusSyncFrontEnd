@@ -1,4 +1,4 @@
-import { useState } from "react"; // Added useState
+import { useState, useEffect } from "react"; // Added useEffect
 import {
   MapPin,
   CalendarDays,
@@ -6,9 +6,10 @@ import {
   Calendar,
   Users,
   User,
-  AlertCircle, // Added AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import SaveButton from "./saveButton";
+import api from "../../api/api"; // Added API import
 
 // --- Types ---
 export interface EventPost {
@@ -74,11 +75,65 @@ export default function EventCard({
   isNotify = false,
   commentCount = 0,
   onToggleSave,
-  onToggleNotify, 
+  onToggleNotify,
   onCommentClick,
 }: EventCardProps) {
-  // Added State for Error Handling
+  
+  // 1. Local State for Notify (Optimistic UI)
+  const [localIsNotify, setLocalIsNotify] = useState(isNotify);
+  
+  // 2. State for Error Handling
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 3. Effect to fetch specific notify status for this user/post
+  useEffect(() => {
+    const fetchNotifyStatus = async () => {
+      try {
+        if (!post._id) return;
+        const response = await api.get(`/events/get_notify_status/${post._id}`);
+        setLocalIsNotify(response.data.isSubscribed);
+      } catch (error) {
+        console.log("Error fetching notify status:", error);
+      }
+    };
+
+    fetchNotifyStatus();
+  }, [post._id]);
+
+  // 4. Notify Toggle Handler (Logic from your previous code)
+  const handleToggleNotify = async () => {
+    // Store previous state in case we need to revert
+    const previousState = localIsNotify;
+
+    try {
+      // Optimistic UI Update (Switch immediately for speed)
+      setLocalIsNotify(!localIsNotify);
+      
+      const response = await api.put(`/events/toggle_notify/${post._id}`);
+      
+      // If success, update with server truth
+      if(response.data.isSubscribed !== undefined) {
+         setLocalIsNotify(response.data.isSubscribed);
+      }
+
+      // Call parent prop if exists
+      if (onToggleNotify) {
+        onToggleNotify(post._id);
+      }
+
+    } catch (error: any) {
+      console.log(error);
+
+      // Revert the optimistic update (toggle back)
+      setLocalIsNotify(previousState);
+
+      // Extract error message from backend response
+      const serverMessage = error.response?.data?.message || "Something went wrong. Please try again.";
+      
+      // Trigger the Modal
+      setErrorMessage(serverMessage);
+    }
+  };
 
   const hasOrg = !!post.organization;
   const avatarSrc = hasOrg ? post.organization?.profileLink : null;
@@ -116,9 +171,6 @@ export default function EventCard({
                 <span>{timeDisplay}</span>
               </div>
             </div>
-            <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
-              {post.type}
-            </span>
           </div>
           <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
             {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
@@ -196,7 +248,7 @@ export default function EventCard({
               </p>
             </div>
           </div>
-        </div> 
+        </div>
 
         {/* Actions */}
         <div className="flex flex-col gap-y-2">
@@ -209,14 +261,14 @@ export default function EventCard({
           <hr className="border-gray-200" />
 
           <div className="flex flex-row gap-x-5 sm:gap-x-0 sm:justify-around pt-2">
-            {/* Notify */}
+            {/* Notify Button - Updated to use local state and handler */}
             <button
               className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${
-                isNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
+                localIsNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
               }`}
-              onClick={() => onToggleNotify?.(post._id)}
+              onClick={handleToggleNotify}
             >
-              <Calendar className={isNotify ? "text-[#F9BF3B]" : ""} />
+              <Calendar className={localIsNotify ? "text-[#F9BF3B]" : ""} />
               <span className="sm:block hidden font-medium">Notify Me</span>
             </button>
 
@@ -229,7 +281,7 @@ export default function EventCard({
               <span className="sm:block hidden font-medium">Comment</span>
             </button>
 
-            {/* UPDATED SAVE BUTTON */}
+            {/* Save Button */}
             <SaveButton
               postId={post._id}
               postType="event"
