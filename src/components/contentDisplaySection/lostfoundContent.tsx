@@ -5,7 +5,6 @@ import {
   MessageCircle,
   Users,
   ChevronDown,
-  ChevronUp,
   Loader2,
 } from "lucide-react";
 import SaveButton from "./saveButton";
