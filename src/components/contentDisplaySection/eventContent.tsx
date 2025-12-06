@@ -1,3 +1,4 @@
+import { useState } from "react"; // Added useState
 import {
   MapPin,
   CalendarDays,
@@ -5,6 +6,7 @@ import {
   Calendar,
   Users,
   User,
+  AlertCircle, // Added AlertCircle
 } from "lucide-react";
 import SaveButton from "./saveButton";
 
@@ -75,6 +77,9 @@ export default function EventCard({
   onToggleNotify, 
   onCommentClick,
 }: EventCardProps) {
+  // Added State for Error Handling
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const hasOrg = !!post.organization;
   const avatarSrc = hasOrg ? post.organization?.profileLink : null;
   const postedByName = post.postedBy
@@ -86,148 +91,152 @@ export default function EventCard({
   const timeDisplay = post.createdAt ? timeAgo(post.createdAt) : "Just now";
 
   return (
-    <div className="mb-0.5 sm:mb-5 flex flex-col gap-5 shadow-sm bg-white p-4 sm:rounded-xl ">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-3 items-center">
-          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
-            {avatarSrc ? (
-              <img
-                src={avatarSrc}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="text-gray-400" size={24} />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <p className="font-semibold text-base sm:text-lg text-black">
-              {displayTitle}
-            </p>
-            <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
-              {hasOrg && <span>Posted by {postedByName} •</span>}
-              <span>{timeDisplay}</span>
+    <>
+      <div className="mb-0.5 sm:mb-5 flex flex-col gap-5 shadow-sm bg-white p-4 sm:rounded-xl ">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3 items-center">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="text-gray-400" size={24} />
+              )}
             </div>
+            <div className="flex flex-col">
+              <p className="font-semibold text-base sm:text-lg text-black">
+                {displayTitle}
+              </p>
+              <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
+                {hasOrg && <span>Posted by {postedByName} •</span>}
+                <span>{timeDisplay}</span>
+              </div>
+            </div>
+            <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
+              {post.type}
+            </span>
           </div>
           <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
-            {post.type}
+            {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
           </span>
         </div>
-        <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
-          {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
-        </span>
-      </div>
 
-      {/* Image */}
-      <div className="w-full rounded-lg overflow-hidden bg-gray-200 border border-gray-100">
-        {post.image ? (
-          <img
-            src={post.image}
-            alt="event preview"
-            className="w-full h-auto object-cover max-h-[500px]"
-            loading="lazy"
-          />
-        ) : (
-          <span className="text-gray-400 text-sm">No Image Available</span>
-        )}
-      </div>
-
-      {/* Details Grid */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-          <p className="text-[#4B4D51] text-sm font-semibold">Event Name:</p>
-          <p className="text-sm sm:text-base font-medium">
-            {post.eventName || "N/A"}
-          </p>
+        {/* Image */}
+        <div className="w-full rounded-lg overflow-hidden bg-gray-200 border border-gray-100">
+          {post.image ? (
+            <img
+              src={post.image}
+              alt="event preview"
+              className="w-full h-auto object-cover max-h-[500px]"
+              loading="lazy"
+            />
+          ) : (
+            <span className="text-gray-400 text-sm">No Image Available</span>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
-            <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">Start:</p>
-              <p className="text-sm sm:text-base font-medium">
-                {formatDateTime(post.startDate)}
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
-            <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">End:</p>
-              <p className="text-sm sm:text-base font-medium">
-                {formatDateTime(post.endDate)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-          <MapPin className="text-red-500 w-6 h-6 shrink-0" />
-          <div className="flex flex-col">
-            <p className="text-[#4B4D51] text-sm font-semibold">Location:</p>
+        {/* Details Grid */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+            <p className="text-[#4B4D51] text-sm font-semibold">Event Name:</p>
             <p className="text-sm sm:text-base font-medium">
-              {post.location || "N/A"}
+              {post.eventName || "N/A"}
             </p>
           </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">Start:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {formatDateTime(post.startDate)}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">End:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {formatDateTime(post.endDate)}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <Users className="text-blue-500 w-6 h-6 shrink-0" />
+            <MapPin className="text-red-500 w-6 h-6 shrink-0" />
             <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">Open To:</p>
+              <p className="text-[#4B4D51] text-sm font-semibold">Location:</p>
               <p className="text-sm sm:text-base font-medium">
-                {post.openTo || "N/A"}
+                {post.location || "N/A"}
               </p>
             </div>
           </div>
-          <div className="flex flex-col justify-center bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <p className="text-[#4B4D51] text-sm font-semibold">Course:</p>
-            <p className="text-sm sm:text-base font-medium">
-              {post.course || "N/A"}
-            </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <Users className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">Open To:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {post.openTo || "N/A"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <p className="text-[#4B4D51] text-sm font-semibold">Course:</p>
+              <p className="text-sm sm:text-base font-medium">
+                {post.course || "N/A"}
+              </p>
+            </div>
           </div>
-        </div>
+        </div> 
 
-      {/* Actions */}
-      <div className="flex flex-col gap-y-2">
-        <button
-          className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
-          onClick={() => onCommentClick?.(post._id, post.postedBy)}
-        >
-          {commentCount} comments
-        </button>
-        <hr className="border-gray-200" />
-
-        <div className="flex flex-row gap-x-5 sm:gap-x-0 sm:justify-around pt-2">
-          {/* Notify */}
+        {/* Actions */}
+        <div className="flex flex-col gap-y-2">
           <button
-            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${
-              isNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
-            }`}
-            onClick={() => onToggleNotify?.(post._id)}
-          >
-            <Calendar className={isNotify ? "text-[#F9BF3B]" : ""} />
-            <span className="sm:block hidden font-medium">Notify Me</span>
-          </button>
-
-          {/* Comment */}
-          <button
-            className="flex flex-row items-center gap-2 cursor-pointer transition-colors text-gray-600 hover:text-black"
+            className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
             onClick={() => onCommentClick?.(post._id, post.postedBy)}
           >
-            <MessageCircle />
-            <span className="sm:block hidden font-medium">Comment</span>
+            {commentCount} comments
           </button>
+          <hr className="border-gray-200" />
 
-          {/* UPDATED SAVE BUTTON */}
-          <SaveButton
-            postId={post._id}
-            postType="event"
-            initialIsSaved={isSaved}
-            onToggle={() => onToggleSave?.(post._id)}
-          />
+          <div className="flex flex-row gap-x-5 sm:gap-x-0 sm:justify-around pt-2">
+            {/* Notify */}
+            <button
+              className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${
+                isNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
+              }`}
+              onClick={() => onToggleNotify?.(post._id)}
+            >
+              <Calendar className={isNotify ? "text-[#F9BF3B]" : ""} />
+              <span className="sm:block hidden font-medium">Notify Me</span>
+            </button>
+
+            {/* Comment */}
+            <button
+              className="flex flex-row items-center gap-2 cursor-pointer transition-colors text-gray-600 hover:text-black"
+              onClick={() => onCommentClick?.(post._id, post.postedBy)}
+            >
+              <MessageCircle />
+              <span className="sm:block hidden font-medium">Comment</span>
+            </button>
+
+            {/* UPDATED SAVE BUTTON */}
+            <SaveButton
+              postId={post._id}
+              postType="event"
+              initialIsSaved={isSaved}
+              onToggle={() => onToggleSave?.(post._id)}
+            />
+          </div>
         </div>
       </div>
 
@@ -237,13 +246,15 @@ export default function EventCard({
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
             <div className="flex items-center gap-3 text-red-600 mb-4">
               <AlertCircle size={28} />
-              <h3 className="text-lg font-bold text-gray-900">Notification Failed</h3>
+              <h3 className="text-lg font-bold text-gray-900">
+                Notification Failed
+              </h3>
             </div>
-            
+
             <p className="text-gray-600 mb-6 leading-relaxed">
               {errorMessage}
             </p>
-            
+
             <div className="flex justify-end">
               <button
                 onClick={() => setErrorMessage(null)}
