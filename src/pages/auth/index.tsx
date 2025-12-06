@@ -8,10 +8,7 @@ import backgroundImage2 from '../../assets/landing-page-img-2.png'
 
 
 export default function landingPage() {
-
-
   const [userSignIn, setUserSignIn] = useState<boolean>(true)
-
 
   return (
     <div
@@ -56,7 +53,6 @@ export default function landingPage() {
           />
         </div>
 
-
         <div
           className="absolute inset-0 flex justify-center items-center"
         >
@@ -67,7 +63,6 @@ export default function landingPage() {
           />
         </div>
       </div>
-
 
       {/** Right Side - 50% */}
       {/*
