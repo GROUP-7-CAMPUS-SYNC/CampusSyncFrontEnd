@@ -35,7 +35,6 @@ interface EventCardProps {
   isNotify?: boolean;
   isCommentOpen?: boolean;
   commentCount?: number;
-  // Actions
   onToggleSave?: (id: string) => void;
   onToggleNotify?: (id: string) => void;
   onCommentClick?: (id: string, postedBy: any) => void;
@@ -73,7 +72,7 @@ export default function EventCard({
   isNotify = false,
   commentCount = 0,
   onToggleSave,
-  onToggleNotify,
+  onToggleNotify, 
   onCommentClick,
 }: EventCardProps) {
   const hasOrg = !!post.organization;
@@ -111,6 +110,9 @@ export default function EventCard({
               <span>{timeDisplay}</span>
             </div>
           </div>
+          <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
+            {post.type}
+          </span>
         </div>
         <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
           {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
@@ -169,7 +171,6 @@ export default function EventCard({
               {post.location || "N/A"}
             </p>
           </div>
-        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
@@ -188,7 +189,6 @@ export default function EventCard({
             </p>
           </div>
         </div>
-      </div>
 
       {/* Actions */}
       <div className="flex flex-col gap-y-2">
@@ -230,6 +230,31 @@ export default function EventCard({
           />
         </div>
       </div>
-    </div>
+
+      {/* --- ERROR MODAL --- */}
+      {errorMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 text-red-600 mb-4">
+              <AlertCircle size={28} />
+              <h3 className="text-lg font-bold text-gray-900">Notification Failed</h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              {errorMessage}
+            </p>
+            
+            <div className="flex justify-end">
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="bg-gray-900 hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
