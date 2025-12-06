@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
 import CommentModal from "../../components/contentDisplaySection/comment";
-import EventCard, { type EventPost } from "../../components/contentDisplaySection/eventContent"; 
+import EventCard, {
+  type EventPost,
+} from "../../components/contentDisplaySection/eventContent";
 
 interface EventContentProps {
   searchQuery: string;
@@ -12,9 +14,15 @@ export default function EventContent({ searchQuery }: EventContentProps) {
   const [searchError, setSearchError] = useState<boolean>(false);
 
   // Interaction States
-  const [commentClicked, setCommentClicked] = useState<{ [key: string]: boolean }>({});
-  const [notifyClicked, setNotifyClicked] = useState<{ [key: string]: boolean }>({});
-  const [savePostClicked, setSavePostClicked] = useState<{ [key: string]: boolean }>({});
+  const [commentClicked, setCommentClicked] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [notifyClicked, setNotifyClicked] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [savePostClicked, setSavePostClicked] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // Modal States
   const [activePostId, setActivePostId] = useState<string | null>(null);
@@ -66,7 +74,9 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     if (!activePostId) return;
 
     try {
-      const response = await api.post(`/events/${activePostId}/comments`, { text });
+      const response = await api.post(`/events/${activePostId}/comments`, {
+        text,
+      });
 
       if (response.status === 200) {
         const updatedComments = response.data;
@@ -75,7 +85,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
         setEventPosts((prevPosts) =>
           prevPosts.map((post) =>
             post._id === activePostId
-              ? { ...post, comments: updatedComments } 
+              ? { ...post, comments: updatedComments }
               : post
           )
         );
@@ -97,9 +107,9 @@ export default function EventContent({ searchQuery }: EventContentProps) {
   const activePostData = eventPosts.find((p) => p._id === activePostId);
 
   return (
-    <div className="flex flex-col w-full px-5 sm:px-0 max-w-4xl mx-auto">
+    <div className="flex flex-col w-full max-w-3xl mx-auto bg-gray-200 sm:bg-[#f1f3f7]">
       {searchError || (searchQuery && eventPosts.length === 0) ? (
-        <div className="flex justify-center py-10">
+        <div className="flex justify-center">
           <p className="font-semibold text-gray-500">
             No items found matching "{searchQuery}".
           </p>

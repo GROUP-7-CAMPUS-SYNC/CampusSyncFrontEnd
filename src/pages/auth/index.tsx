@@ -1,19 +1,16 @@
-import { useState } from "react"
-import CardContainer from "../../components/cardContainer"
-import Login from "../../pages/auth/login"
-import Register from "../auth/register"
-import WebsiteLogo from "../../assets/WebsiteLogo.png"
-import backgroudImage from '../../assets/landing-page-img-1.png'
-import backgroundImage2 from '../../assets/landing-page-img-2.png'
+import { useState } from "react";
+import CardContainer from "../../components/cardContainer";
+import Login from "../../pages/auth/login";
+import Register from "../auth/register";
+import WebsiteLogo from "../../assets/WebsiteLogo.png";
+import backgroudImage from "../../assets/landing-page-img-1.png";
+import backgroundImage2 from "../../assets/landing-page-img-2.png";
 
 export default function landingPage() {
-
-  const [userSignIn, setUserSignIn] = useState<boolean>(true)
+  const [userSignIn, setUserSignIn] = useState<boolean>(true);
 
   return (
-    <div
-      className="flex flex-row bg-[#1F1B4F] w-full h-full"
-    >
+    <div className="flex flex-row bg-[#1F1B4F] w-full h-full">
       {/* Left side - 50%*/}
       {/* 
         LEFT SIDE - LOGO AND BACKGROUND IMAGES
@@ -34,32 +31,26 @@ export default function landingPage() {
         - w-1/2: Takes up 50% of the parent container width
                  (only applies when the element is visible on lg screens)
       */}
-      <div
-        className="hidden lg:flex w-1/2 relative bg-white"
-      >
+      <div className="hidden lg:flex w-1/2 relative bg-white">
         {/** Background Image */}
-        <div
-          className="h-full w-full"
-        >            
+        <div className="h-full w-full">
           <img
-            className="h-1/2 w-full" 
+            className="h-1/2 w-full"
             src={backgroudImage}
-            alt="backgroud image 1" 
+            alt="backgroud image 1"
           />
-          <img 
+          <img
             className="h-1/2 w-full"
             src={backgroundImage2}
-            alt="backgroud image 2" 
+            alt="backgroud image 2"
           />
         </div>
 
-        <div
-          className="absolute inset-0 flex justify-center items-center"
-        >
-          <img 
+        <div className="absolute inset-0 flex justify-center items-center">
+          <img
             className="w-[30%] h-[30%]"
             src={WebsiteLogo}
-            alt="WebsiteLogo" 
+            alt="WebsiteLogo"
           />
         </div>
       </div>
@@ -88,63 +79,67 @@ export default function landingPage() {
         - items-center: Centers content vertically
         - h-full: Takes 100% of parent height
       */}
-      <div
-          className="w-full lg:w-1/2 flex justify-center items-center h-full"
-      >   
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center h-full sm:p-5">
         {userSignIn ? (
           <>
-            <div
-              className="flex flex-col justify-center items-center gap-y-2"
-            >
-              <h1 className="text-[#F9BF3B] sm:text-[45px] text-[35px] font-bold">CampusSync</h1>
-              <h3 className="sm:text-[32] text-[22px] font-bold text-white">Sign In</h3>
-              <CardContainer
-                cardContainerDesign="bg-white shadow-lg rounded-lg p-4 w-[300px] sm:w-[380px] md:w-[462px] lg:w-[500px]"
-              >
-                <Login/>
-              </CardContainer>
-              <h4 
-                className="text-white"
-                style={{fontFamily: 'Roboto, sans-serif'}}
-              >
-                Create an account?
-                <button 
-                  className="hover:text-[#F9BF3B] hover:underline cursor-pointer ml-1"
-                  onClick={() => setUserSignIn(false)}
-                >
-                  Sign Up
-                </button>
-              </h4>
+            <div className="flex flex-col justify-around items-center gap-y-2 w-full h-full sm:h-[50%] ">
+              <div className="h-full flex justify-center items-center">
+                <h1 className="text-[#F9BF3B] text-5xl font-bold mb-0 sm:mb-5">
+                  CampusSync
+                </h1>
+              </div>
+              <div className="w-full h-full flex flex-col justify-between items-center">
+                <CardContainer cardContainerDesign="bg-white sm:rounded-lg p-6 sm:w-[60%] w-full h-full rounded-t-2xl">
+                  <Login />
+                  <div className="text-center text-lg mt-12">
+                    <h4
+                      className="text-blue-800"
+                      style={{ fontFamily: "Roboto, sans-serif" }}
+                    >
+                      Create an account?
+                      <button
+                        className="hover:text-[#F9BF3B] hover:underline cursor-pointer ml-1 text-[#af841e] font-semibold"
+                        onClick={() => setUserSignIn(false)}
+                      >
+                        Sign Up
+                      </button>
+                    </h4>
+                  </div>
+                </CardContainer>
+              </div>
             </div>
           </>
         ) : (
           <>
-            <div
-              className="flex flex-col justify-center items-center gap-y-2"
-            >
-              <h1 className="text-[#F9BF3B] sm:text-[45px] text-[35px] font-bold">CampusSync</h1>
-              <h3 className="sm:text-[32] text-[22px] font-bold text-white">Sign Up</h3>
-              <CardContainer
-                  cardContainerDesign="bg-white shadow-lg rounded-lg p-4 min-w-[300px] sm:w-[380px] md:w-[462px] lg:w-[500px]"
-              >
-                  <Register/>
-              </CardContainer>
-              <h3 
-                className="text-white"
-                style={{fontFamily: 'Roboto, sans-serif'}}
-              >
-                Already have an account?
-                <button 
-                  className="hover:text-[#F9BF3B] hover:underline cursor-pointer ml-1"
-                  onClick={() => setUserSignIn(true)}
-                >
-                  Sign in
-                </button>
-              </h3>
+            <div className="flex flex-col justify-around items-center gap-y-2 w-full h-full sm:h-[70%] ">
+              <div className="h-full flex justify-center items-center">
+                <h1 className="text-[#F9BF3B] text-5xl font-bold mb-0 sm:mb-5">
+                  CampusSync
+                </h1>
+              </div>
+              <div className="w-full h-full flex flex-col justify-between items-center">
+                <CardContainer cardContainerDesign="flex flex-col bg-white sm:rounded-lg p-6 sm:w-[60%] w-full h-full rounded-t-2xl">
+                  <Register />
+                  <div className="text-center text-lg mt-14 sm:mt-5">
+                    <h4
+                      className="text-blue-800 "
+                      style={{ fontFamily: "Roboto, sans-serif" }}
+                    >
+                      Already have an account?
+                      <button
+                        className="hover:text-[#F9BF3B] hover:underline cursor-pointer ml-1 text-[#af841e] font-semibold"
+                        onClick={() => setUserSignIn(true)}
+                      >
+                        Sign in
+                      </button>
+                    </h4>
+                  </div>
+                </CardContainer>
+              </div>
             </div>
           </>
         )}
       </div>
     </div>
-  )
+  );
 }

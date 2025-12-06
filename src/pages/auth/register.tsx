@@ -9,12 +9,12 @@ import api from "../../api/api"
 import Modal from "../../components/modal"
 
 export default function Register() {
-  const [firstName, setFirstName] = useState<string>("")
-  const [lastName, setLastName] = useState<string>("")
-  const [course, setCourse] = useState<string>("")
-  const [email, setEmail] = useState<string>("")
-  const [password, setPassword] = useState<string>("")
-  const navigation = useNavigate()
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+  const [course, setCourse] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const navigation = useNavigate();
 
   // 🔹 Track if form has been submitted
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
@@ -39,19 +39,21 @@ export default function Register() {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormSubmitted(true)
+    e.preventDefault();
+    setFormSubmitted(true);
 
     // Basic Frontend Validation
-    if(firstName.trim() === "" || 
-        lastName.trim() === "" || 
-        course.trim() === "" || 
-        email.trim() === "" ||
-        password.trim() === "" ||
-        !email.endsWith("@1.ustp.edu.ph")
-      ) return
+    if (
+      firstName.trim() === "" ||
+      lastName.trim() === "" ||
+      course.trim() === "" ||
+      email.trim() === "" ||
+      password.trim() === "" ||
+      !email.endsWith("@1.ustp.edu.ph")
+    )
+      return;
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const payload = {
@@ -59,8 +61,8 @@ export default function Register() {
         lastname: lastName,   
         course,
         email,
-        password
-      }
+        password,
+      };
 
       const response = await api.post("/auth/register", payload)
 
@@ -77,6 +79,17 @@ export default function Register() {
       setLoginFlag() 
       navigation("/home")
 
+      // Store the token for future authenticated requests
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("firstName", response.data.user.firstname);
+      localStorage.setItem("lastName", response.data.user.lastname);
+      localStorage.setItem("course", response.data.user.course);
+      localStorage.setItem("email", response.data.user.email);
+      localStorage.setItem("profileLink", response.data.user.profileLink);
+      localStorage.setItem("role", response.data.user.role);
+
+      setLoginFlag(); // Keep your existing flag logic if needed
+      navigation("/home");
     } catch (error: any) {
       console.error("❌ Registration failed:", error)
       
@@ -107,9 +120,9 @@ export default function Register() {
       }
 
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-y-2  max-w-md mx-auto">
@@ -125,60 +138,44 @@ export default function Register() {
                   onChange={(e) => setFirstName(e.target.value)}
                   errorMessage="Please enter your first name"
                   showError={formSubmitted && firstName.trim() === ""}
-              />
+                />
 
-              <StringTextField
+                <StringTextField
                   label="Last Name"
                   placeholder="Backet"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   errorMessage="Please enter your last name"
                   showError={formSubmitted && lastName.trim() === ""}
-              />
+                />
 
-              <StringTextField
-                label="Course/Program"
-                placeholder="BSIT"
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                errorMessage="Please provide your course or program"
-                showError={formSubmitted && course.trim() === ""}
-              />
-              
-              <Button
-                type="button"
-                buttonText="Next"
-                onClick={handleFirstStep}
-              />
-            </div>
-          )}
-
-          {step === 2 && (
-            <>
-              <StringTextField
-                label="University Email"
-                placeholder="example@1.ustp.edu.ph"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                errorMessage="Please use your USTP student email"
-                showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
-              />
-
-              <StringTextField
-                type="password"
-                label="Password"
-                placeholder="******"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                errorMessage="Please create a password"
-                showError={formSubmitted && password.trim() === ""}
-              />
+                <StringTextField
+                  label="Course/Program"
+                  placeholder="BSIT"
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  errorMessage="Please provide your course or program"
+                  showError={formSubmitted && course.trim() === ""}
+                />
 
               <div className="flex justify-between gap-x-2">
                 <Button
                   type="button"
-                  buttonText="Back"
-                  onClick={() => setStep(1)}
+                  buttonText="Next"
+                  onClick={handleFirstStep}
+                />
+              </div>
+            )}
+
+            {step === 2 && (
+              <>
+                <StringTextField
+                  label="University Email"
+                  placeholder="example@1.ustp.edu.ph"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  errorMessage="Please use your USTP student email"
+                  showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
                 />
 
                 <Button

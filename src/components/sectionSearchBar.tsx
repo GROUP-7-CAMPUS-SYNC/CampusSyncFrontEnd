@@ -15,17 +15,16 @@ export default function SearchBar({
 }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState<boolean>(false);
 
-
   // Handle "Enter" key press (works on the Mobile "Go" button too)
-  const handleKeyDown = (e : React.KeyboardEvent<HTMLInputElement>) => {
-    if(e.key === "Enter" && onSearch) {
-      onSearch(value)
-      setIsFocused(false)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && onSearch) {
+      onSearch(value);
+      setIsFocused(false);
 
       // Optional: Remove focus from input to hide mobile keyboard
-      e.currentTarget.blur()
+      e.currentTarget.blur();
     }
-  }
+  };
 
   const handleRecentSearchClick = (term: string) => {
     const syntheticEvent = {
@@ -35,8 +34,8 @@ export default function SearchBar({
     onChange(syntheticEvent);
 
     // Trigger search immediately if clicked
-    if(onSearch){
-      onSearch(term)
+    if (onSearch) {
+      onSearch(term);
     }
     setIsFocused(false);
   };
@@ -68,7 +67,7 @@ export default function SearchBar({
       {isFocused && filteredSearches.length > 0 && !disable && (
         // MODIFIED: Replaced rounded-b-md with rounded-b-[5px] for pixel alignment
         <div
-          className={`absolute top-full overflow-y-auto left-0 mt-3.5 w-full bg-white shadow-lg rounded-b-[5px] border border-gray-200 z-20 no-scrollbar ${searchResultHeight}`}
+          className={`absolute top-full overflow-y-auto left-0 mt-3.5 w-full  shadow-lg rounded-b-[5px]  bg-white border border-gray-800 z-20 no-scrollbar ${searchResultHeight}`}
         >
           <ul className="py-1">
             <li className="px-4 py-2 text-xs text-gray-500 font-semibold sticky top-0 mb-1 bg-white">

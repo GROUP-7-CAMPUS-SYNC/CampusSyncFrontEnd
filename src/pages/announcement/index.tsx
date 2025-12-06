@@ -18,7 +18,7 @@ export default function Index() {
   const getRecentSearch = async () => {
     try {
       const response = await api.get("/recentSearch/recent?context=academic");
-      
+
       const searchStrings = response.data
         .map((item: any) => item.queryText)
         .filter((text: string) => text);
@@ -42,7 +42,7 @@ export default function Index() {
       try {
         const payload = {
           queryText: term,
-          searchContext: "academic" // ✅ Specific context
+          searchContext: "academic", // ✅ Specific context
         };
         await api.post("/recentSearch/log", payload);
         getRecentSearch(); // Refresh list immediately
@@ -84,21 +84,26 @@ export default function Index() {
         postButtonClick={() => validateUserIsAdmin()}
       />
 
-      {isPostClicked && (isUserIsHead ? (
-        // User is head, show the form
-        <CreatePost onClose={() => window.location.reload()} />
-      ) : (
-        // User is not head, show denial
-        <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-96 text-center">
-          <h1 className="text-xl font-bold mb-3 text-red-700">Access Denied</h1>
-          <p className="mb-4 text-gray-700">You must be the head of an organization to post academic content.</p>
-          <Button
-            type="button"
-            buttonText="Close"
-            onClick={() => setIsPostClicked(false)}
-          />
-        </Modal>
-      ))}
+      {isPostClicked &&
+        (isUserIsHead ? (
+          // User is head, show the form
+          <CreatePost onClose={() => window.location.reload()} />
+        ) : (
+          // User is not head, show denial
+          <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-96 text-center">
+            <h1 className="text-xl font-bold mb-3 text-red-700">
+              Access Denied
+            </h1>
+            <p className="mb-4 text-gray-700">
+              You must be the head of an organization to post academic content.
+            </p>
+            <Button
+              type="button"
+              buttonText="Close"
+              onClick={() => setIsPostClicked(false)}
+            />
+          </Modal>
+        ))}
 
       {/* ✅ Pass the submitted query to content */}
       <AcademicContent searchQuery={submittedQuery} />

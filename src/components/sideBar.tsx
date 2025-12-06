@@ -4,13 +4,13 @@ import {
   Calendar,
   GraduationCap,
   BookmarkPlus,
-  ChevronDown
 } from "lucide-react";
 import "../css/components/sideBar.css";
 import WebsiteLogo from "../components/navigationBar/websiteLogo";
 import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 
-export default function SideBar() { // Standard naming convention: Capitalize components
+export default function SideBar() {
+  // Standard naming convention: Capitalize components
   const navigation = useNavigate();
   const location = useLocation(); // Hook to get current URL path
 
@@ -18,24 +18,25 @@ export default function SideBar() { // Standard naming convention: Capitalize co
   const isActive = (path: string) => location.pathname === path;
 
   // Common class logic to avoid repetition
-  const getButtonClass = (path: string) => 
-    `logo-container ${isActive(path) ? "logo-container-current-page" : "md:hover:bg-gray-300"}`;
+  const getButtonClass = (path: string) =>
+    `logo-container ${
+      isActive(path) ? "logo-container-current-page" : "md:hover:bg-gray-300"
+    }`;
 
   return (
     <nav className="side-bar-container">
-      <div className="hidden md:flex justify-center items-center w-full mb-5">
+      <div className="hidden md:flex justify-around sm:justify-center items-center w-full mb-5">
         <WebsiteLogo profileDesign="w-[100px] h-[100px]" />
       </div>
       <ul className="list-item-container">
-        
         {/* Dashboard / Home */}
         <li>
           <button
             onClick={() => navigation("/home")}
-            className={getButtonClass("/home")} 
+            className={getButtonClass("/home")}
           >
             <Home className="logo-size" />
-            <p className="typograpy">Dashboard</p>
+            <p className="typograpy hidden sm:inline">Dashboard</p>
           </button>
         </li>
 
@@ -46,7 +47,7 @@ export default function SideBar() { // Standard naming convention: Capitalize co
             className={getButtonClass("/lost&found")}
           >
             <Search className="logo-size" />
-            <p className="typograpy">Lost & Found</p>
+            <p className="typograpy hidden sm:inline">Lost & Found</p>
           </button>
         </li>
 
@@ -58,10 +59,7 @@ export default function SideBar() { // Standard naming convention: Capitalize co
           >
             <Calendar className="logo-size" />
             <div className="flex flex-row justify-between w-full items-center typograpy">
-              <p>Event</p>
-              <p className="hidden md:block">
-                <ChevronDown />
-              </p>
+              <p className="hidden sm:inline">Event</p>
             </div>
           </button>
         </li>
@@ -73,7 +71,7 @@ export default function SideBar() { // Standard naming convention: Capitalize co
             className={getButtonClass("/academic")}
           >
             <GraduationCap className="logo-size" />
-            <p className="typograpy">Academic</p>
+            <p className="typograpy hidden sm:inline">Academic</p>
           </button>
         </li>
 
@@ -84,10 +82,9 @@ export default function SideBar() { // Standard naming convention: Capitalize co
             className={getButtonClass("/save")}
           >
             <BookmarkPlus className="logo-size" />
-            <p className="typograpy">Save</p>
+            <p className="typograpy hidden sm:inline">Save</p>
           </button>
         </li>
-
       </ul>
     </nav>
   );

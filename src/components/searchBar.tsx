@@ -7,11 +7,11 @@ interface ExtendedSearchBarProps extends SearchBarProps {
 }
 
 export default function SearchBar({
-  searchBarContainerDesign = "relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh]  w-[30vw]",
+  searchBarContainerDesign = "relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh] w-[40vw] md:[30vw] lg:w-[20vw]  rounded-full ",
   value,
   onChange,
   onSearch,
-  searchBarDesign = "bg-transparent focus:outline-none w-full placeholder:text-gray-600",
+  searchBarDesign = "bg-transparent focus:outline-none w-full placeholder:text-gray-600 ",
   placeholder,
   disable,
   searchResultHeight = "max-h-60",
@@ -35,8 +35,8 @@ export default function SearchBar({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && onSearch) {
-        onSearch(value);
-        setIsFocused(false);
+      onSearch(value);
+      setIsFocused(false);
     }
   };
 
@@ -46,11 +46,7 @@ export default function SearchBar({
   );
 
   return (
-    <div
-      className={`${searchBarContainerDesign} ${
-        isFocused ? "rounded-t-[5px]" : "rounded-[5px]"
-      }`}
-    >
+    <div className={searchBarContainerDesign}>
       <Search className="h-5 w-5 text-gray-500 shrink-0" />
       <input
         className={searchBarDesign}
@@ -67,7 +63,7 @@ export default function SearchBar({
       {/* --- Recent Searches Dropdown --- */}
       {isFocused && filteredSearches.length > 0 && !disable && (
         <div
-          className={`absolute top-full overflow-y-auto left-0 w-full bg-white shadow-lg rounded-b-[5px] border border-gray-200 z-50 no-scrollbar ${searchResultHeight}`}
+          className={`absolute top-full mt-1 overflow-y-auto left-0 w-full bg-white shadow-lg rounded-b-[5px]  border-gray-200 z-50 no-scrollbar ${searchResultHeight}`}
         >
           <ul className="py-1">
             <li className="px-4 py-2 text-xs text-gray-500 font-semibold sticky top-0 mb-1 bg-white">

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react"
-import type { TextFieldProps } from "../types/stringTextFiled"
+import { useState, useEffect } from "react";
+import type { TextFieldProps } from "../types/stringTextFiled";
 
 export default function StringTextField({
-  inputContainerDesign = "flex flex-col gap-1",
-  inputDesign = "border border-gray-400 rounded-[5px] px-3 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400",
+  inputContainerDesign = "flex flex-col gap-1 ",
+  inputDesign = "border border-gray-400 rounded-lg px-5 py-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-400",
   label,
   labelDesing = "text-sm text-gray-700",
   value,
@@ -26,37 +26,36 @@ export default function StringTextField({
   inputRef,
   showError: externalShowError = false, // from parent (optional)
 }: TextFieldProps) {
-
   // 🔹 Local states for managing input and validation
-  const [inputValue, setInputValue] = useState<string>(value)
-  const [internalError, setInternalError] = useState<boolean>(false)
+  const [inputValue, setInputValue] = useState<string>(value);
+  const [internalError, setInternalError] = useState<boolean>(false);
 
   // 🔹 Combined error state — internal + external
-  const showError = internalError || externalShowError
+  const showError = internalError || externalShowError;
 
   // 🔹 Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    setInputValue(val)
-    onChange(e)
+    const val = e.target.value;
+    setInputValue(val);
+    onChange(e);
 
     // Hide error if user starts typing something valid
     if (required && val.trim() !== "") {
-      setInternalError(false)
+      setInternalError(false);
     }
-  }
+  };
 
   // 🔹 Handle when input loses focus (onBlur)
   const handleBlur = () => {
     if (required && inputValue.trim() === "") {
-      setInternalError(true)
+      setInternalError(true);
     }
-  }
+  };
 
   // 🔹 Keep value updated when parent changes it
   useEffect(() => {
-    setInputValue(value)
-  }, [value])
+    setInputValue(value);
+  }, [value]);
 
   return (
     <div className={inputContainerDesign}>
@@ -98,8 +97,13 @@ export default function StringTextField({
       {/* {showError && (
         <p className={errorMessageDesign}>{errorMessage}</p>
       )} */}
-      <p className={`${errorMessageDesign} ${showError ? "text-red-500" : "text-white"}` }>{errorMessage}</p>
-
+      <p
+        className={`${errorMessageDesign} ${
+          showError ? "text-red-500" : "text-white"
+        }`}
+      >
+        {errorMessage}
+      </p>
     </div>
-  )
+  );
 }

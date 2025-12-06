@@ -103,7 +103,60 @@ export default function login() {
         }finally{
             setIsLoading(false)
         }
+      } catch (error: any) {
+        localStorage.clear();
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+
+    if (
+      email.trim() === "" ||
+      password.trim() === "" ||
+      !email.endsWith("@1.ustp.edu.ph")
+    )
+      return;
+    setLoginFlag();
+
+    setIsLoading(true);
+    try {
+      const payload = {
+        email,
+        password,
+      };
+
+      const response = await api.post("/auth/login", payload);
+      console.log("✅ Login successful:", response.data);
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("firstName", response.data.user.firstname);
+      localStorage.setItem("lastName", response.data.user.lastname);
+      localStorage.setItem("course", response.data.user.course);
+      localStorage.setItem("email", response.data.user.email);
+      localStorage.setItem("profileLink", response.data.user.profileLink);
+      localStorage.setItem("role", response.data.user.role);
+
+      if (response.data.user.role === "moderator") {
+        navigation("/moderator");
+      } else {
+        navigation("/home");
+      }
+    } catch (error: any) {
+      console.error("❌ Registration failed:", error);
+
+      // Extract error message from backend response
+      const errorMessage =
+        error.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      alert(errorMessage); // Professional Tip: Replace with a toast notification later
+    } finally {
+      setIsLoading(false);
     }
+  };
 
   return (
    <form  onSubmit={handleSubmit} action="" className="flex flex-col gap-y-2  max-w-md mx-auto">
