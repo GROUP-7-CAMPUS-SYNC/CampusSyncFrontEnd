@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"; // Added useEffect
 import {
   MapPin,
   CalendarDays,
@@ -5,8 +6,10 @@ import {
   Calendar,
   Users,
   User,
+  AlertCircle,
 } from "lucide-react";
 import SaveButton from "./saveButton";
+import api from "../../api/api"; // Added API import
 
 // --- Types ---
 export interface EventPost {
@@ -35,7 +38,6 @@ interface EventCardProps {
   isNotify?: boolean;
   isCommentOpen?: boolean;
   commentCount?: number;
-  // Actions
   onToggleSave?: (id: string) => void;
   onToggleNotify?: (id: string) => void;
   onCommentClick?: (id: string, postedBy: any) => void;
@@ -76,6 +78,63 @@ export default function EventCard({
   onToggleNotify,
   onCommentClick,
 }: EventCardProps) {
+  
+  // 1. Local State for Notify (Optimistic UI)
+  const [localIsNotify, setLocalIsNotify] = useState(isNotify);
+  
+  // 2. State for Error Handling
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // 3. Effect to fetch specific notify status for this user/post
+  useEffect(() => {
+    const fetchNotifyStatus = async () => {
+      try {
+        if (!post._id) return;
+        const response = await api.get(`/events/get_notify_status/${post._id}`);
+        setLocalIsNotify(response.data.isSubscribed);
+      } catch (error) {
+        console.log("Error fetching notify status:", error);
+      }
+    };
+
+    fetchNotifyStatus();
+  }, [post._id]);
+
+  // 4. Notify Toggle Handler (Logic from your previous code)
+  const handleToggleNotify = async () => {
+    // Store previous state in case we need to revert
+    const previousState = localIsNotify;
+
+    try {
+      // Optimistic UI Update (Switch immediately for speed)
+      setLocalIsNotify(!localIsNotify);
+      
+      const response = await api.put(`/events/toggle_notify/${post._id}`);
+      
+      // If success, update with server truth
+      if(response.data.isSubscribed !== undefined) {
+         setLocalIsNotify(response.data.isSubscribed);
+      }
+
+      // Call parent prop if exists
+      if (onToggleNotify) {
+        onToggleNotify(post._id);
+      }
+
+    } catch (error: any) {
+      console.log(error);
+
+      // Revert the optimistic update (toggle back)
+      setLocalIsNotify(previousState);
+
+      // Extract error message from backend response
+      const serverMessage = error.response?.data?.message || "Something went wrong. Please try again.";
+      
+      // Trigger the Modal
+      setErrorMessage(serverMessage);
+    }
+  };
+
   const hasOrg = !!post.organization;
   const avatarSrc = hasOrg ? post.organization?.profileLink : null;
   const postedByName = post.postedBy
@@ -87,149 +146,178 @@ export default function EventCard({
   const timeDisplay = post.createdAt ? timeAgo(post.createdAt) : "Just now";
 
   return (
-    <div className="mb-0.5 sm:mb-5 flex flex-col gap-5 shadow-sm bg-white p-4 sm:rounded-xl ">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-3 items-center">
-          <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
-            {avatarSrc ? (
-              <img
-                src={avatarSrc}
-                alt="avatar"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <User className="text-gray-400" size={24} />
-            )}
-          </div>
-          <div className="flex flex-col">
-            <p className="font-semibold text-base sm:text-lg text-black">
-              {displayTitle}
-            </p>
-            <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
-              {hasOrg && <span>Posted by {postedByName} •</span>}
-              <span>{timeDisplay}</span>
+    <>
+      <div className="mb-0.5 sm:mb-5 flex flex-col gap-5 shadow-sm bg-white p-4 sm:rounded-xl ">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex gap-3 items-center">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full border border-gray-200 overflow-hidden flex items-center justify-center bg-gray-50">
+              {avatarSrc ? (
+                <img
+                  src={avatarSrc}
+                  alt="avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="text-gray-400" size={24} />
+              )}
             </div>
-          </div>
-        </div>
-        <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
-          {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
-        </span>
-      </div>
-
-      {/* Image */}
-      <div className="w-full rounded-lg overflow-hidden bg-gray-200 border border-gray-100">
-        {post.image ? (
-          <img
-            src={post.image}
-            alt="event preview"
-            className="w-full h-auto object-cover max-h-[500px]"
-            loading="lazy"
-          />
-        ) : (
-          <span className="text-gray-400 text-sm">No Image Available</span>
-        )}
-      </div>
-
-      {/* Details Grid */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-          <p className="text-[#4B4D51] text-sm font-semibold">Event Name:</p>
-          <p className="text-sm sm:text-base font-medium">
-            {post.eventName || "N/A"}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
             <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">Start:</p>
-              <p className="text-sm sm:text-base font-medium">
-                {formatDateTime(post.startDate)}
+              <p className="font-semibold text-base sm:text-lg text-black">
+                {displayTitle}
               </p>
+              <div className="text-gray-500 text-xs sm:text-sm flex flex-wrap gap-1">
+                {hasOrg && <span>Posted by {postedByName} •</span>}
+                <span>{timeDisplay}</span>
+              </div>
             </div>
           </div>
-          <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
-            <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">End:</p>
-              <p className="text-sm sm:text-base font-medium">
-                {formatDateTime(post.endDate)}
-              </p>
-            </div>
-          </div>
+          <span className="inline-flex items-center bg-[#FEF9C3] px-3 py-2 sm:px-4 rounded-xl text-[#BC8019] text-sm sm:text-base font-medium sm:font-semibold">
+            {post.type.charAt(0).toUpperCase() + post.type.slice(1)}
+          </span>
         </div>
 
-        <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-          <MapPin className="text-red-500 w-6 h-6 shrink-0" />
-          <div className="flex flex-col">
-            <p className="text-[#4B4D51] text-sm font-semibold">Location:</p>
+        {/* Image */}
+        <div className="w-full rounded-lg overflow-hidden bg-gray-200 border border-gray-100">
+          {post.image ? (
+            <img
+              src={post.image}
+              alt="event preview"
+              className="w-full h-auto object-cover max-h-[500px]"
+              loading="lazy"
+            />
+          ) : (
+            <span className="text-gray-400 text-sm">No Image Available</span>
+          )}
+        </div>
+
+        {/* Details Grid */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+            <p className="text-[#4B4D51] text-sm font-semibold">Event Name:</p>
             <p className="text-sm sm:text-base font-medium">
-              {post.location || "N/A"}
+              {post.eventName || "N/A"}
             </p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">Start:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {formatDateTime(post.startDate)}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <CalendarDays className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">End:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {formatDateTime(post.endDate)}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <Users className="text-blue-500 w-6 h-6 shrink-0" />
+            <MapPin className="text-red-500 w-6 h-6 shrink-0" />
             <div className="flex flex-col">
-              <p className="text-[#4B4D51] text-sm font-semibold">Open To:</p>
+              <p className="text-[#4B4D51] text-sm font-semibold">Location:</p>
               <p className="text-sm sm:text-base font-medium">
-                {post.openTo || "N/A"}
+                {post.location || "N/A"}
               </p>
             </div>
           </div>
-          <div className="flex flex-col justify-center bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
-            <p className="text-[#4B4D51] text-sm font-semibold">Course:</p>
-            <p className="text-sm sm:text-base font-medium">
-              {post.course || "N/A"}
-            </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-row items-center gap-2 bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <Users className="text-blue-500 w-6 h-6 shrink-0" />
+              <div className="flex flex-col">
+                <p className="text-[#4B4D51] text-sm font-semibold">Open To:</p>
+                <p className="text-sm sm:text-base font-medium">
+                  {post.openTo || "N/A"}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-col justify-center bg-[#EFF6FF] px-2 sm:px-4 py-2 rounded-lg">
+              <p className="text-[#4B4D51] text-sm font-semibold">Course:</p>
+              <p className="text-sm sm:text-base font-medium">
+                {post.course || "N/A"}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="flex flex-col gap-y-2">
-        <button
-          className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
-          onClick={() => onCommentClick?.(post._id, post.postedBy)}
-        >
-          {commentCount} comments
-        </button>
-        <hr className="border-gray-200" />
-
-        <div className="flex flex-row gap-x-5 sm:gap-x-0 sm:justify-around pt-2">
-          {/* Notify */}
+        {/* Actions */}
+        <div className="flex flex-col gap-y-2">
           <button
-            className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${
-              isNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
-            }`}
-            onClick={() => onToggleNotify?.(post._id)}
-          >
-            <Calendar className={isNotify ? "text-[#F9BF3B]" : ""} />
-            <span className="sm:block hidden font-medium">Notify Me</span>
-          </button>
-
-          {/* Comment */}
-          <button
-            className="flex flex-row items-center gap-2 cursor-pointer transition-colors text-gray-600 hover:text-black"
+            className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
             onClick={() => onCommentClick?.(post._id, post.postedBy)}
           >
-            <MessageCircle />
-            <span className="sm:block hidden font-medium">Comment</span>
+            {commentCount} comments
           </button>
+          <hr className="border-gray-200" />
 
-          {/* UPDATED SAVE BUTTON */}
-          <SaveButton
-            postId={post._id}
-            postType="event"
-            initialIsSaved={isSaved}
-            onToggle={() => onToggleSave?.(post._id)}
-          />
+          <div className="flex flex-row gap-x-5 sm:gap-x-0 sm:justify-around pt-2">
+            {/* Notify Button - Updated to use local state and handler */}
+            <button
+              className={`flex flex-row items-center gap-2 cursor-pointer transition-colors ${
+                localIsNotify ? "text-[#F9BF3B]" : "text-gray-600 hover:text-black"
+              }`}
+              onClick={handleToggleNotify}
+            >
+              <Calendar className={localIsNotify ? "text-[#F9BF3B]" : ""} />
+              <span className="sm:block hidden font-medium">Notify Me</span>
+            </button>
+
+            {/* Comment */}
+            <button
+              className="flex flex-row items-center gap-2 cursor-pointer transition-colors text-gray-600 hover:text-black"
+              onClick={() => onCommentClick?.(post._id, post.postedBy)}
+            >
+              <MessageCircle />
+              <span className="sm:block hidden font-medium">Comment</span>
+            </button>
+
+            {/* Save Button */}
+            <SaveButton
+              postId={post._id}
+              postType="event"
+              initialIsSaved={isSaved}
+              onToggle={() => onToggleSave?.(post._id)}
+            />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* --- ERROR MODAL --- */}
+      {errorMessage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full p-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 text-red-600 mb-4">
+              <AlertCircle size={28} />
+              <h3 className="text-lg font-bold text-gray-900">
+                Notification Failed
+              </h3>
+            </div>
+
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              {errorMessage}
+            </p>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => setErrorMessage(null)}
+                className="bg-gray-900 hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

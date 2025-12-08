@@ -8,8 +8,7 @@ import LogoHoverMessage from "./logoHoverMessage";
 import NotificationClickModal from "./notification/notificationClickModal";
 import LogoutModal from "./logout";
 import { useScreenSize } from "../../hooks/useScreenSize";
-import { Search, ChevronDown, ChevronUp, ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Search, ChevronDown, ArrowLeft } from "lucide-react";
 import api from "../../api/api";
 import GlobalSearchModal from "./globalSearchModal";
 
@@ -34,7 +33,6 @@ export default function NavigationContainer() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [submittedQuery, setSubmittedQuery] = useState("");
 
-  const navigation = useNavigate();
   const isSmallScreen = useScreenSize(400);
 
   // Refs

@@ -28,7 +28,6 @@ export default function CommentModal({
   onClose,
   comments = [],
   onAddComment,
-
 }: CommentProps) {
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
