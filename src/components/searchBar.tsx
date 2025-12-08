@@ -7,7 +7,7 @@ interface ExtendedSearchBarProps extends SearchBarProps {
 }
 
 export default function SearchBar({
-  searchBarContainerDesign = "relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh] w-[40vw] md:[30vw] lg:w-[20vw]  rounded-full ",
+  searchBarContainerDesign = "relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh] w-[40vw] md:[30vw] lg:w-[20vw] rounded-full ",
   value,
   onChange,
   onSearch,
