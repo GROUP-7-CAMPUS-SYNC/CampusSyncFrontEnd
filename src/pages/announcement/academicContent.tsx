@@ -130,9 +130,9 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
         <CommentModal
           postId={activePostId}
           postedBy={activeUser}
-          comments={activePostData?.comments || []} // ✅ Pass real comments
+          comments={activePostData?.comments || []} // Pass real comments
           onClose={closeCommentModal}
-          onAddComment={handleAddComment} // ✅ Connect handler
+          onAddComment={handleAddComment} // Connect handler
         />
       )}
     </div>
