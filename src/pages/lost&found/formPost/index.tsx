@@ -55,6 +55,10 @@ export default function index({ onClose, initialData }: CreatePostProps) {
     initialData?.dateLostOrFound ? formatForInput(initialData.dateLostOrFound) : ""
   );
 
+  const [formPostError, setFormPostError] = useState<boolean>(false);
+  const [formPostErrorMessage, setFormPostErrorMessage] = useState<string>("");
+
+
   const [image, setImage] = useState<File | null>(null);
   
   // Store the existing image URL to show preview in edit mode
@@ -195,9 +199,11 @@ export default function index({ onClose, initialData }: CreatePostProps) {
       } else {
           setIsSubmitting(false);
       }
-    } catch (error) {
+    } catch (error : any) {
       console.log(error);
       setIsSubmitting(false);
+      setFormPostError(true);
+      setFormPostErrorMessage(error.response.data.message);
     }
   };
 
@@ -380,6 +386,18 @@ export default function index({ onClose, initialData }: CreatePostProps) {
              {isEditMode ? "Updating..." : "Submitting..."}
           </h3>
           <p className="text-gray-500 text-sm mt-2">Please wait...</p>
+        </Modal>
+      )}
+
+      {/* API Submission Error Modal */}
+      {formPostError && (
+        <Modal>
+           <div className="text-center flex flex-col items-center justify-center p-4">
+              <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+              <h2 className="text-xl font-bold text-gray-800 mb-2">Submission Failed</h2>
+              <p className="text-gray-600 mb-6">{formPostErrorMessage}</p>
+              <Button type="button" buttonText="Close" onClick={() => window.location.reload()} />
+            </div>
         </Modal>
       )}
     </>
