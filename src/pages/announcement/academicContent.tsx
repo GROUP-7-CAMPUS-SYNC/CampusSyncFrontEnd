@@ -3,7 +3,7 @@ import api from "../../api/api";
 import CommentModal from "../../components/contentDisplaySection/comment";
 import AcademicCard, {
   type AcademicPost,
-} from "../../components/contentDisplaySection/academicContent";
+} from "../../components/contentDisplaySection/academicContent/academicContent";
 
 interface AcademicContentProps {
   searchQuery: string;

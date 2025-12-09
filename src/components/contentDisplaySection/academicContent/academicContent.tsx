@@ -1,5 +1,12 @@
-import { MessageCircle, User } from "lucide-react";
-import SaveButton from "./saveButton";
+import { useState, useEffect, useRef } from "react";
+import { MessageCircle, User, XCircleIcon } from "lucide-react";
+import SaveButton from "../saveButton";
+import api from "../../../api/api";
+import Modal from "../../modal"; // Ensure path is correct
+import Button from "../../button"; // Ensure path is correct
+
+// Import the dropdown
+import PostOptionDropDown from "./postOptionDropdown";
 
 // --- Types ---
 export interface AcademicPost {
@@ -50,10 +57,50 @@ function timeAgo(dateString: string) {
 export default function AcademicCard({
   post,
   isSaved = false,
-
   onToggleSave,
   onCommentClick,
 }: AcademicCardProps) {
+  
+  // Modals / Errors
+  const [errorModal, setErrorModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  // Dropdown State
+  const [userClickDropDown, setUserClickDropDown] = useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Click Outside Logic for Dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserClickDropDown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+  // --- DELETE POST LOGIC ---
+  const deletePost = async () => {
+    try {
+      const response = await api.delete(`/academic/delete/${post._id}`);
+
+      if (response.status === 200) {
+        window.location.reload();
+      }
+    } catch (error: any) {
+      setErrorMessage(
+        error.response?.data?.message || "Failed to delete academic post."
+      );
+      setErrorModal(true);
+    }
+  };
+
   const orgName = post.organization?.organizationName || "Unknown Organization";
   const orgImage = post.organization?.profileLink;
   const posterName = post.postedBy
@@ -64,8 +111,7 @@ export default function AcademicCard({
   return (
     <div className="bg-white sm:rounded-xl shadow-sm p-5 mb-0.5 sm:mb-5">
       {/* HEADER */}
-
-      <div className="flex justify-between items-start mb-4">
+      <div className="flex justify-between items-start mb-4 relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border border-black/20">
             {orgImage ? (
@@ -87,10 +133,33 @@ export default function AcademicCard({
           </div>
         </div>
 
-        <span className="inline-flex items-center bg-[#60A5FA] text-white text-sm sm:text-base font-medium sm:font-semibold px-3 py-2 sm:px-4 rounded-xl ">
-          {post.type || "Academic"}
-        </span>
+        {/* Right Side: 3 Dots + Badge */}
+        <div className="flex items-center gap-4">
+            
+            {/* Dropdown Container */}
+            <div className="relative" ref={dropdownRef}>
+                <button 
+                  className="text-gray-500 cursor-pointer hover:text-black p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  onClick={() => setUserClickDropDown(!userClickDropDown)}
+                >
+                    •••
+                </button>
+
+                {/* Dropdown Logic */}
+                {userClickDropDown && (
+                    <PostOptionDropDown
+                        onClose={() => setUserClickDropDown(false)}
+                        onDeleteClick={() => deletePost()}
+                    />
+                )}
+            </div>
+
+            <span className="inline-flex items-center bg-[#60A5FA] text-white text-sm sm:text-base font-medium sm:font-semibold px-3 py-2 sm:px-4 rounded-xl ">
+            {post.type || "Academic"}
+            </span>
+        </div>
       </div>
+
       {/* CONTENT BODY */}
       <div className="mb-4">
         <h4 className="font-bold text-lg text-gray-800 mb-2">{post.title}</h4>
@@ -109,6 +178,7 @@ export default function AcademicCard({
           />
         </div>
       )}
+      
       <div className="flex justify-end ">
         <button
           className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black mb-2"
@@ -118,6 +188,7 @@ export default function AcademicCard({
         </button>
       </div>
       <hr className="border-gray-200" />
+      
       {/* FOOTER ACTIONS */}
       <div className="flex items-center gap-x-5sm:gap-x-0 sm:justify-around pt-3 ">
         <button
@@ -136,6 +207,22 @@ export default function AcademicCard({
           onToggle={() => onToggleSave?.(post._id)}
         />
       </div>
+
+      {/* --- ERROR MODAL --- */}
+      {errorModal && (
+        <Modal>
+          <div className="text-center flex flex-col items-center justify-center p-4">
+            <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Error</h2>
+            <p className="text-gray-600 mb-6">{errorMessage}</p>
+            <Button
+              type="button"
+              buttonText="Close"
+              onClick={() => setErrorModal(false)}
+            />
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import EventCard, {
 } from "../contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
-} from "../contentDisplaySection/academicContent";
+} from "../contentDisplaySection/academicContent/academicContent";
 import LostFoundCard, {
   type ReportItem,
 } from "../contentDisplaySection/lostFoundContent/lostfoundContent";
