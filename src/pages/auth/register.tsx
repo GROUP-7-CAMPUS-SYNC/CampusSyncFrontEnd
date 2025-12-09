@@ -8,6 +8,13 @@ import { useNavigate } from "react-router-dom"
 import api from "../../api/api"
 import Modal from "../../components/modal"
 
+// Match strict values from User Model and Controller
+const ALLOWED_COURSES = [
+  "BS Civil Engineering",
+  "BS Information Technology",
+  "BS Computer Science",
+  "BS Food Technology"
+];
 
 export default function Register() {
   const [firstName, setFirstName] = useState<string>("")
@@ -17,24 +24,19 @@ export default function Register() {
   const [password, setPassword] = useState<string>("")
   const navigation = useNavigate()
 
-
   // 🔹 Track if form has been submitted
   const [formSubmitted, setFormSubmitted] = useState<boolean>(false)
-   
+    
   // 🔹 Loading state
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
-
   // 🔹 Error Handling State
-  // Changed type to React.ReactNode to allow rendering JSX (lists) inside the modal
   const [errorMessage, setErrorMessage] = useState<React.ReactNode | null>(null)
   const [registrationError, setRegistrationError] = useState<boolean>(false)
-
 
   // Screen detection
   const [step, setStep] = useState<number>(1)
   const isSmallScreen = useScreenSize(640)
-
 
   const handleFirstStep = () => {
     setFormSubmitted(true)
@@ -43,24 +45,20 @@ export default function Register() {
     setStep(2)
   }
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormSubmitted(true)
 
-
     // Basic Frontend Validation
     if(firstName.trim() === "" ||
-        lastName.trim() === "" ||
-        course.trim() === "" ||
-        email.trim() === "" ||
-        password.trim() === "" ||
-        !email.endsWith("@1.ustp.edu.ph")
+       lastName.trim() === "" ||
+       course.trim() === "" ||
+       email.trim() === "" ||
+       password.trim() === "" ||
+       !email.endsWith("@1.ustp.edu.ph")
       ) return
 
-
     setIsLoading(true)
-
 
     try {
       const payload = {
@@ -71,12 +69,10 @@ export default function Register() {
         password
       }
 
-
       const response = await api.post("/auth/register", payload)
 
-
       console.log("✅ Registration successful:", response.data)
-     
+      
       localStorage.setItem("authToken", response.data.token)
       localStorage.setItem("firstName", response.data.user.firstname)
       localStorage.setItem("lastName", response.data.user.lastname)
@@ -84,20 +80,17 @@ export default function Register() {
       localStorage.setItem("email", response.data.user.email)
       localStorage.setItem("profileLink", response.data.user.profileLink)
       localStorage.setItem("role", response.data.user.role)
-     
+      
       setLoginFlag()
       navigation("/home")
 
-
     } catch (error: any) {
       console.error("❌ Registration failed:", error)
-     
+      
       const resData = error.response?.data
       setRegistrationError(true)
 
-
       // 🔹 Tailored Error Logic
-      // Check if the backend sent a list of allowed courses
       if (resData?.allowedCourses && Array.isArray(resData.allowedCourses)) {
         setErrorMessage(
             <div className="w-full">
@@ -115,20 +108,44 @@ export default function Register() {
             </div>
         )
       } else {
-        // Default generic error
         setErrorMessage(resData?.message || "Something went wrong. Please try again.")
       }
-
 
     } finally {
       setIsLoading(false)
     }
   }
 
+  // Reusable Select Component Logic to avoid code duplication in render
+  const renderCourseSelect = () => (
+    <div className="flex flex-col gap-1 w-full">
+      <label className="text-sm font-medium text-gray-700">Course/Program</label>
+      <div className="relative">
+        <select
+            value={course}
+            onChange={(e) => setCourse(e.target.value)}
+            className={`w-full p-2 border rounded-md outline-none transition-all duration-200 appearance-none bg-white 
+              ${formSubmitted && course === "" ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-[#1F1B4F]"}
+            `}
+        >
+            <option value="" disabled>Select your program</option>
+            {ALLOWED_COURSES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+            ))}
+        </select>
+        {/* Custom arrow pointer to make it look cleaner */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+          <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+        </div>
+      </div>
+      {formSubmitted && course === "" && (
+          <span className="text-xs text-red-500 mt-1">Please provide your course or program</span>
+      )}
+    </div>
+  )
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-y-2  max-w-md mx-auto">
-
 
       {isSmallScreen ? (
         <>
@@ -143,7 +160,6 @@ export default function Register() {
                   showError={formSubmitted && firstName.trim() === ""}
               />
 
-
               <StringTextField
                   label="Last Name"
                   placeholder="Backet"
@@ -153,16 +169,9 @@ export default function Register() {
                   showError={formSubmitted && lastName.trim() === ""}
               />
 
-
-              <StringTextField
-                label="Course/Program"
-                placeholder="BSIT"
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                errorMessage="Please provide your course or program"
-                showError={formSubmitted && course.trim() === ""}
-              />
-             
+              {/* 🔹 Dropdown Replacement for Mobile Step 1 */}
+              {renderCourseSelect()}
+              
               <Button
                 type="button"
                 buttonText="Next"
@@ -170,7 +179,6 @@ export default function Register() {
               />
             </div>
           )}
-
 
           {step === 2 && (
             <>
@@ -183,7 +191,6 @@ export default function Register() {
                 showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
               />
 
-
               <StringTextField
                 type="password"
                 label="Password"
@@ -194,14 +201,12 @@ export default function Register() {
                 showError={formSubmitted && password.trim() === ""}
               />
 
-
               <div className="flex justify-between gap-x-2">
                 <Button
                   type="button"
                   buttonText="Back"
                   onClick={() => setStep(1)}
                 />
-
 
                 <Button
                   type="submit"
@@ -223,7 +228,6 @@ export default function Register() {
                     showError={formSubmitted && firstName.trim() === ""}
                 />
 
-
                 <StringTextField
                     label="Last Name"
                     placeholder="Backet"
@@ -234,16 +238,8 @@ export default function Register() {
                 />
             </div>
 
-
-          <StringTextField
-            label="Course/Program"
-            placeholder="BSIT"
-            value={course}
-            onChange={(e) => setCourse(e.target.value)}
-            errorMessage="Please provide your course or program"
-            showError={formSubmitted && course.trim() === ""}
-          />
-
+          {/* 🔹 Dropdown Replacement for Desktop View */}
+          {renderCourseSelect()}
 
           <StringTextField
             label="University Email"
@@ -253,7 +249,6 @@ export default function Register() {
             errorMessage="Please enter a valid university email"
             showError={formSubmitted && !email.endsWith("@1.ustp.edu.ph")}
           />
-
 
           <StringTextField
             type="password"
@@ -265,7 +260,6 @@ export default function Register() {
             showError={formSubmitted && password.trim() === ""}
           />
 
-
           <Button
             type="submit"
             buttonText={isLoading ? "Signing Up..." : "Sign Up"}
@@ -274,14 +268,12 @@ export default function Register() {
         </>
       )}
 
-
       {/* 🔹 Modal Implementation */}
       {registrationError && (
         <Modal>
             <div className="flex justify-center items-center flex-col gap-4 p-2 w-full">
-                {/* Error message is now dynamic (can be text or a complex list) */}
                 {errorMessage}
-               
+                
                 <Button
                     type="button"
                     buttonText="Close"
@@ -293,4 +285,3 @@ export default function Register() {
     </form>
   )
 }
-
