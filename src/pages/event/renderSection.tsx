@@ -1,7 +1,7 @@
 import TopBar from "../../components/navigationBar/index"
 import SideBar from "../../components/sideBar"
 import Event from "./index"
-
+import MessageBubble from "../../components/privateChat/itemUserMessage"
 
 export default function index() {
 
@@ -18,6 +18,10 @@ export default function index() {
             >
                 <TopBar/>
 
+                <div className="fixed right-6 top-[80%] z-50">
+                    <MessageBubble />
+                </div>
+                
                 <Event/>
             </main>
         </div>
