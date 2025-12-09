@@ -5,13 +5,13 @@ import { BookmarkX, Loader2 } from "lucide-react";
 // --- Import Reusable Cards & Types ---
 import EventCard, {
   type EventPost,
-} from "../../components/contentDisplaySection/eventContent";
+} from "../../components/contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
-} from "../../components/contentDisplaySection/academicContent";
+} from "../../components/contentDisplaySection/academicContent/academicContent";
 import LostFoundCard, {
   type ReportItem,
-} from "../../components/contentDisplaySection/lostfoundContent";
+} from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
 import CommentModal from "../../components/contentDisplaySection/comment";
 
 // Unified Type Definition

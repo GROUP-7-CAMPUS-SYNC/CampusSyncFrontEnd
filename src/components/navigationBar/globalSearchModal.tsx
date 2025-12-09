@@ -5,13 +5,13 @@ import api from "../../api/api";
 // Import Reusable Cards
 import EventCard, {
   type EventPost,
-} from "../contentDisplaySection/eventContent";
+} from "../contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
-} from "../contentDisplaySection/academicContent";
+} from "../contentDisplaySection/academicContent/academicContent";
 import LostFoundCard, {
   type ReportItem,
-} from "../contentDisplaySection/lostfoundContent";
+} from "../contentDisplaySection/lostFoundContent/lostfoundContent";
 
 // ✅ Import the Shared Comment Modal
 import CommentModal from "../contentDisplaySection/comment";

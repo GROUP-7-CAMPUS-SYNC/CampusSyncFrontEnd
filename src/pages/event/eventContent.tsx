@@ -3,7 +3,7 @@ import api from "../../api/api";
 import CommentModal from "../../components/contentDisplaySection/comment";
 import EventCard, {
   type EventPost,
-} from "../../components/contentDisplaySection/eventContent";
+} from "../../components/contentDisplaySection/eventContent/eventContent";
 
 interface EventContentProps {
   searchQuery: string;

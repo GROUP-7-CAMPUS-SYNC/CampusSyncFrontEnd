@@ -6,14 +6,15 @@ import {
   Users,
   ChevronDown,
   Loader2,
+  XCircleIcon
 } from "lucide-react";
-import SaveButton from "./saveButton";
-import WitnessButton from "./witness";
+import SaveButton from "../saveButton";
+import WitnessButton from "../witness";
 import WitnessModal from "./witnessModal";
 import { useEffect, useState, useRef } from "react";
-import api from "../../api/api";
-import Modal from "../../components/modal";
-import Button from "../../components/button";
+import api from "../../../api/api";
+import Modal from "../../modal";
+import Button from "../../button";
 import PostOptionDropDown from "./postOptionDropdown";
 import ChatInitiationModal from "./chatInitiationModal";
 import SelfChatErrorModal from "./SelfChatErrorModal";
@@ -95,6 +96,9 @@ export default function LostFoundCard({
   const [showChatModal, setShowChatModal] = useState(false);
   const [isNotValidChat, setIsNotValidChat] = useState<boolean>(false);
 
+  // Response Api modal state
+  const [errorModal, setErrorModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
   // Ref to track the dropdown container
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -190,6 +194,21 @@ export default function LostFoundCard({
     }
   }
 
+  const deletePost = async () => {
+    try {
+      const response = await api.delete(`/report_types/delete/${item._id}`);
+
+      if(response.status === 200)
+      {
+        window.location.reload();
+      }
+    }
+    catch(error : any)
+    {
+      setErrorMessage(error.response.data.message);
+      setErrorModal(true);
+    }
+  }
   const posterName = item.postedBy
     ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
     : "Unknown User";
@@ -236,6 +255,7 @@ export default function LostFoundCard({
                 onClose={() => setUserClickDropDown(false)}
                 // 3. Update the OnClick Logic
                 onChatClick={() => validateUserChat()}
+                onDeleteClick={() => deletePost()}
               />
             )}
           </div>
@@ -449,6 +469,19 @@ export default function LostFoundCard({
           onClose={() => setIsNotValidChat(false)} 
         />
       )}
+
+      {errorModal && (
+        <Modal>
+          <div className="text-center flex flex-col items-center justify-center p-4">
+            <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">
+              {errorMessage}
+            </h2>
+            <Button type="button" buttonText="Close" onClick={() => setErrorModal(false)} />
+          </div>
+        </Modal>
+      )
+      }
     </div>
   );
 }
