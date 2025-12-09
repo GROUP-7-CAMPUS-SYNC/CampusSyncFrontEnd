@@ -3,7 +3,7 @@ import Button from "../../../components/button"
 import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useState, useEffect } from "react";
-import { Calendar, CheckCircle, XCircleIcon } from "lucide-react";
+import { Calendar, CheckCircle, XCircleIcon, Loader2 } from "lucide-react"; // Added Loader2
 import api from "../../../api/api"
 
 interface Organization {
@@ -19,7 +19,7 @@ export default function Index({
     onClose,
 }: CreatePostProps) {
 
-    // Event Details State (Step 1 & 2)
+    // Event Details State
     const [eventName, setEventName] = useState<string>("")
     const [eventLocation, setEventLocation] = useState<string>("")
     const [course, setCourse] = useState<string>("")
@@ -38,8 +38,9 @@ export default function Index({
     const [step, setStep] = useState<number>(1)
     const [successfullySubmitted, setSuccessfullySubmitted] = useState<boolean>(false)
     
-    // isSubmitting was declared here, and now we will use it below
+    // NEW: Loading State
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    
     const [submissionError, setSubmissionError] = useState<string | null>(null);
 
     const [cloudinaryError, setCloudinaryError] = useState<boolean>(false)
@@ -107,6 +108,10 @@ export default function Index({
 
     const handleFormSubmtion = async (e: React.FormEvent) => {
         e.preventDefault()
+        
+        // Prevent double submit
+        if (isSubmitting) return;
+
         setFormSubmitted(true)
         setSubmissionError(null);
 
@@ -114,10 +119,8 @@ export default function Index({
 
         setIsSubmitting(true); // START LOADING
 
-
         try 
         {
-
             const signatureResponse = await api.get("/upload/generate_signature")
             const {
                 timestamp,
@@ -152,6 +155,7 @@ export default function Index({
             {
                 setCloudinaryError(true)
                 setCloudinaryErrorMessage(uploadData.error.message || "Unknown Error during upload imaage")
+                setIsSubmitting(false); // Stop loading on error
             }
             else
             {
@@ -167,28 +171,33 @@ export default function Index({
                 }
 
                 const response = await api.post("/events/create_post", payload);
+                
                 if (response.status === 201) {
                     setSuccessfullySubmitted(true);
+                    setIsSubmitting(false); // Stop loading on success
+                    
                 } else {
                     setSubmissionError(response.data?.message || `Submission failed with status: ${response.status}`);
+                    setIsSubmitting(false); // Stop loading on API fail
                 }
             }
         } catch (e: any) {
             console.error("Event submission failed:", e);
             setSubmissionError(e.response?.data?.message || 'A network error occurred during submission.');
-        } finally {
-            setIsSubmitting(false); // STOP LOADING
-        }
+            setIsSubmitting(false); // Stop loading on crash
+        } 
     }
 
     const isOrgLoading = managedOrgs.length === 0 && organizationId === "";
 
     return (
+        <>
         <Modal cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[500px]">
             {successfullySubmitted ? (
                 <div className="text-center p-4">
                     <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-4" />
-                    <p className="font-semibold mb-4 text-lg">Event Post Created Successfully!</p>
+                    <h2 className="text-xl font-bold text-gray-800 mb-2">Post Created!</h2>
+                    <p className="text-gray-600 mb-6">Event Post has been successfully published.</p>
                     <Button type="button" buttonText="Close" onClick={onClose} />
                 </div>
             ) : (
@@ -306,7 +315,12 @@ export default function Index({
                                 </div>
                             )}
                             <div className="flex flex-row gap-x-10 mt-2">
-                                <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setStep(1)} />
+                                <Button 
+                                    buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" 
+                                    type="button" 
+                                    buttonText="Back" 
+                                    onClick={() => setStep(1)} 
+                                />
                                 <Button type="button" buttonText="Continue" onClick={handleSecondStep} />
                             </div>
                         </div>
@@ -321,9 +335,13 @@ export default function Index({
                             <UploadPicture image={image} setImage={setImage} />
                             {formSubmitted && !image && <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>}
                             <div className="flex flex-row gap-x-10 mt-2">
-                                <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setStep(2)} />
+                                <Button 
+                                    buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" 
+                                    type="button" 
+                                    buttonText="Back" 
+                                    onClick={() => setStep(2)}
+                                />
                                 
-                                {/* FIX: Used isSubmitting to change text during submission */}
                                 <Button 
                                     type="submit" 
                                     buttonText={isSubmitting ? "Submitting..." : "Submit"} 
@@ -349,5 +367,17 @@ export default function Index({
                     </Modal>
                 )}
         </Modal>
+
+        {/* NEW: Loading Modal Overlay */}
+        {isSubmitting && (
+        <Modal
+            cardContainerDesign="bg-white shadow-lg rounded-lg p-8 w-[300px] flex flex-col items-center justify-center"
+        >
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+            <h3 className="text-lg font-semibold text-gray-800">Submitting...</h3>
+            <p className="text-gray-500 text-sm mt-2">Please wait while we post your event.</p>
+        </Modal>
+        )}
+        </>
     )
 }
