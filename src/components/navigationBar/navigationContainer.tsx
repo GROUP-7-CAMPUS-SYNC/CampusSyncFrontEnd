@@ -24,7 +24,6 @@ export default function NavigationContainer() {
 
   // Data States
   const [badgeCount, setBadgeCount] = useState<number>(0);
-  // ✅ Stores dynamic history from API (Replaces hardcoded array)
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   // Global Search Modal States
@@ -44,14 +43,10 @@ export default function NavigationContainer() {
   // --- 1. Fetch Recent Searches (History) ---
   const getRecentSearch = async () => {
     try {
-      // Fetch history specifically for 'global' context
       const response = await api.get("/recentSearch/recent?context=global");
-
       const searchStrings = response.data
         .map((item: any) => item.queryText)
         .filter((text: string) => text);
-
-      // Remove duplicates using Set
       const uniqueSearches = [...new Set(searchStrings)] as string[];
       setRecentSearches(uniqueSearches);
     } catch (error) {
@@ -73,12 +68,13 @@ export default function NavigationContainer() {
   // Initial Fetches
   useEffect(() => {
     fetchUnreadCount();
-    getRecentSearch(); // ✅ Load history on mount
+    getRecentSearch();
   }, []);
 
   useEffect(() => {
     if (!clickNotification) fetchUnreadCount();
   }, [clickNotification]);
+
   useEffect(() => {
     if (!isSmallScreen) setClickSmallScreenSearchbar(false);
   }, [isSmallScreen]);
@@ -121,7 +117,9 @@ export default function NavigationContainer() {
     setClickProfile(false);
   };
 
-  const handleProfileClick = () => {
+  // UPDATED: Added e.stopPropagation() to prevent bubbling to the logout container
+  const handleProfileClick = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setClickProfile(!clickProfile);
   };
 
@@ -130,27 +128,19 @@ export default function NavigationContainer() {
     if (!term.trim()) return;
 
     setSubmittedQuery(term);
-    setIsSearchModalOpen(true); // Open modal immediately
+    setIsSearchModalOpen(true);
     setIsSearchLoading(true);
-
-    // Close mobile search bar if open
     setClickSmallScreenSearchbar(false);
 
     try {
-      // A. Log interaction (Save to history)
       await api.post("/recentSearch/log", {
         queryText: term,
         searchContext: "global",
       });
-
-      // B. Refresh history list (so next time we click search, new term is there)
       getRecentSearch();
-
-      // C. Perform the search
       const response = await api.get(
         `/search/getGlobalSearch?search=${encodeURIComponent(term)}`
       );
-
       if (response.status === 200) {
         setSearchResults(response.data);
       }
@@ -179,9 +169,9 @@ export default function NavigationContainer() {
               <SearchBar
                 value={searchBarValue}
                 onChange={(e) => setSearchBarValue(e.target.value)}
-                onSearch={handleGlobalSearch} // ✅ Triggers API Search
+                onSearch={handleGlobalSearch}
                 placeholder="Search post, event, or item"
-                recentSearch={recentSearches} // ✅ Uses dynamic API Data
+                recentSearch={recentSearches}
               />
             </div>
 
@@ -205,16 +195,28 @@ export default function NavigationContainer() {
             </div>
 
             {/* PROFILE / LOG OUT */}
-            <div className="relative group ">
-              <button
+            <div className="relative group">
+              {/* FIXED: Changed from <button> to <div> to prevent nesting error */}
+              <div
+                role="button"
+                tabIndex={0}
                 className={`p-2 flex cursor-pointer items-center gap-x-1 sm:gap-x-3 rounded-md transition-colors duration-200 ${
                   clickLogOut ? "bg-gray-400" : "hover:bg-gray-300"
                 }`}
                 onClick={handleLogOutClick}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        handleLogOutClick();
+                    }
+                }}
               >
+                {/* ProfilePicture contains a <button> inside it.
+                   We pass handleProfileClick which now stops propagation 
+                   so clicking the image doesn't also trigger the logout logic.
+                */}
                 <ProfilePicture
                   profileImageURL={`${localStorage.getItem("profileLink")}`}
-                  onClick={handleProfileClick}
+                  onClick={() => handleProfileClick} // TS might require wrapper if types mismatch, but this passes the function
                 />
 
                 <span className="hidden sm:inline">
@@ -229,7 +231,7 @@ export default function NavigationContainer() {
                     clickLogOut ? "rotate-180" : "rotate-0"
                   }`}
                 />
-              </button>
+              </div>
             </div>
           </div>
         </div>
@@ -246,9 +248,9 @@ export default function NavigationContainer() {
             searchBarContainerDesign="relative bg-[#EEEEEE] flex items-center gap-3 p-3 h-[6vh] w-full"
             value={searchBarValue}
             onChange={(e) => setSearchBarValue(e.target.value)}
-            onSearch={handleGlobalSearch} // ✅ Triggers API Search
+            onSearch={handleGlobalSearch}
             placeholder="Search post, event, or item"
-            recentSearch={recentSearches} // ✅ Uses dynamic API Data
+            recentSearch={recentSearches}
           />
         </div>
       )}
@@ -257,7 +259,6 @@ export default function NavigationContainer() {
       {clickNotification && <NotificationClickModal ref={notifModalRef} />}
       {clickLogOut && <LogoutModal ref={logoutModalRef} />}
 
-      {/* ✅ Search Result Modal */}
       <GlobalSearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}

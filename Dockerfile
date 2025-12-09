@@ -8,7 +8,6 @@ RUN npm install
 
 COPY . .
 
-# --- ADD THESE TWO LINES ---
 # 1. Catch the variable from Render
 ARG VITE_API_URL
 # 2. Make it available to the build command

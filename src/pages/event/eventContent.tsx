@@ -123,7 +123,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               isSaved={savePostClicked[post._id] || false}
               isNotify={notifyClicked[post._id] || false}
               isCommentOpen={commentClicked[post._id] || false}
-              commentCount={post.comments?.length || 0} // ✅ Use real count
+              commentCount={post.comments?.length || 0} //  Use real count
               onToggleSave={handleToggleSave}
               onToggleNotify={handleToggleNotify}
               onCommentClick={handleCommentClick}
@@ -135,8 +135,8 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               postId={activePostId}
               postedBy={activeUser}
               onClose={closeCommentModal}
-              comments={activePostData?.comments || []} // ✅ Pass real comments
-              onAddComment={handleAddComment} // ✅ Connect handler
+              comments={activePostData?.comments || []} //  Pass real comments
+              onAddComment={handleAddComment} //  Connect handler
             />
           )}
         </>

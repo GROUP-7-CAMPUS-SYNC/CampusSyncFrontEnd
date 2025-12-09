@@ -10,10 +10,13 @@ import {
 import SaveButton from "./saveButton";
 import WitnessButton from "./witness";
 import WitnessModal from "./witnessModal";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../../api/api";
 import Modal from "../../components/modal";
 import Button from "../../components/button";
+import PostOptionDropDown from "./postOptionDropdown";
+import ChatInitiationModal from "./chatInitiationModal";
+import SelfChatErrorModal from "./SelfChatErrorModal";
 
 // --- Helper: Format Time ---
 const timeAgo = (dateString: string) => {
@@ -30,15 +33,14 @@ const timeAgo = (dateString: string) => {
   return past.toLocaleDateString();
 };
 
-// --- Types ---
 interface UserProfile {
   _id: string;
+  email: string;
   firstname: string;
   lastname: string;
   profileLink: string;
 }
 
-// Structure for the fetched detail list
 interface WitnessData {
   user: UserProfile;
   vouchTime?: string;
@@ -57,7 +59,6 @@ export interface ReportItem {
   image: string;
   postedBy: UserProfile | null;
   status: string;
-  // Generic array because initial feed might not have full details
   witnesses: any[];
   comments: any[];
   createdAt: string;
@@ -77,23 +78,44 @@ export default function LostFoundCard({
   onToggleSave,
   onCommentClick,
 }: LostFoundCardProps) {
-  // Local state
   const [showModal, setShowModal] = useState(false);
   const [showWitnessList, setShowWitnessList] = useState(false);
-
-  // State to hold the fetched detailed list
   const [witnessList, setWitnessList] = useState<WitnessData[]>([]);
   const [isLoadingWitnesses, setIsLoadingWitnesses] = useState(false);
-
   const [hasWitnessed, setHasWitnessed] = useState(item.isWitnessed);
   const [witnessCount, setWitnessCount] = useState(item.witnesses?.length || 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Post owner witness himself
   const [userWitnessErrorModal, setUserWitnessErrorModal] = useState(false);
   const [userWitnessErrorMessage, setUserWitnessErrorMessage] = useState("");
 
-  // --- 1. CHECK WITNESS STATUS (User Specific) ---
+  // Dropdown state
+  const [userClickDropDown, setUserClickDropDown] = useState<boolean>(false);
+  
+  // 2. Chat Modal State
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [isNotValidChat, setIsNotValidChat] = useState<boolean>(false);
+
+
+  // Ref to track the dropdown container
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Click Outside Logic
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserClickDropDown(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+  // --- CHECK WITNESS STATUS ---
   useEffect(() => {
     const checkWitnessStatus = async () => {
       try {
@@ -108,13 +130,11 @@ export default function LostFoundCard({
     checkWitnessStatus();
   }, [item._id]);
 
-  // --- 2. FETCH WITNESS LIST (Lazy Load) ---
+  // --- FETCH WITNESS LIST ---
   const handleToggleWitnessList = async () => {
-    // If we are opening the list AND we haven't fetched data yet
     if (!showWitnessList && witnessList.length === 0) {
       setIsLoadingWitnesses(true);
       try {
-        // Call the NEW independent controller
         const response = await api.get(
           `/report_types/${item._id}/witness-list`
         );
@@ -127,21 +147,18 @@ export default function LostFoundCard({
         setIsLoadingWitnesses(false);
       }
     }
-    // Toggle the view
     setShowWitnessList(!showWitnessList);
   };
 
-  // --- 3. SUBMIT WITNESS ACTION ---
+  // --- SUBMIT WITNESS ACTION ---
   const handleWitnessSubmit = async () => {
     if (hasWitnessed) return;
     setIsSubmitting(true);
-
     try {
       const response = await api.post(`/report_types/${item._id}/witnesses`);
       if (response.status === 200) {
         setHasWitnessed(true);
         setWitnessCount((prev) => prev + 1);
-        // Clear list so it refetches next time or manually add self (optional)
         setWitnessList([]);
         setShowModal(false);
       }
@@ -154,15 +171,24 @@ export default function LostFoundCard({
         setUserWitnessErrorMessage("You cannot witness your own report");
         return;
       }
-
       console.error("Witness submission failed:", error);
-      alert(
-        error.response?.data?.message || "Failed to submit witness statement."
-      );
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const validateUserChat = async () => {
+
+    if(item.postedBy?.email === localStorage.getItem("email"))
+    {
+      setIsNotValidChat(true);
+    }
+    else
+    {
+      setUserClickDropDown(false); // Close the menu
+      setShowChatModal(true);      // Open the modal
+    }
+  }
 
   const posterName = item.postedBy
     ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
@@ -173,7 +199,7 @@ export default function LostFoundCard({
   return (
     <div className="w-full bg-white shadow-sm sm:rounded-xl p-5 mb-0.5 sm:mb-5 mx-auto ">
       {/* HEADER */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between relative z-10">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
             {avatarSrc ? (
@@ -193,13 +219,35 @@ export default function LostFoundCard({
             </p>
           </div>
         </div>
-        <span
-          className={`px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium text-white ${
-            item.reportType === "Lost" ? "bg-red-700" : "bg-green-700"
-          }`}
-        >
-          {item.reportType}
-        </span>
+
+        <div className="flex items-center gap-4">
+          {/* Dropdown Container */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              className="text-gray-500 cursor-pointer hover:text-black p-1 rounded-full hover:bg-gray-100 transition-colors"
+              onClick={() => setUserClickDropDown(!userClickDropDown)}
+            >
+              •••
+            </button>
+
+            {/* Dropdown Logic */}
+            {userClickDropDown && (
+              <PostOptionDropDown
+                onClose={() => setUserClickDropDown(false)}
+                // 3. Update the OnClick Logic
+                onChatClick={() => validateUserChat()}
+              />
+            )}
+          </div>
+
+          <span
+            className={`px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium text-white ${
+              item.reportType === "Lost" ? "bg-red-700" : "bg-green-700"
+            }`}
+          > 
+            {item.reportType}
+          </span>
+        </div>
       </div>
 
       {/* MAIN IMAGE */}
@@ -267,7 +315,7 @@ export default function LostFoundCard({
         </div>
       </div>
 
-      {/* --- SEE WITNESSES TOGGLE (Lazy Load) --- */}
+      {/* WITNESS TOGGLE */}
       {witnessCount > 0 && (
         <div className="flex flex-row justify-between mt-4 mb-2 ">
           <button
@@ -279,7 +327,6 @@ export default function LostFoundCard({
             {showWitnessList
               ? "Hide Witnesses"
               : `See ${witnessCount} Witnesses`}
-
             <ChevronDown
               size={14}
               className={`transition-transform duration-300 ${
@@ -296,13 +343,13 @@ export default function LostFoundCard({
         </div>
       )}
 
-      {/* WITNESS LIST DROPDOWN */}
+      {/* WITNESS LIST */}
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out mt-0 ${
           showWitnessList
             ? "max-h-48 mt-2 opacity-100 p-3"
             : "max-h-0 mt-0 opacity-0"
-        } bg-gray-50 rounded-lg  space-y-3 border border-gray-100 shadow-inner custom-scrollbar`}
+        } bg-gray-50 rounded-lg space-y-3 border border-gray-100 shadow-inner custom-scrollbar`}
       >
         {isLoadingWitnesses ? (
           <div className="flex justify-center py-2">
@@ -311,13 +358,12 @@ export default function LostFoundCard({
         ) : (
           witnessList.map((witness, idx) => (
             <div key={idx} className="flex items-center gap-3">
-              {/* Avatar */}
               <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
                 {witness.user?.profileLink ? (
                   <img
                     src={witness.user.profileLink}
-                    alt="avatar"
                     className="w-full h-full object-cover"
+                    alt="witness avatar"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-300">
@@ -325,8 +371,6 @@ export default function LostFoundCard({
                   </div>
                 )}
               </div>
-
-              {/* Details */}
               <div className="flex flex-col">
                 <span className="text-xs sm:text-sm font-semibold text-gray-800">
                   {witness.user
@@ -342,9 +386,9 @@ export default function LostFoundCard({
           ))
         )}
       </div>
-
       <hr className="border-gray-200"></hr>
-      {/* --- FOOTER --- */}
+
+      {/* FOOTER */}
       <div className="flex items-center gap-x-5 sm:gap-x-0 sm:justify-around pt-4 text-gray-600">
         <WitnessButton
           witnessCount={witnessCount}
@@ -353,7 +397,6 @@ export default function LostFoundCard({
             if (!hasWitnessed) setShowModal(true);
           }}
         />
-
         <button
           onClick={() => onCommentClick?.(item.comments)}
           className="flex flex-row gap-x-2 items-center group cursor-pointer"
@@ -371,18 +414,16 @@ export default function LostFoundCard({
         />
       </div>
 
-      {/* MODAL */}
+      {/* --- MODALS --- */}
       {showModal && (
         <WitnessModal
           onClose={() => setShowModal(false)}
           onProceed={handleWitnessSubmit}
         />
       )}
-
       {userWitnessErrorModal && (
         <Modal>
           {userWitnessErrorMessage}
-
           <div className="mt-2">
             <Button
               type="button"
@@ -391,6 +432,22 @@ export default function LostFoundCard({
             />
           </div>
         </Modal>
+      )}
+
+      {/* 4. Render the Chat Modal */}
+      {showChatModal && (
+        <ChatInitiationModal
+          isOpen={showChatModal}
+          onClose={() => setShowChatModal(false)}
+          poster={item.postedBy}
+        />
+      )}
+
+      {isNotValidChat && (
+        <SelfChatErrorModal 
+          isOpen={isNotValidChat} 
+          onClose={() => setIsNotValidChat(false)} 
+        />
       )}
     </div>
   );
