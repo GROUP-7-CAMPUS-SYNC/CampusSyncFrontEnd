@@ -5,7 +5,7 @@ import { BookmarkX, Loader2 } from "lucide-react";
 // --- Import Reusable Cards & Types ---
 import EventCard, {
   type EventPost,
-} from "../../components/contentDisplaySection/eventContent";
+} from "../../components/contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
 } from "../../components/contentDisplaySection/academicContent";

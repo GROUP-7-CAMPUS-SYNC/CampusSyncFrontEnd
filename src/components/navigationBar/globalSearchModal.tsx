@@ -5,7 +5,7 @@ import api from "../../api/api";
 // Import Reusable Cards
 import EventCard, {
   type EventPost,
-} from "../contentDisplaySection/eventContent";
+} from "../contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
 } from "../contentDisplaySection/academicContent";

@@ -4,7 +4,7 @@ import { Briefcase, GraduationCap, Bookmark, User } from "lucide-react";
 
 import EventCard, {
   type EventPost,
-} from "../../components/contentDisplaySection/eventContent";
+} from "../../components/contentDisplaySection/eventContent/eventContent";
 import AcademicCard, {
   type AcademicPost,
 } from "../../components/contentDisplaySection/academicContent";
