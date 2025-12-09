@@ -1,8 +1,8 @@
 // components/lostFound/SelfChatErrorModal.tsx
 
 import { AlertCircle } from "lucide-react";
-import Modal from "../../components/modal"; // Ensure path matches your project
-import Button from "../../components/button"; // Ensure path matches your project
+import Modal from "../../modal"; // Ensure path matches your project
+import Button from "../../button"; // Ensure path matches your project
 
 interface SelfChatErrorModalProps {
   isOpen: boolean;

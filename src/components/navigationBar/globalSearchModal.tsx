@@ -11,7 +11,7 @@ import AcademicCard, {
 } from "../contentDisplaySection/academicContent";
 import LostFoundCard, {
   type ReportItem,
-} from "../contentDisplaySection/lostfoundContent";
+} from "../contentDisplaySection/lostFoundContent/lostfoundContent";
 
 // ✅ Import the Shared Comment Modal
 import CommentModal from "../contentDisplaySection/comment";

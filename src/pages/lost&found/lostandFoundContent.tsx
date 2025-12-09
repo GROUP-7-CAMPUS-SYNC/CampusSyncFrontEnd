@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../api/api";
 import LostFoundCard, {
   type ReportItem,
-} from "../../components/contentDisplaySection/lostfoundContent";
+} from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
 import CommentModal from "../../components/contentDisplaySection/comment";
 
 interface LostAndFoundContentProps {

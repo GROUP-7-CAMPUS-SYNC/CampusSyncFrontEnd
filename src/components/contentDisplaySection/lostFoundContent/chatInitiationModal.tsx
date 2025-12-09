@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X, User, Send, Loader2 } from "lucide-react";
-import api from "../../api/api"; // Ensure this path matches your project structure
+import api from "../../../api/api"; // Ensure this path matches your project structure
 
 interface PosterDetails {
   _id: string;

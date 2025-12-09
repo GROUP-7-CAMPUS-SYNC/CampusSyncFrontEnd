@@ -1,13 +1,16 @@
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Trash } from "lucide-react";
+
 
 interface PostOptionDropDownProps {
   onClose: () => void;
   onChatClick?: () => void;
+  onDeleteClick?: () => void;
 }
 
 export default function PostOptionDropDown({
   onClose,
   onChatClick,
+  onDeleteClick,
 }: PostOptionDropDownProps) {
   return (
     // 1. absolute: Takes it out of the normal flow
@@ -25,6 +28,17 @@ export default function PostOptionDropDown({
         >
           <MessageCircle size={16} className="text-blue-500" />
           <span>Chat with poster</span>
+        </button>
+
+        <button
+          onClick={() => {
+            if(onDeleteClick) onDeleteClick();
+            onClose()
+          }}
+          className="flex items-center w-full px-4 py-3 cursor-pointer text-sm text-gray-700 hover:bg-gray-100 gap-3 transition-colors"
+        >
+          <Trash size={16} className="text-blue-500" />
+          <span>Delete</span>
         </button>
       </div>
     </div>
