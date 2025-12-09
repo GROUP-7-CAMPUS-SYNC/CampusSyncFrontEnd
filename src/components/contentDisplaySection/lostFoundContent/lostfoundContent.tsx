@@ -18,6 +18,7 @@ import Button from "../../button";
 import PostOptionDropDown from "./postOptionDropdown";
 import ChatInitiationModal from "./chatInitiationModal";
 import SelfChatErrorModal from "./SelfChatErrorModal";
+import ReportForm from "../../../pages/lost&found/formPost/index"; // Imported the Form
 
 // --- Helper: Format Time ---
 const timeAgo = (dateString: string) => {
@@ -99,6 +100,9 @@ export default function LostFoundCard({
   // Response Api modal state
   const [errorModal, setErrorModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
+
+  // NEW: Update Modal State
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
 
   // Ref to track the dropdown container
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -182,7 +186,6 @@ export default function LostFoundCard({
   };
 
   const validateUserChat = async () => {
-
     if(item.postedBy?.email === localStorage.getItem("email"))
     {
       setIsNotValidChat(true);
@@ -209,6 +212,7 @@ export default function LostFoundCard({
       setErrorModal(true);
     }
   }
+  
   const posterName = item.postedBy
     ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
     : "Unknown User";
@@ -253,9 +257,10 @@ export default function LostFoundCard({
             {userClickDropDown && (
               <PostOptionDropDown
                 onClose={() => setUserClickDropDown(false)}
-                // 3. Update the OnClick Logic
                 onChatClick={() => validateUserChat()}
                 onDeleteClick={() => deletePost()}
+                // 1. CONNECT UPDATE CLICK
+                onUpdateClick={() => setShowUpdateModal(true)} 
               />
             )}
           </div>
@@ -433,6 +438,24 @@ export default function LostFoundCard({
           onToggle={() => onToggleSave?.(item._id)}
         />
       </div>
+
+      {/* --- 2. RENDER UPDATE FORM MODAL --- */}
+      {showUpdateModal && (
+        <ReportForm 
+            onClose={() => window.location.reload()}
+            initialData={{
+                _id: item._id,
+                reportType: item.reportType,
+                itemName: item.itemName,
+                description: item.description,
+                turnOver: item.turnOver,
+                locationDetails: item.locationDetails,
+                contactDetails: item.contactDetails,
+                dateLostOrFound: item.dateLostOrFound,
+                image: item.image
+            }}
+        />
+      )}
 
       {/* --- MODALS --- */}
       {showModal && (
