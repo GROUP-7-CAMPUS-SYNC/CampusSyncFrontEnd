@@ -6,16 +6,16 @@ import {
   Calendar,
   Users,
   User,
-  XCircleIcon
+  XCircleIcon,
 } from "lucide-react";
 import SaveButton from "../saveButton";
 import api from "../../../api/api";
-import Modal from "../../modal"; // Make sure path is correct
-import Button from "../../button"; // Make sure path is correct
-
-// Import the dropdown you mentioned (reuse the same file if possible, or duplicate for event)
-// Assuming you moved it to a shared location or duplicated it
+import Modal from "../../modal"; 
+import Button from "../../button"; 
 import PostOptionDropDown from "./postOptionDropdown"; 
+
+// IMPORT THE EVENT FORM
+import EventForm from "../../../pages/event/formPost/index"; 
 
 // --- Types ---
 export interface EventPost {
@@ -33,6 +33,10 @@ export interface EventPost {
     _id: string;
     organizationName: string;
     profileLink: string;
+    organizationHeadID: {
+      _id: string;
+      email: string;
+    };
   } | null;
   comments: any[];
   createdAt: string;
@@ -94,6 +98,10 @@ export default function EventCard({
 
   // Dropdown State
   const [userClickDropDown, setUserClickDropDown] = useState<boolean>(false);
+  
+  // Update Modal State
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Click Outside Logic for Dropdown
@@ -161,6 +169,25 @@ export default function EventCard({
     }
   };
 
+  // --- UPDATE CHECK LOGIC ---
+  const handleUpdateClick = () => {
+      // 1. Get current logged-in user EMAIL
+      const currentUserEmail = localStorage.getItem("email"); 
+      
+      // 2. Get the Org Head EMAIL from the nested object
+      const orgHeadEmail = post.organization?.organizationHeadID?.email;
+
+      // 3. Compare Emails
+      if (currentUserEmail && orgHeadEmail && currentUserEmail === orgHeadEmail) {
+          // Success: Open Form
+          setShowUpdateModal(true);
+      } else {
+          // Fail: Show Error
+          setErrorMessage("Unauthorized. Only the Organization Head can update this event.");
+          setErrorModal(true);
+      }
+  };
+
   const hasOrg = !!post.organization;
   const avatarSrc = hasOrg ? post.organization?.profileLink : null;
   const postedByName = post.postedBy
@@ -216,6 +243,8 @@ export default function EventCard({
                     <PostOptionDropDown
                         onClose={() => setUserClickDropDown(false)}
                         onDeleteClick={() => deletePost()}
+                        // 1. CONNECT HANDLER HERE
+                        onUpdateClick={handleUpdateClick} 
                     />
                 )}
             </div>
@@ -339,6 +368,24 @@ export default function EventCard({
           />
         </div>
       </div>
+
+      {/* 2. RENDER UPDATE FORM MODAL */}
+      {showUpdateModal && (
+        <EventForm 
+            onClose={() => setShowUpdateModal(false)}
+            initialData={{
+                _id: post._id,
+                eventName: post.eventName,
+                location: post.location,
+                course: post.course,
+                openTo: post.openTo,
+                startDate: post.startDate,
+                endDate: post.endDate,
+                image: post.image,
+                organizationId: post.organization?._id 
+            }}
+        />
+      )}
 
       {/* --- ERROR MODAL --- */}
       {errorModal && (

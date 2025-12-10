@@ -1,14 +1,17 @@
-import {  Trash } from "lucide-react";
+import {  Trash, Edit } from "lucide-react";
 
 
 interface PostOptionDropDownProps {
   onClose: () => void;
   onDeleteClick?: () => void;
+  onUpdateClick?: () => void
+
 }
 
 export default function PostOptionDropDown({
   onClose,
   onDeleteClick,
+  onUpdateClick
 }: PostOptionDropDownProps) {
   return (
     // 1. absolute: Takes it out of the normal flow
@@ -27,6 +30,17 @@ export default function PostOptionDropDown({
         >
           <Trash size={16} className="text-blue-500" />
           <span>Delete</span>
+        </button>
+
+        <button
+          onClick={() => {
+            if(onUpdateClick) onUpdateClick();
+            onClose()
+          }}
+          className="flex items-center w-full px-4 py-3 cursor-pointer text-sm text-gray-700 hover:bg-gray-100 gap-3 transition-colors"
+        >
+          <Edit size={16} className="text-blue-500" />
+          <span>Update</span>
         </button>
       </div>
     </div>
