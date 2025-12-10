@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { MessageCircle, User, XCircleIcon } from "lucide-react";
 import SaveButton from "../saveButton";
 import api from "../../../api/api";
-import Modal from "../../modal"; // Ensure path is correct
-import Button from "../../button"; // Ensure path is correct
+import Modal from "../../modal"; 
+import Button from "../../button"; 
 
 // Import the dropdown
 import PostOptionDropDown from "./postOptionDropdown";
+
+// Import the form
+import AcademicForm from "../../../pages/announcement/formPost/index"; 
 
 // --- Types ---
 export interface AcademicPost {
@@ -24,6 +27,10 @@ export interface AcademicPost {
     _id: string;
     organizationName: string;
     profileLink: string;
+    organizationHeadID: { // Updated to match populated structure
+        _id: string;
+        email: string;
+    };
   } | null;
   taggedUsers: any[];
   comments: any[];
@@ -46,12 +53,11 @@ function timeAgo(dateString: string) {
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
   if (diffInSeconds < 60) return "Just now";
   const minutes = Math.floor(diffInSeconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-  return past.toLocaleDateString();
+  return `${days}d ago`;
 }
 
 export default function AcademicCard({
@@ -67,6 +73,10 @@ export default function AcademicCard({
 
   // Dropdown State
   const [userClickDropDown, setUserClickDropDown] = useState<boolean>(false);
+  
+  // Update Modal State
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Click Outside Logic for Dropdown
@@ -99,6 +109,25 @@ export default function AcademicCard({
       );
       setErrorModal(true);
     }
+  };
+
+  // --- UPDATE CHECK LOGIC ---
+  const handleUpdateClick = () => {
+      // 1. Get current logged-in user EMAIL
+      const currentUserEmail = localStorage.getItem("email"); 
+      
+      // 2. Get the Org Head EMAIL from the nested object
+      const orgHeadEmail = post.organization?.organizationHeadID?.email;
+
+      // 3. Compare Emails
+      if (currentUserEmail && orgHeadEmail && currentUserEmail === orgHeadEmail) {
+          // Success: Open Form
+          setShowUpdateModal(true);
+      } else {
+          // Fail: Show Error
+          setErrorMessage("Unauthorized. Only the Organization Head can update this post.");
+          setErrorModal(true);
+      }
   };
 
   const orgName = post.organization?.organizationName || "Unknown Organization";
@@ -150,6 +179,8 @@ export default function AcademicCard({
                     <PostOptionDropDown
                         onClose={() => setUserClickDropDown(false)}
                         onDeleteClick={() => deletePost()}
+                        // 1. CONNECT HANDLER HERE
+                        onUpdateClick={handleUpdateClick}
                     />
                 )}
             </div>
@@ -207,6 +238,20 @@ export default function AcademicCard({
           onToggle={() => onToggleSave?.(post._id)}
         />
       </div>
+
+      {/* 2. RENDER UPDATE FORM MODAL */}
+      {showUpdateModal && (
+        <AcademicForm 
+            onClose={() => setShowUpdateModal(false)}
+            initialData={{
+                _id: post._id,
+                title: post.title,
+                content: post.content,
+                image: post.image,
+                organizationId: post.organization?._id // Pass existing org ID
+            }}
+        />
+      )}
 
       {/* --- ERROR MODAL --- */}
       {errorModal && (
