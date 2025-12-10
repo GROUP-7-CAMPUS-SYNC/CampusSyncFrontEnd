@@ -35,24 +35,34 @@ export default function ViewMessage({
 }: ViewMessageProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Only for initial load
+  const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-
-  // Ref to auto-scroll to bottom
+  
+  const [shouldScroll, setShouldScroll] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Define maskAsRead outside useEffect so we can reuse it
+  const maskAsRead = async () => {
+    try {
+      await api.put(`/message/markAsRead/${partner._id}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // 1. Fetch Conversation History (POLLING)
   useEffect(() => {
-    // We define the function inside useEffect
     const fetchMessages = async (isBackground: boolean) => {
-      // Only show spinner on the very first load, not every 2 seconds
       if (!isBackground) setIsLoading(true);
       
       try {
         const response = await api.get(`/message/${partner._id}`);
         if (response.status === 200) {
-          // Update state with new messages
           setMessages(response.data);
+
+          if (!isBackground) {
+            setShouldScroll(true);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -61,35 +71,27 @@ export default function ViewMessage({
       }
     };
 
-    const maskAsRead = async () => {
-        try
-        {
-            await api.put(`/message/markAsRead/${partner._id}`);
-        }
-        catch(error)
-        {
-            console.error(error)
-        }
-    }
-
-    // A. Initial Fetch (Show Loading Spinner)
+    // Initial Fetch
     fetchMessages(false);
-    maskAsRead()
+    
+    // Also run on mount (optional, if you want to mark as read immediately upon opening too)
+    maskAsRead();
 
-    // B. Set up Interval (Run every 2 seconds, No Spinner)
     const intervalId = setInterval(() => {
       fetchMessages(true);
     }, 2000);
 
-    // C. Cleanup: Stop the timer when user leaves this chat or component unmounts
     return () => clearInterval(intervalId);
 
   }, [partner._id]);
 
-  // 2. Auto-scroll to bottom when messages change
+  // 2. Auto-scroll
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (shouldScroll) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      setShouldScroll(false); 
+    }
+  }, [messages, shouldScroll]);
 
   // 3. Handle Send Message
   const handleSendMessage = async (e?: React.FormEvent) => {
@@ -103,9 +105,9 @@ export default function ViewMessage({
       });
 
       if (response.status === 201) {
-        // Add the new message immediately to UI
         setMessages((prev) => [...prev, response.data]);
         setNewMessage(""); 
+        setShouldScroll(true);
       }
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -114,17 +116,22 @@ export default function ViewMessage({
     }
   };
 
-  // Helper to format time
+  // 4. NEW: Handle Back Click
+  const handleBackClick = () => {
+    // Fire the "Mark as Read" request
+    // We do NOT await this. We want the UI to close instantly.
+    // The request will complete in the background.
+    maskAsRead(); 
+    
+    // Execute the parent's onBack function (closes the view)
+    onBack();
+  };
+
   const formatTime = (dateString: string) => {
-    // Handle potential invalid dates gracefully
     if (!dateString) return "";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return "";
-
-    return date.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -132,14 +139,13 @@ export default function ViewMessage({
       {/* --- HEADER --- */}
       <div className="flex items-center gap-3 p-3 border-b border-gray-100 bg-white shadow-sm shrink-0 z-10">
         <button
-          onClick={onBack}
+          onClick={handleBackClick} // <--- UPDATED HANDLER HERE
           className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
 
         <div className="flex items-center gap-3">
-          {/* Avatar */}
           <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
             {partner.profileLink ? (
               <img
@@ -153,12 +159,9 @@ export default function ViewMessage({
               </div>
             )}
           </div>
-
-            {/* Name */}
             <h3 className="font-semibold text-gray-800 text-sm">
                 {partner.firstname} {partner.lastname}
             </h3>
-          
         </div>
       </div>
 
@@ -175,8 +178,7 @@ export default function ViewMessage({
           </div>
         ) : (
           messages.map((msg, index) => {
-            // Safety check: ensure sender exists before accessing _id
-            const senderId = msg.sender?._id || msg.sender; // Handle populated vs unpopulated
+            const senderId = msg.sender?._id || msg.sender;
             const isMe = senderId === currentUserId;
             
             return (
