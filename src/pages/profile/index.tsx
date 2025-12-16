@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
-import { Briefcase, GraduationCap, Bookmark, User } from "lucide-react";
+import { Briefcase, GraduationCap, Bookmark, User, Camera, Loader2 } from "lucide-react";
 
 import EventCard, {
   type EventPost,
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [posts, setPosts] = useState<FeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Interaction States
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
@@ -154,6 +155,57 @@ export default function ProfilePage() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+
+      // 1. Get Signature
+      const signatureResponse = await api.get("/upload/generate_signature");
+      const { timestamp, signature, folder, apiKey, cloudName } =
+        signatureResponse.data;
+
+      // 2. Upload to Cloudinary
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", timestamp.toString());
+      formData.append("signature", signature);
+      formData.append("folder", folder);
+
+      const uploadResponse = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        { method: "POST", body: formData }
+      );
+      const uploadData = await uploadResponse.json();
+
+      if (!uploadResponse.ok) {
+        throw new Error(uploadData.error?.message || "Upload failed");
+      }
+
+      const newProfileLink = uploadData.secure_url;
+
+      // 3. Update Backend
+      const updateResponse = await api.put("/profile/update-picture", {
+        profileLink: newProfileLink,
+      });
+
+      if (updateResponse.status === 200) {
+        // 4. Update Local State
+        const updatedUser = updateResponse.data.user;
+        setUserInfo(updatedUser);
+        localStorage.setItem("profileLink", updatedUser.profileLink);
+      }
+    } catch (error) {
+      console.error("Profile picture upload failed:", error);
+      alert("Failed to upload profile picture. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUserPosts();
   }, []);
@@ -165,10 +217,34 @@ export default function ProfilePage() {
         <div className="h-32 bg-linear-to-r from-blue-600 to-indigo-600"></div>
         <div className="px-6 pb-6 relative">
           <div className="absolute -top-12 left-6 border-4 border-white rounded-full bg-white z-10">
-            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              {localStorage.getItem("profileLink") ? (
+            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden relative group">
+              {isUploading ? (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                </div>
+              ) : (
+                <>
+                  <label
+                    htmlFor="profile-upload"
+                    className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10"
+                  >
+                    <Camera className="text-white w-8 h-8" />
+                  </label>
+                  <input
+                    type="file"
+                    id="profile-upload"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                  />
+                </>
+              )}
+              {userInfo?.profileLink || localStorage.getItem("profileLink") ? (
                 <img
-                  src={localStorage.getItem("profileLink")!}
+                  src={
+                    userInfo?.profileLink ||
+                    localStorage.getItem("profileLink")!
+                  }
                   className="w-full h-full object-cover"
                 />
               ) : (

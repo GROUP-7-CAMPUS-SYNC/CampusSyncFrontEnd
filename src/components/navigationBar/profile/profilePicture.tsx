@@ -8,7 +8,7 @@ interface ProfileProps {
 export default function profile({
   profileImageURL,
   profileDesign = "flex items-center rounded-full",
-  imageDesign = "lg:h-[4vh] w-[30px] h-[30px] cursor-pointer transition-all duration-200 ",
+  imageDesign = "lg:h-[4vh] w-[30px] h-[30px] cursor-pointer transition-all duration-200 rounded-full object-cover",
   onClick,
 }: ProfileProps) {
   return (

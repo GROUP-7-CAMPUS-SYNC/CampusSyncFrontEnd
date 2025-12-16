@@ -19,10 +19,12 @@ export default function LostAndFoundContent({
   const [savedItems, setSavedItems] = useState<Set<string>>(new Set());
 
   // Modal States
-  const [activePostId, setActivePostId] = useState<string | null>(null);
-  // We don't need separate modalComments state anymore if we look up from reportItems,
-  // but to keep your logic consistent with previous iterations:
-  const [modalComments, setModalComments] = useState<any[]>([]);
+  const [activeModal, setActiveModal] = useState<{
+    id: string;
+    postedBy: any;
+    data: any[];
+    feedType: "event" | "academic" | "report";
+  } | null>(null);
 
   // --- Handlers ---
   const handleSaveClick = (itemId: string) => {
@@ -38,8 +40,26 @@ export default function LostAndFoundContent({
   };
 
   const closeModal = () => {
-    setActivePostId(null);
-    setModalComments([]);
+    setActiveModal(null);
+  };
+
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update Feed Data
+    setReportItems((prev) =>
+      prev.map((item) =>
+        item._id === activeModal.id
+          ? { ...item, comments: updatedComments }
+          : item
+      )
+    );
+
+    // 2. Update Modal Data
+    setActiveModal((prev) =>
+      prev ? { ...prev, data: updatedComments } : null
+    );
   };
 
   // --- API Logic ---
@@ -48,8 +68,8 @@ export default function LostAndFoundContent({
     try {
       const url = searchQuery
         ? `/report_types/getPosts/reportItems?search=${encodeURIComponent(
-            searchQuery
-          )}`
+          searchQuery
+        )}`
         : "/report_types/getPosts/reportItems";
 
       const response = await api.get(url);
@@ -71,14 +91,14 @@ export default function LostAndFoundContent({
   // --- API Logic: Add Comment ---
   const handleAddComment = async (text: string) => {
     // If ID is missing or placeholder, we can't post
-    if (!activePostId || activePostId === "view-only-mode") {
+    if (!activeModal || activeModal.id === "view-only-mode") {
       console.error("Missing Post ID");
       return;
     }
 
     try {
       const response = await api.post(
-        `/report_types/${activePostId}/comments`,
+        `/report_types/${activeModal.id}/comments`,
         { text }
       );
 
@@ -88,14 +108,16 @@ export default function LostAndFoundContent({
         // Update List
         setReportItems((prev) =>
           prev.map((item) =>
-            item._id === activePostId
+            item._id === activeModal.id
               ? { ...item, comments: updatedComments }
               : item
           )
         );
 
         // Update Modal View
-        setModalComments(updatedComments);
+        setActiveModal((prev) =>
+          prev ? { ...prev, data: updatedComments } : null
+        );
       }
     } catch (error) {
       console.error("Failed to add comment:", error);
@@ -129,22 +151,27 @@ export default function LostAndFoundContent({
               isSaved={savedItems.has(item._id)}
               onToggleSave={handleSaveClick}
               onCommentClick={(comments) => {
-                setActivePostId(item._id);
-                setModalComments(comments);
+                setActiveModal({
+                  id: item._id,
+                  postedBy: null, // LostAndFound items might not have 'postedBy' field readily available or used like this? Assuming null as per previous code.
+                  data: comments,
+                  feedType: "report",
+                });
               }}
             />
           ))}
         </>
       )}
 
-      {activePostId && (
+      {activeModal && (
         <CommentModal
-          postId={activePostId}
-          comments={modalComments}
-          postedBy={null}
+          postId={activeModal.id}
+          postedBy={activeModal.postedBy}
+          comments={activeModal.data}
           onClose={closeModal}
-          feedType="report" 
           onAddComment={handleAddComment}
+          feedType={activeModal.feedType}
+          onCommentsUpdated={handleCommentsUpdated}
         />
       )}
     </div>
