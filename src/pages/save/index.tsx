@@ -12,7 +12,7 @@ import AcademicCard, {
 import LostFoundCard, {
   type ReportItem,
 } from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 
 // Unified Type Definition
 type FeedItem =
@@ -29,12 +29,11 @@ export default function SavedContent() {
   const [commentOpenItems, setCommentOpenItems] = useState<Set<string>>(
     new Set()
   );
-  // REMOVED: witnessItems state is no longer needed in the parent since the Card handles it individually.
 
   // --- Modal State ---
   const [activeModal, setActiveModal] = useState<{
     id: string;
-    feedType?: "event" | "academic" | "report";
+    feedType: "event" | "academic" | "report"; // Removed '?' to enforce type safety
     data?: any;
     postedBy?: any;
   } | null>(null);
@@ -56,8 +55,6 @@ export default function SavedContent() {
       return newSet;
     });
   };
-
-  // REMOVED: handleToggleWitness function is no longer needed.
 
   // Unified Comment Modal Opener
   const handleOpenCommentModal = (
@@ -116,6 +113,25 @@ export default function SavedContent() {
     } catch (error) {
       console.error("Failed to add comment:", error);
     }
+  };
+
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update Saved Posts List
+    setSavedPosts((prev) =>
+      prev.map((item) =>
+        item._id === activeModal.id
+          ? { ...item, comments: updatedComments }
+          : item
+      )
+    );
+
+    // 2. Update Modal Data
+    setActiveModal((prev) =>
+      prev ? { ...prev, data: updatedComments } : null
+    );
   };
 
   // ==============================
@@ -200,9 +216,7 @@ export default function SavedContent() {
                 key={item._id}
                 item={item as ReportItem}
                 isSaved={true}
-                // isWitnessed={/* Pass logic here based on current user ID check if needed, or rely on Card's default false */}
                 onToggleSave={() => handleRemoveSaved(item._id)}
-                // ERROR FIXED: Removed onToggleWitness
                 onCommentClick={(comments) =>
                   handleOpenCommentModal(item._id, null, "report", comments)
                 }
@@ -222,6 +236,9 @@ export default function SavedContent() {
           comments={activeModal.data}
           onClose={closeModal}
           onAddComment={handleAddComment}
+          // IMPORTANT FIXES:
+          feedType={activeModal.feedType} // 1. Pass feedType
+          onCommentsUpdated={handleCommentsUpdated} // 2. Handle updates
         />
       )}
     </div>

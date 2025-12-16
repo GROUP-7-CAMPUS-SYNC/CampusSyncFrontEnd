@@ -11,7 +11,7 @@ import AcademicCard, {
 import LostFoundCard, {
   type ReportItem,
 } from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 
 type FeedItem =
   | (EventPost & { feedType: "event" })
@@ -33,7 +33,7 @@ export default function ProfilePage() {
   // Unified Modal State
   const [activeModal, setActiveModal] = useState<{
     id: string;
-    feedType?: "event" | "academic" | "report";
+    feedType: "event" | "academic" | "report"; // Removed '?' to enforce type safety
     data?: any;
     postedBy?: any;
   } | null>(null);
@@ -60,14 +60,14 @@ export default function ProfilePage() {
   const handleOpenCommentModal = (
     id: string,
     postedBy: any,
-    feedType: "event" | "academic" | "report"
+    feedType: "event" | "academic" | "report",
+    comments: any[] // Pass comments directly from card click
   ) => {
-    const post = posts.find((p) => p._id === id);
     setActiveModal({
       id,
       postedBy,
       feedType,
-      data: post?.comments || [],
+      data: comments || [],
     });
     setCommentOpenItems((prev) => new Set(prev).add(id));
   };
@@ -94,7 +94,7 @@ export default function ProfilePage() {
       else if (activeModal.feedType === "academic")
         endpoint = `/academic/${activeModal.id}/comments`;
       else if (activeModal.feedType === "report")
-        endpoint = `/report_types/${activeModal.id}/comments`; // ✅ Added Report Logic
+        endpoint = `/report_types/${activeModal.id}/comments`;
 
       const response = await api.post(endpoint, { text });
 
@@ -118,6 +118,25 @@ export default function ProfilePage() {
     } catch (error) {
       console.error("Failed to add comment:", error);
     }
+  };
+
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update Posts List
+    setPosts((prev) =>
+      prev.map((item) =>
+        item._id === activeModal.id
+          ? { ...item, comments: updatedComments }
+          : item
+      )
+    );
+
+    // 2. Update Active Modal
+    setActiveModal((prev) =>
+      prev ? { ...prev, data: updatedComments } : null
+    );
   };
 
   const fetchUserPosts = async () => {
@@ -228,7 +247,12 @@ export default function ProfilePage() {
                         onToggleSave={handleToggleSave}
                         onToggleNotify={handleToggleNotify}
                         onCommentClick={(id, postedBy) =>
-                          handleOpenCommentModal(id, postedBy, "event")
+                          handleOpenCommentModal(
+                            id,
+                            postedBy,
+                            "event",
+                            item.comments
+                          )
                         }
                       />
                     );
@@ -241,7 +265,12 @@ export default function ProfilePage() {
                         isCommentOpen={commentOpenItems.has(item._id)}
                         onToggleSave={handleToggleSave}
                         onCommentClick={(id, postedBy) =>
-                          handleOpenCommentModal(id, postedBy, "academic")
+                          handleOpenCommentModal(
+                            id,
+                            postedBy,
+                            "academic",
+                            item.comments
+                          )
                         }
                       />
                     );
@@ -252,9 +281,13 @@ export default function ProfilePage() {
                         item={item as ReportItem}
                         isSaved={savedItems.has(item._id)}
                         onToggleSave={handleToggleSave}
-                        // ✅ Use Unified Handler (Matches Dashboard Logic)
-                        onCommentClick={() =>
-                          handleOpenCommentModal(item._id, null, "report")
+                        onCommentClick={(comments) =>
+                          handleOpenCommentModal(
+                            item._id,
+                            null,
+                            "report",
+                            comments
+                          )
                         }
                       />
                     );
@@ -275,6 +308,9 @@ export default function ProfilePage() {
           comments={activeModal.data}
           onClose={closeModal}
           onAddComment={handleAddComment}
+          // IMPORTANT FIXES:
+          feedType={activeModal.feedType} // 1. Pass feedType
+          onCommentsUpdated={handleCommentsUpdated} // 2. Handle updates
         />
       )}
     </div>

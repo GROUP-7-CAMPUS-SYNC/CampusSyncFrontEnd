@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 import EventCard, {
   type EventPost,
 } from "../../components/contentDisplaySection/eventContent/eventContent";
@@ -136,6 +136,7 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               postedBy={activeUser}
               onClose={closeCommentModal}
               comments={activePostData?.comments || []} //  Pass real comments
+              feedType="event"
               onAddComment={handleAddComment} //  Connect handler
             />
           )}

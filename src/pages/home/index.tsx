@@ -11,7 +11,7 @@ import AcademicCard, {
 import LostFoundCard, {
   type ReportItem,
 } from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 
 type FeedItem =
   | (EventPost & { feedType: "event" })
@@ -33,7 +33,7 @@ export default function DashboardContent() {
   // Modal State (Unified)
   const [activeModal, setActiveModal] = useState<{
     id: string;
-    feedType?: "event" | "academic" | "report";
+    feedType: "event" | "academic" | "report"; // Removed '?' to enforce type
     data?: any; // Comments array
     postedBy?: any;
   } | null>(null);
@@ -101,7 +101,7 @@ export default function DashboardContent() {
       if (response.status === 200) {
         const updatedComments = response.data;
 
-        // 1. Update Feed Data (background update for comment count)
+        // 1. Update Feed Data (background update)
         setFeedData((prev) =>
           prev.map((item) =>
             item._id === activeModal.id
@@ -110,7 +110,7 @@ export default function DashboardContent() {
           )
         );
 
-        // 2. Update Modal Data (foreground update for list)
+        // 2. Update Modal Data (foreground update)
         setActiveModal((prev) =>
           prev ? { ...prev, data: updatedComments } : null
         );
@@ -119,6 +119,25 @@ export default function DashboardContent() {
       console.error("Failed to add comment:", error);
     }
   };
+
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update Feed Data
+    setFeedData((prev) =>
+        prev.map((item) =>
+          item._id === activeModal.id
+            ? { ...item, comments: updatedComments }
+            : item
+        )
+      );
+
+    // 2. Update Modal Data
+    setActiveModal((prev) =>
+        prev ? { ...prev, data: updatedComments } : null
+    );
+  }
 
   // --- Fetch Data ---
   useEffect(() => {
@@ -217,6 +236,9 @@ export default function DashboardContent() {
           comments={activeModal.data}
           onClose={closeModal}
           onAddComment={handleAddComment}
+          // IMPORTANT FIXES HERE:
+          feedType={activeModal.feedType} // 1. Pass the correct feedType
+          onCommentsUpdated={handleCommentsUpdated} // 2. Pass update handler
         />
       )}
     </div>
