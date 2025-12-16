@@ -3,7 +3,7 @@ import api from "../../api/api";
 import LostFoundCard, {
   type ReportItem,
 } from "../../components/contentDisplaySection/lostFoundContent/lostfoundContent";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 
 interface LostAndFoundContentProps {
   searchQuery: string;
@@ -143,7 +143,8 @@ export default function LostAndFoundContent({
           comments={modalComments}
           postedBy={null}
           onClose={closeModal}
-          onAddComment={handleAddComment} // ✅ Handler Added
+          feedType="report" 
+          onAddComment={handleAddComment}
         />
       )}
     </div>

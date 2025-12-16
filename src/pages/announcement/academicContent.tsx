@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../api/api";
-import CommentModal from "../../components/contentDisplaySection/comment";
+import CommentModal from "../../components/contentDisplaySection/comment/comment";
 import AcademicCard, {
   type AcademicPost,
 } from "../../components/contentDisplaySection/academicContent/academicContent";
@@ -131,6 +131,7 @@ export default function AcademicContent({ searchQuery }: AcademicContentProps) {
           postId={activePostId}
           postedBy={activeUser}
           comments={activePostData?.comments || []} // Pass real comments
+          feedType="academic"
           onClose={closeCommentModal}
           onAddComment={handleAddComment} // Connect handler
         />

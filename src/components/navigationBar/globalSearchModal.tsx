@@ -14,7 +14,7 @@ import LostFoundCard, {
 } from "../contentDisplaySection/lostFoundContent/lostfoundContent";
 
 // ✅ Import the Shared Comment Modal
-import CommentModal from "../contentDisplaySection/comment";
+import CommentModal from "../contentDisplaySection/comment/comment";
 
 type FeedItem =
   | (EventPost & { feedType: "event" })
@@ -46,7 +46,7 @@ export default function GlobalSearchModal({
   // Modal State
   const [activeModal, setActiveModal] = useState<{
     id: string;
-    feedType?: "event" | "academic" | "report";
+    feedType: "event" | "academic" | "report"; // Removed '?' to enforce type safety
     data?: any;
     postedBy?: any;
   } | null>(null);
@@ -78,6 +78,20 @@ export default function GlobalSearchModal({
     }
   };
 
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update the Active Modal to reflect changes immediately
+    setActiveModal((prev) =>
+      prev ? { ...prev, data: updatedComments } : null
+    );
+
+    // Note: Since this is a search result modal, we might not need to update
+    // the 'results' prop directly unless we hoist state up, but updating the
+    // modal is critical for user feedback.
+  };
+
   if (!isOpen) return null;
 
   // --- Card Handlers ---
@@ -98,18 +112,18 @@ export default function GlobalSearchModal({
     });
   };
 
-  // Unified Handler for Opening Comment Modal (Event/Academic)
+  // Unified Handler for Opening Comment Modal
   const handleOpenCommentForm = (
     id: string,
     postedBy: any,
-    feedType: "event" | "academic"
+    feedType: "event" | "academic" | "report",
+    comments: any[]
   ) => {
-    const item = results.find((r) => r._id === id);
     setActiveModal({
       id,
       postedBy,
       feedType,
-      data: item?.comments || [],
+      data: comments || [],
     });
     setCommentOpenItems((prev) => new Set(prev).add(id));
   };
@@ -170,7 +184,12 @@ export default function GlobalSearchModal({
                         onToggleSave={handleToggleSave}
                         onToggleNotify={handleToggleNotify}
                         onCommentClick={(id, postedBy) =>
-                          handleOpenCommentForm(id, postedBy, "event")
+                          handleOpenCommentForm(
+                            id,
+                            postedBy,
+                            "event",
+                            item.comments
+                          )
                         }
                       />
                     );
@@ -183,7 +202,12 @@ export default function GlobalSearchModal({
                         isCommentOpen={commentOpenItems.has(item._id)}
                         onToggleSave={handleToggleSave}
                         onCommentClick={(id, postedBy) =>
-                          handleOpenCommentForm(id, postedBy, "academic")
+                          handleOpenCommentForm(
+                            id,
+                            postedBy,
+                            "academic",
+                            item.comments
+                          )
                         }
                       />
                     );
@@ -195,12 +219,12 @@ export default function GlobalSearchModal({
                         isSaved={savedItems.has(item._id)}
                         onToggleSave={handleToggleSave}
                         onCommentClick={(comments) => {
-                          setActiveModal({
-                            id: item._id,
-                            feedType: "report",
-                            data: comments,
-                            postedBy: null, // Reports might not need "Reply to X"
-                          });
+                          handleOpenCommentForm(
+                            item._id,
+                            null,
+                            "report",
+                            comments
+                          );
                         }}
                       />
                     );
@@ -213,7 +237,6 @@ export default function GlobalSearchModal({
         </div>
 
         {/* --- Unified Comment Modal --- */}
-        {/* Now uses the EXACT same component as LostAndFound page */}
         {activeModal && (
           <CommentModal
             postId={activeModal.id}
@@ -221,6 +244,9 @@ export default function GlobalSearchModal({
             comments={activeModal.data}
             onClose={closeModal}
             onAddComment={handleAddComment}
+            // IMPORTANT FIXES:
+            feedType={activeModal.feedType} // 1. Pass feedType
+            onCommentsUpdated={handleCommentsUpdated} // 2. Handle updates
           />
         )}
       </div>
