@@ -25,8 +25,12 @@ export default function EventContent({ searchQuery }: EventContentProps) {
   }>({});
 
   // Modal States
-  const [activePostId, setActivePostId] = useState<string | null>(null);
-  const [activeUser, setActiveUser] = useState<any>(null);
+  const [activeModal, setActiveModal] = useState<{
+    id: string;
+    postedBy: any;
+    data: any[];
+    feedType: "event" | "academic" | "report";
+  } | null>(null);
 
   // --- Handlers ---
 
@@ -38,14 +42,37 @@ export default function EventContent({ searchQuery }: EventContentProps) {
     setSavePostClicked((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const handleCommentClick = (id: string, postedBy: any) => {
-    setActivePostId(id);
-    setActiveUser(postedBy);
+  const handleCommentClick = (id: string, postedBy: any, comments: any[]) => {
+    setActiveModal({
+      id,
+      postedBy,
+      data: comments || [],
+      feedType: "event",
+    });
     setCommentClicked((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const closeCommentModal = () => {
-    setActivePostId(null);
+    setActiveModal(null);
+  };
+
+  // --- Handle Comment Updates (Edit/Delete) ---
+  const handleCommentsUpdated = (updatedComments: any[]) => {
+    if (!activeModal) return;
+
+    // 1. Update Feed Data
+    setEventPosts((prev) =>
+      prev.map((item) =>
+        item._id === activeModal.id
+          ? { ...item, comments: updatedComments }
+          : item
+      )
+    );
+
+    // 2. Update Modal Data
+    setActiveModal((prev) =>
+      prev ? { ...prev, data: updatedComments } : null
+    );
   };
 
   // --- API Logic: Fetch Posts ---
@@ -71,10 +98,10 @@ export default function EventContent({ searchQuery }: EventContentProps) {
 
   // --- API Logic: Add Comment ---
   const handleAddComment = async (text: string) => {
-    if (!activePostId) return;
+    if (!activeModal) return;
 
     try {
-      const response = await api.post(`/events/${activePostId}/comments`, {
+      const response = await api.post(`/events/${activeModal.id}/comments`, {
         text,
       });
 
@@ -84,10 +111,15 @@ export default function EventContent({ searchQuery }: EventContentProps) {
         // Update local state instantly
         setEventPosts((prevPosts) =>
           prevPosts.map((post) =>
-            post._id === activePostId
+            post._id === activeModal.id
               ? { ...post, comments: updatedComments }
               : post
           )
+        );
+
+        // Update Modal Data
+        setActiveModal((prev) =>
+          prev ? { ...prev, data: updatedComments } : null
         );
       }
     } catch (error) {
@@ -102,9 +134,6 @@ export default function EventContent({ searchQuery }: EventContentProps) {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
-
-  // Helper: Find Active Post Data
-  const activePostData = eventPosts.find((p) => p._id === activePostId);
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-gray-200 sm:bg-[#f1f3f7]">
@@ -126,18 +155,19 @@ export default function EventContent({ searchQuery }: EventContentProps) {
               commentCount={post.comments?.length || 0} //  Use real count
               onToggleSave={handleToggleSave}
               onToggleNotify={handleToggleNotify}
-              onCommentClick={handleCommentClick}
+              onCommentClick={(id, postedBy) => handleCommentClick(id, postedBy, post.comments)}
             />
           ))}
 
-          {activePostId && (
+          {activeModal && (
             <CommentModal
-              postId={activePostId}
-              postedBy={activeUser}
+              postId={activeModal.id}
+              postedBy={activeModal.postedBy}
+              comments={activeModal.data}
               onClose={closeCommentModal}
-              comments={activePostData?.comments || []} //  Pass real comments
-              feedType="event"
-              onAddComment={handleAddComment} //  Connect handler
+              onAddComment={handleAddComment}
+              feedType={activeModal.feedType}
+              onCommentsUpdated={handleCommentsUpdated}
             />
           )}
         </>
