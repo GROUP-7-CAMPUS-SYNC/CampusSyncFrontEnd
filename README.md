@@ -1,73 +1,64 @@
-# React + TypeScript + Vite
+# CampusSync Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The frontend user interface for CampusSync, built with React, TypeScript, and Vite. It features a modern, responsive design using TailwindCSS.
 
-Currently, two official plugins are available:
+## 🚀 Technologies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **Framework**: React 19
+*   **Build Tool**: Vite
+*   **Language**: TypeScript
+*   **Styling**: TailwindCSS v4
+*   **Routing**: React Router DOM 7
+*   **HTTP Client**: Axios
+*   **Icons**: Lucide React, React Icons
 
-## React Compiler
+## 🛠️ Installation & Setup
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+1.  **Navigate to the directory**:
+    ```bash
+    cd CampusSyncFrontEnd
+    ```
 
-## Expanding the ESLint configuration
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+3.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+    The app will typically run at `http://localhost:5173`.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+4.  **Build for Production**:
+    ```bash
+    npm run build
+    ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📂 Project Structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── api/            # API configuration (Axios)
+├── components/     # Reusable UI components
+├── pages/          # Application views/routes
+├── hooks/          # Custom React hooks
+├── types/          # TypeScript interface definitions
+├── utils/          # Helper functions
+└── App.tsx         # Main application component
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🐳 Docker Support
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+This project includes a `Dockerfile` and `nginx.conf` for production deployment via Nginx.
+To build the image:
+```bash
+docker build -t campussync-frontend .
 ```
+
+## ✨ Key Features
+
+*   **Organization Management**: Moderators can manage organization details and posts.
+*   **Event & Academic Posts**: Users can view, save, and interact with various post types.
+*   **Global Search**: Integrated search bar for finding content across the platform.
+*   **Responsive Design**: Optimized for both desktop and mobile views.
