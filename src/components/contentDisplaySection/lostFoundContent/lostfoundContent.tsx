@@ -335,8 +335,8 @@ export default function LostFoundCard({
       </div>
 
       {/* WITNESS TOGGLE */}
-      {witnessCount > 0 && (
-        <div className="flex flex-row justify-between mt-4 mb-2 ">
+      <div className="flex flex-row justify-between mt-4 mb-2 ">
+        {witnessCount > 0 ? (
           <button
             disabled={isSubmitting}
             onClick={handleToggleWitnessList}
@@ -352,20 +352,22 @@ export default function LostFoundCard({
                 }`}
             />
           </button>
-          <button
-            onClick={() => onCommentClick?.(item.comments)}
-            className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
-          >
-            {item.comments?.length || 0} Comments
-          </button>
-        </div>
-      )}
+        ) : (
+          <div />
+        )}
+        <button
+          onClick={() => onCommentClick?.(item.comments)}
+          className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
+        >
+          {item.comments?.length || 0} Comments
+        </button>
+      </div>
 
       {/* WITNESS LIST */}
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out mt-0 ${showWitnessList
-            ? "max-h-48 mt-2 opacity-100 p-3"
-            : "max-h-0 mt-0 opacity-0"
+          ? "max-h-48 mt-2 opacity-100 p-3"
+          : "max-h-0 mt-0 opacity-0"
           } bg-gray-50 rounded-lg space-y-3 border border-gray-100 shadow-inner custom-scrollbar`}
       >
         {isLoadingWitnesses ? (
