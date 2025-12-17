@@ -1,4 +1,4 @@
-# CampusSync Frontend
+# CampusSync 
 
 <div align="center">
   <img src="./public/WebsiteLogoWhiteBackGround.png" alt="CampusSync Logo" width="50%" />
