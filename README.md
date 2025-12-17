@@ -67,14 +67,28 @@ This project prioritizes **performance, maintainability, and scalability**.
 ## 📂 Project Structure
 
 ```
-src/
-├── api/            # API configuration (Axios)
-├── components/     # Reusable UI components
-├── pages/          # Application views/routes
-├── hooks/          # Custom React hooks
-├── types/          # TypeScript interface definitions
-├── utils/          # Helper functions
-└── App.tsx         # Main application component
+frontend/
+├── docs/               # 📚 Comprehensive Project Documentation
+│   ├── features/       # Feature-specific guides (Auth, Posts, User)
+│   ├── technical/      # Architecture, Tech Stack, & Deployment docs
+│   ├── ProjectOverview.md
+│   ├── UserGuide.md
+│   └── ...
+├── public/             # Static assets (Logos, Icons)
+├── src/
+│   ├── api/            # 🔌 Axios configuration & API keys
+│   ├── components/     # 🧩 Reusable UI components (Buttons, Cards)
+│   ├── pages/          # 📄 Application Routes/Views
+│   ├── hooks/          # 🪝 Custom React Hooks
+│   ├── types/          # 🏷️ TypeScript Interfaces/Types
+│   ├── utils/          # 🛠️ Helper Functions
+│   └── App.tsx         # Main entry component
+├── .env                # Environment variables
+├── Dockerfile          # 🐳 Multi-stage Docker configuration
+├── nginx.conf          # 🌐 Nginx configuration for SPA routing
+├── package.json        # Dependencies & Scripts
+├── tailwind.config.js  # Styling configuration
+└── vite.config.ts      # Vite build configuration
 ```
 
 ## 🐳 Docker Support
