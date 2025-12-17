@@ -14,12 +14,12 @@ A centralized, communication platform designed to unify the USTP community under
 ## 📚 Documentation
 We have prepared comprehensive documentation for the project defense:
 
-*   **[Features & User Guide](./src/docs/UserGuide.md)**
-*   **[Technical Architecture](./src/docs/technical/Architecture.md)**
-*   **[Security & Privacy](./src/docs/features/AuthSystem.md)**
-*   **[Future Roadmap](./src/docs/FutureRoadmap.md)**
+*   **[Features & User Guide](./docs/UserGuide.md)**
+*   **[Technical Architecture](./docs/technical/Architecture.md)**
+*   **[Security & Privacy](./docs/features/AuthSystem.md)**
+*   **[Future Roadmap](./docs/FutureRoadmap.md)**
 
-[**View Full Documentation**](./src/docs/ProjectOverview.md)
+[**View Full Documentation**](./docs/ProjectOverview.md)
 
 ## 🚀 Technologies
 
