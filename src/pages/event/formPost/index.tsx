@@ -3,7 +3,7 @@ import Button from "../../../components/button"
 import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useState, useEffect } from "react";
-import { Calendar, CheckCircle, XCircleIcon, Loader2 } from "lucide-react"; 
+import { Calendar, CheckCircle, XCircleIcon, Loader2 } from "lucide-react";
 import api from "../../../api/api"
 
 // Interface for Edit Mode Data
@@ -52,7 +52,7 @@ export default function Index({
     const [eventLocation, setEventLocation] = useState<string>(initialData?.location || "");
     const [course, setCourse] = useState<string>(initialData?.course || "");
     const [openTo, setOpenTo] = useState<string>(initialData?.openTo || "");
-    
+
     // Date State
     const [startDate, setStartDate] = useState<string>(
         initialData?.startDate ? formatForInput(initialData.startDate) : ""
@@ -60,7 +60,7 @@ export default function Index({
     const [endDate, setEndDate] = useState<string>(
         initialData?.endDate ? formatForInput(initialData.endDate) : ""
     );
-    
+
     // Organization State
     // If editing, we might not need to select org again if backend handles it, 
     // but for UI consistency we can try to pre-select if ID is known.
@@ -76,15 +76,15 @@ export default function Index({
     const [dateError, setDateError] = useState<string>("")
     const [step, setStep] = useState<number>(1)
     const [successfullySubmitted, setSuccessfullySubmitted] = useState<boolean>(false)
-    
+
     // Loading State
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-    
+
     const [submissionError, setSubmissionError] = useState<string | null>(null);
 
     const [cloudinaryError, setCloudinaryError] = useState<boolean>(false)
     const [cloudinaryErrorMessage, setCloudinaryErrorMessage] = useState<string>("")
-    
+
     useEffect(() => {
         const getAllOrganizationAssigned = async () => {
             try {
@@ -96,15 +96,15 @@ export default function Index({
                         _id: org._id,
                         organizationName: org.organizationName,
                     }));
-                    
+
                     setManagedOrgs(formattedData);
-                    
+
                     // Only auto-select first org if NOT in edit mode (or if initialData didn't have one)
                     if (!initialData) {
-                        setOrganizationId(formattedData[0]._id); 
+                        setOrganizationId(formattedData[0]._id);
                     }
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error("Error fetching organizations:", error);
                 setSubmissionError("Failed to load organization data.");
             }
@@ -113,15 +113,27 @@ export default function Index({
         getAllOrganizationAssigned();
     }, [initialData]);
 
+    /* 
+        Updated Validation Constants 
+    */
+    const MIN_CHAR = 3;
+    const MAX_CHAR_ITEM = 100;
+
     const handleFirstStep = () => {
         setFormSubmitted(true)
         setSubmissionError(null)
-        
+
+        // Validation Logic
+        const isEventNameValid = eventName.trim().length >= MIN_CHAR && eventName.trim().length <= MAX_CHAR_ITEM;
+        const isLocationValid = eventLocation.trim().length >= MIN_CHAR && eventLocation.trim().length <= MAX_CHAR_ITEM;
+        const isCourseValid = course.trim().length >= MIN_CHAR && course.trim().length <= MAX_CHAR_ITEM;
+        const isOpenToValid = openTo.trim().length >= MIN_CHAR && openTo.trim().length <= MAX_CHAR_ITEM;
+
         // In Update mode, organizationId might be hidden/disabled, ensure validation passes
-        if(eventName.trim() === "" || eventLocation.trim() === "" || course.trim() === "" || openTo.trim() === "") return;
-        
+        if (!isEventNameValid || !isLocationValid || !isCourseValid || !isOpenToValid) return;
+
         // If creating new post, Org is mandatory. If editing, we assume Org is already linked in backend.
-        if(!isEditMode && organizationId === "") return;
+        if (!isEditMode && organizationId === "") return;
 
         setFormSubmitted(false)
         setStep(2)
@@ -131,7 +143,7 @@ export default function Index({
         setFormSubmitted(true)
         setDateError("")
 
-        if(startDate.trim() === "" || endDate.trim() === "") {
+        if (startDate.trim() === "" || endDate.trim() === "") {
             setDateError("Please fill in both start and end dates")
             return
         }
@@ -143,12 +155,12 @@ export default function Index({
 
         // Only enforce minimum start date for NEW events, or if user changed the date
         // Ideally, we allow editing past events without strict future validation to fix typos.
-        if(!isEditMode && startEventTime < minimumStartDate) {
+        if (!isEditMode && startEventTime < minimumStartDate) {
             setDateError("Event must start at least 1 hour from now")
             return
         }
 
-        if(startEventTime >= endEventTime) {
+        if (startEventTime >= endEventTime) {
             setDateError("Start date cannot be after or the same as end date")
             return
         }
@@ -165,12 +177,11 @@ export default function Index({
         setSubmissionError(null);
 
         // Validation: Must have new file OR existing URL
-        if(!image && !existingImageUrl) return 
+        if (!image && !existingImageUrl) return
 
         setIsSubmitting(true);
 
-        try 
-        {
+        try {
             let finalImageUrl = existingImageUrl || "";
 
             // 1. Upload if new image selected
@@ -180,20 +191,19 @@ export default function Index({
 
                 const formData = new FormData()
                 formData.append("file", image)
-                formData.append("api_key", apiKey); 
+                formData.append("api_key", apiKey);
                 formData.append("timestamp", timestamp.toString());
                 formData.append("signature", signature);
                 formData.append("folder", folder);
 
                 const uploadResponse = await fetch(
-                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, 
+                    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
                     { method: "POST", body: formData }
                 )
-                
+
                 const uploadData = await uploadResponse.json()
 
-                if(!uploadResponse.ok)
-                {
+                if (!uploadResponse.ok) {
                     setCloudinaryError(true)
                     setCloudinaryErrorMessage(uploadData.error.message || "Upload failed")
                     setIsSubmitting(false);
@@ -237,7 +247,7 @@ export default function Index({
             console.error("Submission failed:", e);
             setSubmissionError(e.response?.data?.message || 'Network error.');
             setIsSubmitting(false);
-        } 
+        }
     }
 
     const isEditMode = !!initialData;
@@ -245,213 +255,213 @@ export default function Index({
 
     return (
         <>
-        <Modal cardContainerDesign = "bg-white shadow-lg rounded-lg p-6 w-[500px]">
-            {successfullySubmitted ? (
-                <div className="text-center p-4">
-                    <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">
-                        {isEditMode ? "Event Updated!" : "Event Created!"}
-                    </h2>
-                    <p className="text-gray-600 mb-6">
-                        Event Post has been successfully {isEditMode ? "updated" : "published"}.
-                    </p>
-                    <p className="text-xs text-gray-400">Closing automatically...</p>
-                    <Button type="button" buttonText="Close" onClick={onClose} />
-                </div>
-            ) : (
-                <form onSubmit={handleSubmit}>
-                    {submissionError && (
-                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                            <p className="font-semibold">Error:</p>
-                            <p>{submissionError}</p>
-                        </div>
-                    )}
-
-                    {step === 1 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6">
-                                {isEditMode ? "Edit Event Details" : "Event Details"}
-                            </h2>
-                            
-                            {/* Organization Select - Disable in Edit Mode for simplicity, or handle complex org switching */}
-                            <div className="flex flex-col gap-1 mb-4">
-                                <label className="text-sm text-gray-700 font-semibold" htmlFor="org-select">Post As Organization:</label>
-                                <div className="relative">
-                                    <select
-                                        id="org-select"
-                                        value={organizationId}
-                                        onChange={(e) => setOrganizationId(e.target.value)}
-                                        className="appearance-none border border-gray-400 rounded-[5px] px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white cursor-pointer text-gray-900 disabled:bg-gray-100"
-                                        // Disable org selection in Edit Mode to prevent moving events between orgs easily (optional rule)
-                                        disabled={isEditMode || isOrgLoading || managedOrgs.length === 0}
-                                    >
-                                        {isOrgLoading ? (
-                                            <option disabled>Loading organizations...</option>
-                                        ) : managedOrgs.length > 0 ? (
-                                            managedOrgs.map((org) => (
-                                                <option key={org._id} value={org._id} className="text-gray-900">
-                                                    {org.organizationName}
-                                                </option>
-                                            ))
-                                        ) : (
-                                            <option disabled>No managed organizations found</option>
-                                        )}
-                                    </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                {formSubmitted && !isEditMode && organizationId === "" && (
-                                    <p className="text-red-500 text-sm mt-1">Please select an organization</p>
-                                )}
-                            </div>
-                            
-                            <StringTextField
-                                label="Event Name"
-                                placeholder="Enter Event Name"
-                                value={eventName}
-                                onChange={(e) => setEventName(e.target.value)}
-                                errorMessage="Event name minimum of 3 characters"
-                                showError={formSubmitted && eventName.trim() === ""}
-                            />
-                            <StringTextField
-                                label="Location"
-                                placeholder="Enter Event Location"
-                                value={eventLocation}
-                                onChange={(e) => setEventLocation(e.target.value)}
-                                errorMessage="Please fill the text field"
-                                showError={formSubmitted && eventLocation.trim() === ""}
-                            />
-                            <StringTextField
-                                label="Course"
-                                placeholder="e.g. All BSIT Students"
-                                value={course}
-                                onChange={(e) => setCourse(e.target.value)}
-                                errorMessage="Please fill the text field"
-                                showError={formSubmitted && course.trim() === ""}
-                            />
-                            <StringTextField
-                                label="Open To"
-                                placeholder="e.g. Open to Everyone"
-                                value={openTo}
-                                onChange={(e) => setOpenTo(e.target.value)}
-                                errorMessage="Please fill the text field"
-                                showError={formSubmitted && openTo.trim() === ""}
-                            />
-
-                            <div className="flex flex-row gap-x-10 mt-2">
-                                <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Close" onClick={onClose} />
-                                <Button type="button" buttonText="Continue" onClick={handleFirstStep} />
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 2 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6">Event Dates</h2>
-                            {dateError && (
-                                <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg">
-                                    <p className="text-red-600 text-sm font-semibold">{dateError}</p>
-                                </div>
-                            )}
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date & Time</label>
-                                <div className="relative flex items-center">
-                                    <Calendar className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
-                                    <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                                </div>
-                                {formSubmitted && startDate.trim() === "" && <p className="text-red-500 text-sm mt-1">Please select start date</p>}
-                            </div>
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">End Date & Time</label>
-                                <div className="relative flex items-center">
-                                    <Calendar className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
-                                    <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
-                                </div>
-                                {formSubmitted && endDate.trim() === "" && <p className="text-red-500 text-sm mt-1">Please select end date</p>}
-                            </div>
-                            {startDate && endDate && !dateError && (
-                                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                    <p className="text-sm text-gray-700"><span className="font-semibold">Event Duration:</span> {new Date(startDate).toLocaleString()} - {new Date(endDate).toLocaleString()}</p>
-                                </div>
-                            )}
-                            <div className="flex flex-row gap-x-10 mt-2">
-                                <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setStep(1)} />
-                                <Button type="button" buttonText="Continue" onClick={handleSecondStep} />
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div>
-                            <h2 className="text-2xl font-bold mb-6">Upload Event Image</h2>
-                            
-                            <div className="mb-4 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
-                                Posting as: <strong>{managedOrgs.find(o => o._id === organizationId)?.organizationName || (isEditMode ? "Current Organization" : 'N/A')}</strong>
-                            </div>
-
-                            {/* EXISTING IMAGE PREVIEW FOR EDIT MODE */}
-                            {existingImageUrl && !image && (
-                                <div className="mb-4">
-                                    <p className="text-sm text-gray-500 mb-1">Current Image:</p>
-                                    <img src={existingImageUrl} alt="Current" className="h-32 w-auto object-cover rounded-md border" />
-                                </div>
-                            )}
-
-                            <UploadPicture image={image} setImage={setImage} />
-                            
-                            {formSubmitted && !image && !existingImageUrl && (
-                                <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
-                            )}
-
-                            <div className="flex flex-row gap-x-10 mt-2">
-                                <Button 
-                                    buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" 
-                                    type="button" 
-                                    buttonText="Back" 
-                                    onClick={() => setStep(2)}
-                                />
-                                
-                                <Button 
-                                    type="submit" 
-                                    buttonText={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update" : "Submit")} 
-                                />
-                            </div>
-                        </div>
-                    )}
-                </form>
-            )}
-
-            {cloudinaryError && (
-                <Modal>
-                    <div className="text-center flex flex-col items-center justify-center p-4">
-                    <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">Image Upload Failed</h2>
-                    <p className="text-gray-600 mb-6">{cloudinaryErrorMessage}</p>
-                    <Button
-                        type="button"
-                        buttonText="Close"
-                        onClick={onClose}
-                    />
+            <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-[500px]">
+                {successfullySubmitted ? (
+                    <div className="text-center p-4">
+                        <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-4" />
+                        <h2 className="text-xl font-bold text-gray-800 mb-2">
+                            {isEditMode ? "Event Updated!" : "Event Created!"}
+                        </h2>
+                        <p className="text-gray-600 mb-6">
+                            Event Post has been successfully {isEditMode ? "updated" : "published"}.
+                        </p>
+                        <p className="text-xs text-gray-400">Closing automatically...</p>
+                        <Button type="button" buttonText="Close" onClick={onClose} />
                     </div>
+                ) : (
+                    <form onSubmit={handleSubmit}>
+                        {submissionError && (
+                            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                                <p className="font-semibold">Error:</p>
+                                <p>{submissionError}</p>
+                            </div>
+                        )}
+
+                        {step === 1 && (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-6">
+                                    {isEditMode ? "Edit Event Details" : "Event Details"}
+                                </h2>
+
+                                {/* Organization Select - Disable in Edit Mode for simplicity, or handle complex org switching */}
+                                <div className="flex flex-col gap-1 mb-4">
+                                    <label className="text-sm text-gray-700 font-semibold" htmlFor="org-select">Post As Organization:</label>
+                                    <div className="relative">
+                                        <select
+                                            id="org-select"
+                                            value={organizationId}
+                                            onChange={(e) => setOrganizationId(e.target.value)}
+                                            className="appearance-none border border-gray-400 rounded-[5px] px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white cursor-pointer text-gray-900 disabled:bg-gray-100"
+                                            // Disable org selection in Edit Mode to prevent moving events between orgs easily (optional rule)
+                                            disabled={isEditMode || isOrgLoading || managedOrgs.length === 0}
+                                        >
+                                            {isOrgLoading ? (
+                                                <option disabled>Loading organizations...</option>
+                                            ) : managedOrgs.length > 0 ? (
+                                                managedOrgs.map((org) => (
+                                                    <option key={org._id} value={org._id} className="text-gray-900">
+                                                        {org.organizationName}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option disabled>No managed organizations found</option>
+                                            )}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    {formSubmitted && !isEditMode && organizationId === "" && (
+                                        <p className="text-red-500 text-sm mt-1">Please select an organization</p>
+                                    )}
+                                </div>
+
+                                <StringTextField
+                                    label="Event Name"
+                                    placeholder="Enter Event Name"
+                                    value={eventName}
+                                    onChange={(e) => setEventName(e.target.value)}
+                                    errorMessage="Must be between 3 and 100 characters"
+                                    showError={formSubmitted && (eventName.trim().length < MIN_CHAR || eventName.trim().length > MAX_CHAR_ITEM)}
+                                />
+                                <StringTextField
+                                    label="Location"
+                                    placeholder="Enter Event Location"
+                                    value={eventLocation}
+                                    onChange={(e) => setEventLocation(e.target.value)}
+                                    errorMessage="Must be between 3 and 100 characters"
+                                    showError={formSubmitted && (eventLocation.trim().length < MIN_CHAR || eventLocation.trim().length > MAX_CHAR_ITEM)}
+                                />
+                                <StringTextField
+                                    label="Course"
+                                    placeholder="e.g. All BSIT Students"
+                                    value={course}
+                                    onChange={(e) => setCourse(e.target.value)}
+                                    errorMessage="Must be between 3 and 100 characters"
+                                    showError={formSubmitted && (course.trim().length < MIN_CHAR || course.trim().length > MAX_CHAR_ITEM)}
+                                />
+                                <StringTextField
+                                    label="Open To"
+                                    placeholder="e.g. Open to Everyone"
+                                    value={openTo}
+                                    onChange={(e) => setOpenTo(e.target.value)}
+                                    errorMessage="Must be between 3 and 100 characters"
+                                    showError={formSubmitted && (openTo.trim().length < MIN_CHAR || openTo.trim().length > MAX_CHAR_ITEM)}
+                                />
+
+                                <div className="flex flex-row gap-x-10 mt-2">
+                                    <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Close" onClick={onClose} />
+                                    <Button type="button" buttonText="Continue" onClick={handleFirstStep} />
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 2 && (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-6">Event Dates</h2>
+                                {dateError && (
+                                    <div className="mb-4 p-3 bg-red-50 border border-red-300 rounded-lg">
+                                        <p className="text-red-600 text-sm font-semibold">{dateError}</p>
+                                    </div>
+                                )}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date & Time</label>
+                                    <div className="relative flex items-center">
+                                        <Calendar className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                                        <input type="datetime-local" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                    </div>
+                                    {formSubmitted && startDate.trim() === "" && <p className="text-red-500 text-sm mt-1">Please select start date</p>}
+                                </div>
+                                <div className="mb-6">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">End Date & Time</label>
+                                    <div className="relative flex items-center">
+                                        <Calendar className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
+                                        <input type="datetime-local" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                                    </div>
+                                    {formSubmitted && endDate.trim() === "" && <p className="text-red-500 text-sm mt-1">Please select end date</p>}
+                                </div>
+                                {startDate && endDate && !dateError && (
+                                    <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <p className="text-sm text-gray-700"><span className="font-semibold">Event Duration:</span> {new Date(startDate).toLocaleString()} - {new Date(endDate).toLocaleString()}</p>
+                                    </div>
+                                )}
+                                <div className="flex flex-row gap-x-10 mt-2">
+                                    <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setStep(1)} />
+                                    <Button type="button" buttonText="Continue" onClick={handleSecondStep} />
+                                </div>
+                            </div>
+                        )}
+
+                        {step === 3 && (
+                            <div>
+                                <h2 className="text-2xl font-bold mb-6">Upload Event Image</h2>
+
+                                <div className="mb-4 text-sm text-gray-600 bg-gray-50 p-2 rounded border border-gray-200">
+                                    Posting as: <strong>{managedOrgs.find(o => o._id === organizationId)?.organizationName || (isEditMode ? "Current Organization" : 'N/A')}</strong>
+                                </div>
+
+                                {/* EXISTING IMAGE PREVIEW FOR EDIT MODE */}
+                                {existingImageUrl && !image && (
+                                    <div className="mb-4">
+                                        <p className="text-sm text-gray-500 mb-1">Current Image:</p>
+                                        <img src={existingImageUrl} alt="Current" className="h-32 w-auto object-cover rounded-md border" />
+                                    </div>
+                                )}
+
+                                <UploadPicture image={image} setImage={setImage} />
+
+                                {formSubmitted && !image && !existingImageUrl && (
+                                    <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
+                                )}
+
+                                <div className="flex flex-row gap-x-10 mt-2">
+                                    <Button
+                                        buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer"
+                                        type="button"
+                                        buttonText="Back"
+                                        onClick={() => setStep(2)}
+                                    />
+
+                                    <Button
+                                        type="submit"
+                                        buttonText={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update" : "Submit")}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </form>
+                )}
+
+                {cloudinaryError && (
+                    <Modal>
+                        <div className="text-center flex flex-col items-center justify-center p-4">
+                            <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+                            <h2 className="text-xl font-bold text-gray-800 mb-2">Image Upload Failed</h2>
+                            <p className="text-gray-600 mb-6">{cloudinaryErrorMessage}</p>
+                            <Button
+                                type="button"
+                                buttonText="Close"
+                                onClick={onClose}
+                            />
+                        </div>
+                    </Modal>
+                )}
+            </Modal>
+
+            {/* NEW: Loading Modal Overlay */}
+            {isSubmitting && (
+                <Modal
+                    cardContainerDesign="bg-white shadow-lg rounded-lg p-8 w-[300px] flex flex-col items-center justify-center"
+                >
+                    <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-800">
+                        {isEditMode ? "Updating..." : "Submitting..."}
+                    </h3>
+                    <p className="text-gray-500 text-sm mt-2">Please wait...</p>
                 </Modal>
             )}
-        </Modal>
-
-        {/* NEW: Loading Modal Overlay */}
-        {isSubmitting && (
-        <Modal
-            cardContainerDesign="bg-white shadow-lg rounded-lg p-8 w-[300px] flex flex-col items-center justify-center"
-        >
-            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-            <h3 className="text-lg font-semibold text-gray-800">
-                {isEditMode ? "Updating..." : "Submitting..."}
-            </h3>
-            <p className="text-gray-500 text-sm mt-2">Please wait...</p>
-        </Modal>
-        )}
         </>
     )
 }
