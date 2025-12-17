@@ -4,9 +4,9 @@ import StringTextField from "../../../components/stringTextField";
 import UploadPicture from "../../../components/uploadPicture";
 import { useState } from "react";
 import type { ChangeEvent } from "react";
-import { Calendar, Loader2 } from "lucide-react"; 
+import { Calendar, Loader2 } from "lucide-react";
 import api from "../../../api/api";
-import { CheckCircle, XCircleIcon } from "lucide-react"; 
+import { CheckCircle, XCircleIcon } from "lucide-react";
 
 // Interface for editing data
 interface ReportItemData {
@@ -31,13 +31,13 @@ const formatForInput = (isoString: string) => {
   if (!isoString) return "";
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return "";
-  
+
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
@@ -50,7 +50,7 @@ export default function index({ onClose, initialData }: CreatePostProps) {
   const [validContact, setValidContact] = useState<boolean>(true);
   const [turnedOver, setTurnedOver] = useState<string>(initialData?.turnOver || "");
   const [description, setDescription] = useState<string>(initialData?.description || "");
-  
+
   const [timeDetails, setTimeDetails] = useState<string>(
     initialData?.dateLostOrFound ? formatForInput(initialData.dateLostOrFound) : ""
   );
@@ -60,7 +60,7 @@ export default function index({ onClose, initialData }: CreatePostProps) {
 
 
   const [image, setImage] = useState<File | null>(null);
-  
+
   // Store the existing image URL to show preview in edit mode
   // Note: We don't need the setter, so just destructure the value
   const [existingImageUrl] = useState<string | null>(initialData?.image || null);
@@ -71,7 +71,14 @@ export default function index({ onClose, initialData }: CreatePostProps) {
   const [dateError, setDateError] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  const showContentError = formSubmitted && description.trim() === "";
+  /* 
+    Updated Validation Constants 
+  */
+  const MIN_CHAR = 3;
+  const MAX_CHAR_ITEM = 100;
+  const MAX_CHAR_DESC = 400;
+
+  const showContentError = formSubmitted && (description.trim().length < MIN_CHAR || description.trim().length > MAX_CHAR_DESC);
   const [cloudinaryError, setCloudinaryError] = useState<boolean>(false);
   const [cloudinaryErrorMessage, setCloudinaryErrorMessage] = useState<string>("");
 
@@ -96,12 +103,17 @@ export default function index({ onClose, initialData }: CreatePostProps) {
 
   const handleFirstStep = () => {
     setFormSubmitted(true);
-    if (
-      itemName.trim() == "" ||
-      description.trim() == "" ||
-      (reportType === "Found" && turnedOver.trim() === "")
-    )
+
+    // Validation Logic
+    const isItemNameValid = itemName.trim().length >= MIN_CHAR && itemName.trim().length <= MAX_CHAR_ITEM;
+    const isDescValid = description.trim().length >= MIN_CHAR && description.trim().length <= MAX_CHAR_DESC;
+    const isTurnOverValid = reportType === "Found"
+      ? (turnedOver.trim().length >= MIN_CHAR && turnedOver.trim().length <= MAX_CHAR_ITEM)
+      : true;
+
+    if (!isItemNameValid || !isDescValid || !isTurnOverValid)
       return;
+
     setFormSubmitted(false);
     setSteps(2);
   };
@@ -111,15 +123,17 @@ export default function index({ onClose, initialData }: CreatePostProps) {
     const isContactValid = validatePhoneNumber(contact);
     setValidContact(isContactValid);
 
+    const isLocationValid = locationDetails.trim().length >= MIN_CHAR && locationDetails.trim().length <= MAX_CHAR_ITEM;
+
     if (
       contact.trim() == "" ||
       !isContactValid ||
-      locationDetails.trim() == "" ||
+      !isLocationValid ||
       timeDetails.trim() == ""
     ) {
       return;
     }
-    
+
     const foundItemTime = new Date(timeDetails);
     const today = new Date();
     if (foundItemTime > today) {
@@ -135,7 +149,7 @@ export default function index({ onClose, initialData }: CreatePostProps) {
     if (isSubmitting) return;
 
     setFormSubmitted(true);
-    
+
     // Valid if new file selected OR existing URL present
     if (!image && !existingImageUrl) return;
 
@@ -192,14 +206,14 @@ export default function index({ onClose, initialData }: CreatePostProps) {
         // CREATE REQUEST
         response = await api.post("/report_types/createPost", payload);
       }
-      
+
       if (response.status === 201 || response.status === 200) {
-          setSuccessfullySubmitted(true);
-          setIsSubmitting(false);
+        setSuccessfullySubmitted(true);
+        setIsSubmitting(false);
       } else {
-          setIsSubmitting(false);
+        setIsSubmitting(false);
       }
-    } catch (error : any) {
+    } catch (error: any) {
       console.log(error);
       setIsSubmitting(false);
       setFormPostError(true);
@@ -213,157 +227,159 @@ export default function index({ onClose, initialData }: CreatePostProps) {
     <>
       <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-6 w-[500px]">
         {successfullySubmitted ? (
-            <div className="text-center flex flex-col items-center justify-center p-4">
+          <div className="text-center flex flex-col items-center justify-center p-4">
             <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
             <h2 className="text-xl font-bold text-gray-800 mb-2">
-                {isEditMode ? "Post Updated!" : "Post Created!"}
+              {isEditMode ? "Post Updated!" : "Post Created!"}
             </h2>
             <p className="text-gray-600 mb-6">
-                Your report has been successfully {isEditMode ? "updated" : "published"}.
+              Your report has been successfully {isEditMode ? "updated" : "published"}.
             </p>
             <Button type="button" buttonText="Close" onClick={onClose} />
-            </div>
+          </div>
         ) : (
-            <form onSubmit={handleSubmit} action="">
+          <form onSubmit={handleSubmit} action="">
             {step === 1 && (
-                <>
+              <>
                 <h2 className="text-2xl font-bold mb-6">
-                    {isEditMode ? "Edit Report" : "Lost & Found Report"}
+                  {isEditMode ? "Edit Report" : "Lost & Found Report"}
                 </h2>
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm text-gray-700" htmlFor="report-type">Report Type</label>
-                    <div className="relative flex items-center gap-2">
+                  <label className="text-sm text-gray-700" htmlFor="report-type">Report Type</label>
+                  <div className="relative flex items-center gap-2">
                     <select
-                        id="report-type"
-                        value={reportType}
-                        onChange={(e) => setReportType(e.target.value)}
-                        className={`appearance-none border border-gray-400 rounded-[5px] px-3 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8`}
+                      id="report-type"
+                      value={reportType}
+                      onChange={(e) => setReportType(e.target.value)}
+                      className={`appearance-none border border-gray-400 rounded-[5px] px-3 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 pr-8`}
                     >
-                        <option value="Found">Found</option>
-                        <option value="Lost">Lost</option>
+                      <option value="Found">Found</option>
+                      <option value="Lost">Lost</option>
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 ">
-                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                        </svg>
+                      </svg>
                     </div>
-                    </div>
+                  </div>
                 </div>
 
                 <StringTextField
-                    value={itemName}
-                    onChange={(e) => setItemName(e.target.value)}
-                    label="Item Name"
-                    placeholder="e.g. Cellphone"
-                    errorMessage="Item name minimum of 3 characters"
-                    showError={formSubmitted && itemName.trim() === ""}
+                  value={itemName}
+                  onChange={(e) => setItemName(e.target.value)}
+                  label="Item Name"
+                  placeholder="e.g. Cellphone"
+                  errorMessage="Must be between 3 and 100 characters"
+                  showError={formSubmitted && (itemName.trim().length < MIN_CHAR || itemName.trim().length > MAX_CHAR_ITEM)}
                 />
 
                 <div className="flex flex-col gap-1">
-                    <label className="text-sm text-gray-700" htmlFor="content-field">Description</label>
-                    <div className="flex items-center gap-2">
+                  <label className="text-sm text-gray-700" htmlFor="content-field">Description</label>
+                  <div className="flex items-center gap-2">
                     <textarea
-                        id="content-field"
-                        name="content-field"
-                        rows={3}
-                        className={`border border-gray-400 rounded-[5px] px-3 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 ${showContentError ? "border-red-500 focus:ring-red-400" : ""}`}
-                        placeholder="Enter Content"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
+                      id="content-field"
+                      name="content-field"
+                      rows={3}
+                      className={`border border-gray-400 rounded-[5px] px-3 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400 ${showContentError ? "border-red-500 focus:ring-red-400" : ""}`}
+                      placeholder="Enter Content"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
                     />
-                    </div>
-                    <p className={`text-sm ${showContentError ? "text-red-500" : "text-white"}`}>Please fill the text field</p>
+                  </div>
+                  <p className={`text-sm ${showContentError ? "text-red-500" : "text-white"}`}>
+                    Must be between 3 and 400 characters
+                  </p>
                 </div>
 
                 {reportType === "Found" && (
-                    <StringTextField
+                  <StringTextField
                     value={turnedOver}
                     onChange={(e) => setTurnedOver(e.target.value)}
                     label="Turned Over"
                     placeholder="e.g. Lost & Found center"
-                    errorMessage="If you have the item just type N/A"
-                    showError={formSubmitted && turnedOver.trim() === ""}
-                    />
+                    errorMessage="Must be between 3 and 100 characters"
+                    showError={formSubmitted && (turnedOver.trim().length < MIN_CHAR || turnedOver.trim().length > MAX_CHAR_ITEM)}
+                  />
                 )}
 
                 <div className="flex flex-row gap-x-10 mt-2">
-                    <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Close" onClick={onClose} />
-                    <Button type="button" buttonText="Continue" onClick={handleFirstStep} />
+                  <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Close" onClick={onClose} />
+                  <Button type="button" buttonText="Continue" onClick={handleFirstStep} />
                 </div>
-                </>
+              </>
             )}
 
             {step === 2 && (
-                <>
+              <>
                 <h2 className="text-2xl font-bold mb-6">Item Details</h2>
                 <StringTextField
-                    value={contact}
-                    onChange={handleContactChange}
-                    maxLength={13}
-                    label="Contact No."
-                    placeholder="e.g 0909 440 5379"
-                    errorMessage="Please enter a valid phone number"
-                    showError={formSubmitted && !validContact}
+                  value={contact}
+                  onChange={handleContactChange}
+                  maxLength={13}
+                  label="Contact No."
+                  placeholder="e.g 0909 440 5379"
+                  errorMessage="Please enter a valid phone number"
+                  showError={formSubmitted && !validContact}
                 />
                 <StringTextField
-                    value={locationDetails}
-                    onChange={(e) => setLocationDetails(e.target.value)}
-                    label="Item location"
-                    placeholder="e.g USTP Library"
-                    errorMessage="Please fill the text field"
-                    showError={formSubmitted && locationDetails.trim() === ""}
+                  value={locationDetails}
+                  onChange={(e) => setLocationDetails(e.target.value)}
+                  label="Item location"
+                  placeholder="e.g USTP Library"
+                  errorMessage="Must be between 3 and 100 characters"
+                  showError={formSubmitted && (locationDetails.trim().length < MIN_CHAR || locationDetails.trim().length > MAX_CHAR_ITEM)}
                 />
                 <div className="mb-6">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Time details</label>
-                    <div className="relative flex items-center">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Time details</label>
+                  <div className="relative flex items-center">
                     <Calendar className="absolute left-3 w-5 h-5 text-gray-400 pointer-events-none" />
                     <input
-                        type="datetime-local"
-                        value={timeDetails}
-                        onChange={(e) => setTimeDetails(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      type="datetime-local"
+                      value={timeDetails}
+                      onChange={(e) => setTimeDetails(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
-                    </div>
-                    {formSubmitted && (timeDetails.trim() === "" || dateError === true) && (
-                        <p className="text-red-500 text-sm mt-1">Please select valid time</p>
-                    )}
+                  </div>
+                  {formSubmitted && (timeDetails.trim() === "" || dateError === true) && (
+                    <p className="text-red-500 text-sm mt-1">Please select valid time</p>
+                  )}
                 </div>
                 <div className="flex flex-row gap-x-10 mt-2">
-                    <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setSteps(1)} />
-                    <Button type="button" buttonText="Continue" onClick={handleSecondStep} />
+                  <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setSteps(1)} />
+                  <Button type="button" buttonText="Continue" onClick={handleSecondStep} />
                 </div>
-                </>
+              </>
             )}
 
             {step === 3 && (
-                <>
+              <>
                 <h2 className="text-2xl font-bold mb-6">Item Image</h2>
-                
+
                 {/* EXISTING IMAGE PREVIEW FOR EDIT MODE */}
                 {existingImageUrl && !image && (
-                   <div className="mb-4">
-                     <p className="text-sm text-gray-500 mb-1">Current Image:</p>
-                     <img src={existingImageUrl} alt="Current" className="h-32 w-auto object-cover rounded-md border" />
-                   </div>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-500 mb-1">Current Image:</p>
+                    <img src={existingImageUrl} alt="Current" className="h-32 w-auto object-cover rounded-md border" />
+                  </div>
                 )}
 
                 <UploadPicture image={image} setImage={setImage} />
 
                 {formSubmitted && !image && !existingImageUrl && (
-                    <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
+                  <p className="text-red-500 text-sm mb-4 font-semibold">Please upload an image</p>
                 )}
 
                 <div className="flex flex-row gap-x-10 mt-2">
-                    <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setSteps(2)} />
-                    <Button 
-                        type="submit" 
-                        buttonText={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update" : "Submit")} 
-                    />
+                  <Button buttonContainerDesign="bg-white border border-[#3B82F6] p-[10px] w-full text-[#3B82F6] rounded-[6px] hover:bg-blue-50 transition-colors duration-200 hover:cursor-pointer" type="button" buttonText="Back" onClick={() => setSteps(2)} />
+                  <Button
+                    type="submit"
+                    buttonText={isSubmitting ? (isEditMode ? "Updating..." : "Submitting...") : (isEditMode ? "Update" : "Submit")}
+                  />
                 </div>
-                </>
+              </>
             )}
-            </form>
+          </form>
         )}
 
         {cloudinaryError && (
@@ -383,7 +399,7 @@ export default function index({ onClose, initialData }: CreatePostProps) {
         <Modal cardContainerDesign="bg-white shadow-lg rounded-lg p-8 w-[300px] flex flex-col items-center justify-center">
           <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
           <h3 className="text-lg font-semibold text-gray-800">
-             {isEditMode ? "Updating..." : "Submitting..."}
+            {isEditMode ? "Updating..." : "Submitting..."}
           </h3>
           <p className="text-gray-500 text-sm mt-2">Please wait...</p>
         </Modal>
@@ -392,12 +408,12 @@ export default function index({ onClose, initialData }: CreatePostProps) {
       {/* API Submission Error Modal */}
       {formPostError && (
         <Modal>
-           <div className="text-center flex flex-col items-center justify-center p-4">
-              <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Submission Failed</h2>
-              <p className="text-gray-600 mb-6">{formPostErrorMessage}</p>
-              <Button type="button" buttonText="Close" onClick={() => window.location.reload()} />
-            </div>
+          <div className="text-center flex flex-col items-center justify-center p-4">
+            <XCircleIcon className="w-12 h-12 text-red-500 mb-4" />
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Submission Failed</h2>
+            <p className="text-gray-600 mb-6">{formPostErrorMessage}</p>
+            <Button type="button" buttonText="Close" onClick={() => window.location.reload()} />
+          </div>
         </Modal>
       )}
     </>
