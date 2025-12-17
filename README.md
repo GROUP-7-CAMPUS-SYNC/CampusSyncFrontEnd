@@ -5,6 +5,11 @@
 </div>
 
 A centralized, communication platform designed to unify the USTP community under one trusted digital ecosystem. It streamlines access to events, announcements, and lost&found items while eliminating dependence on scattered social media channels and unverified sources.
+ 
+## 🌐 Live Demo
+
+*   **Frontend**: [CampusSync Frontend](https://campussyncfrontend.onrender.com)
+*   **Backend API**: [CampusSync Backend](https://campussyncbackend-ybn0.onrender.com)
 
 ## 🚀 Technologies
 
