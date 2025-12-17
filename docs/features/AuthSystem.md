@@ -11,7 +11,7 @@ The authentication system secures the platform by ensuring only verified USTP co
 1.  User submits Email, Password, and Course.
 2.  Frontend validates the email format (Regex).
 3.  Backend checks if the user already exists.
-4.  If unique, account is created with `Standard` role by default.
+4.  If unique, account is created with `user` role by default.
 
 ## 🔑 Login Flow
 1.  User submits credentials.

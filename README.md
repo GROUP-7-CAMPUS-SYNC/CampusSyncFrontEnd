@@ -11,43 +11,15 @@ A centralized, communication platform designed to unify the USTP community under
 *   **Frontend**: [CampusSync Frontend](https://campussyncfrontend.onrender.com)
 *   **Backend API**: [CampusSync Backend](https://campussyncbackend-ybn0.onrender.com)
 
-## 🔑 User Credentials & Roles
+## 📚 Documentation
+We have prepared comprehensive documentation for the project defense:
 
-### Role Descriptions
-*   **Moderator Account**: Authorized to designate Organization Heads and create new organizations within the system.
-*   **Standard User Accounts**: Encompasses both Organization Heads and regular members.
-    *   **Organization Heads**: Authorized to create, edit, and delete organization-wide posts.
-    *   **Regular Members**: Authorized to create, edit, and delete only their own personal posts.
+*   **[Features & User Guide](./src/docs/UserGuide.md)**
+*   **[Technical Architecture](./src/docs/technical/Architecture.md)**
+*   **[Security & Privacy](./src/docs/features/AuthSystem.md)**
+*   **[Future Roadmap](./src/docs/FutureRoadmap.md)**
 
-### Sample Account Credentials
-
-#### 1. Moderator
-*   **Name**: Gabriela Silang
-*   **Email**: `gabriela.silang@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-#### 2. Standard Users
-
-**Juan DelaCruz**
-*   **Email**: `juan.delacruz@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-
-**Maria Santos**
-*   **Email**: `maria.santos@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Jose Rizal**
-*   **Email**: `jose.rizal@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Andres Bonifacio**
-*   **Email**: `andres.bonifacio@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Emilio Aguinaldo**
-*   **Email**: `emilio.aguinaldo@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
+[**View Full Documentation**](./src/docs/ProjectOverview.md)
 
 ## 🚀 Technologies
 
@@ -131,34 +103,7 @@ docker run -d -p 3000:80 --name campussync-client campussync-frontend
 *   The app will be accessible at: `http://localhost:3000`
 *   Nginx is configured (`nginx.conf`) to handle SPA routing (redirecting 404s to `index.html`).
 
-## Phase 2: Frontend Deployment
 
-### Objective
-We deployed the React client, ensuring the **Backend URL** was baked into the build artifacts.
-
-### Initiating Service
-1.  We selected **New + > Web Service**.
-2.  We connected the `CampusSyncFrontEnd` GitHub repository.
-
-### Configuring Build & Runtime
-*   **Name**: `CampusSyncFrontEnd`
-*   **Region**: Singapore
-*   **Runtime**: Docker
-
-### Configuring Build Arguments
-**Context**: Our `Dockerfile` uses `ARG VITE_API_URL` to inject the API endpoint into the static files during the build phase.
-
-1.  We navigated to the **Environment Variables** section.
-2.  We added the following Key/Value pair to link the services:
-    *   **Key**: `VITE_API_URL`
-    *   **Value**: *[Backend URL generated in Phase 1]*
-3.  We ensured there was no trailing slash on the URL to prevent routing errors.
-
-### Deployment Execution
-1.  We clicked **Create Web Service**.
-2.  **Render** executed our Multi-stage Docker build:
-    *   **Stage 1**: Node installed dependencies and ran `npm run build` using the injected `VITE_API_URL`.
-    *   **Stage 2**: Nginx started and served the `/dist` folder on Port 80.
 ## ✨ Key Features
 
 | Feature | Description |
