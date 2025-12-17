@@ -49,22 +49,6 @@ A centralized, communication platform designed to unify the USTP community under
 *   **Email**: `emilio.aguinaldo@1.ustp.edu.ph`
 *   **Password**: `securePassword123`
 
-**Apolinario Mabini**
-*   **Email**: `apolinario.mabini@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Melchora Aquino**
-*   **Email**: `melchora.aquino@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Antonio Luna**
-*   **Email**: `antonio.luna@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
-**Gregorio DelPilar**
-*   **Email**: `gregorio.delpilar@1.ustp.edu.ph`
-*   **Password**: `securePassword123`
-
 ## 🚀 Technologies
 
 *   **Framework**: React 19
@@ -97,6 +81,16 @@ A centralized, communication platform designed to unify the USTP community under
     ```bash
     npm run build
     ```
+
+## 💡 Design Decisions
+
+This project prioritizes **performance, maintainability, and scalability**.
+
+*   **React 19 & Vite**: Selected for a modern, high-performance development experience. Vite provides instant server start and lightning-fast HMR (Hot Module Replacement), while React 19 introduces newer concurrency features for smoother UI interactions.
+*   **TailwindCSS**: Chosen for its utility-first approach, allowing for rapid UI development and consistent design tokens without the overhead of writing custom CSS classes.
+*   **Docker Multi-Stage Build**: Implemented to keep the final production image lightweight. The build process happens in a separate node environment, and only the compiled static assets are copied to the final Nginx container, significantly reducing image size.
+*   **Nginx as Web Server**: Used to serve the static frontend assets efficiently. It is also configured to handle client-side routing by redirecting all unknown requests to `index.html`, ensuring the Single Page Application (SPA) works correctly.
+*   **TypeScript**: Enforced to ensure type safety across the application, reducing runtime errors and improving developer productivity through better autocomplete and code intelligence.
 
 ## 📂 Project Structure
 
