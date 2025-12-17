@@ -27,12 +27,11 @@ const timeAgo = (dateString: string) => {
   const diffInSeconds = Math.floor((now.getTime() - past.getTime()) / 1000);
   if (diffInSeconds < 60) return "Just now";
   const minutes = Math.floor(diffInSeconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
-  return past.toLocaleDateString();
+  return `${days}d ago`;
 };
 
 interface UserProfile {
@@ -92,7 +91,7 @@ export default function LostFoundCard({
 
   // Dropdown state
   const [userClickDropDown, setUserClickDropDown] = useState<boolean>(false);
-  
+
   // 2. Chat Modal State
   const [showChatModal, setShowChatModal] = useState(false);
   const [isNotValidChat, setIsNotValidChat] = useState<boolean>(false);
@@ -186,12 +185,10 @@ export default function LostFoundCard({
   };
 
   const validateUserChat = async () => {
-    if(item.postedBy?.email === localStorage.getItem("email"))
-    {
+    if (item.postedBy?.email === localStorage.getItem("email")) {
       setIsNotValidChat(true);
     }
-    else
-    {
+    else {
       setUserClickDropDown(false); // Close the menu
       setShowChatModal(true);      // Open the modal
     }
@@ -201,18 +198,16 @@ export default function LostFoundCard({
     try {
       const response = await api.delete(`/report_types/delete/${item._id}`);
 
-      if(response.status === 200)
-      {
+      if (response.status === 200) {
         window.location.reload();
       }
     }
-    catch(error : any)
-    {
+    catch (error: any) {
       setErrorMessage(error.response.data.message);
       setErrorModal(true);
     }
   }
-  
+
   const posterName = item.postedBy
     ? `${item.postedBy.firstname} ${item.postedBy.lastname}`
     : "Unknown User";
@@ -260,16 +255,15 @@ export default function LostFoundCard({
                 onChatClick={() => validateUserChat()}
                 onDeleteClick={() => deletePost()}
                 // 1. CONNECT UPDATE CLICK
-                onUpdateClick={() => setShowUpdateModal(true)} 
+                onUpdateClick={() => setShowUpdateModal(true)}
               />
             )}
           </div>
 
           <span
-            className={`px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium text-white ${
-              item.reportType === "Lost" ? "bg-red-700" : "bg-green-700"
-            }`}
-          > 
+            className={`px-3 py-2 sm:px-4 rounded-lg text-sm sm:text-base font-medium text-white ${item.reportType === "Lost" ? "bg-red-700" : "bg-green-700"
+              }`}
+          >
             {item.reportType}
           </span>
         </div>
@@ -313,6 +307,17 @@ export default function LostFoundCard({
             {item.contactDetails}
           </p>
         </div>
+
+        {item.reportType === "Found" && (
+          <div className="flex flex-col bg-[#EFF6FF] px-3 py-2 rounded-lg">
+            <p className="text-[#4B4D51] text-xs uppercase font-bold tracking-wide">
+              Turn Over
+            </p>
+            <p className="text-sm font-medium text-gray-700">
+              {item.turnOver}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* LOCATION + TIME */}
@@ -341,8 +346,8 @@ export default function LostFoundCard({
       </div>
 
       {/* WITNESS TOGGLE */}
-      {witnessCount > 0 && (
-        <div className="flex flex-row justify-between mt-4 mb-2 ">
+      <div className="flex flex-row justify-between mt-4 mb-2 ">
+        {witnessCount > 0 ? (
           <button
             disabled={isSubmitting}
             onClick={handleToggleWitnessList}
@@ -354,27 +359,27 @@ export default function LostFoundCard({
               : `See ${witnessCount} Witnesses`}
             <ChevronDown
               size={14}
-              className={`transition-transform duration-300 ${
-                showWitnessList ? "rotate-180" : "rotate-0"
-              }`}
+              className={`transition-transform duration-300 ${showWitnessList ? "rotate-180" : "rotate-0"
+                }`}
             />
           </button>
-          <button
-            onClick={() => onCommentClick?.(item.comments)}
-            className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
-          >
-            {item.comments?.length || 0} Comments
-          </button>
-        </div>
-      )}
+        ) : (
+          <div />
+        )}
+        <button
+          onClick={() => onCommentClick?.(item.comments)}
+          className="flex justify-end text-sm sm:text-base cursor-pointer text-gray-500 hover:text-black"
+        >
+          {item.comments?.length || 0} Comments
+        </button>
+      </div>
 
       {/* WITNESS LIST */}
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out mt-0 ${
-          showWitnessList
-            ? "max-h-48 mt-2 opacity-100 p-3"
-            : "max-h-0 mt-0 opacity-0"
-        } bg-gray-50 rounded-lg space-y-3 border border-gray-100 shadow-inner custom-scrollbar`}
+        className={`overflow-hidden transition-all duration-300 ease-in-out mt-0 ${showWitnessList
+          ? "max-h-48 mt-2 opacity-100 p-3"
+          : "max-h-0 mt-0 opacity-0"
+          } bg-gray-50 rounded-lg space-y-3 border border-gray-100 shadow-inner custom-scrollbar`}
       >
         {isLoadingWitnesses ? (
           <div className="flex justify-center py-2">
@@ -441,19 +446,19 @@ export default function LostFoundCard({
 
       {/* --- 2. RENDER UPDATE FORM MODAL --- */}
       {showUpdateModal && (
-        <ReportForm 
-            onClose={() => window.location.reload()}
-            initialData={{
-                _id: item._id,
-                reportType: item.reportType,
-                itemName: item.itemName,
-                description: item.description,
-                turnOver: item.turnOver,
-                locationDetails: item.locationDetails,
-                contactDetails: item.contactDetails,
-                dateLostOrFound: item.dateLostOrFound,
-                image: item.image
-            }}
+        <ReportForm
+          onClose={() => window.location.reload()}
+          initialData={{
+            _id: item._id,
+            reportType: item.reportType,
+            itemName: item.itemName,
+            description: item.description,
+            turnOver: item.turnOver,
+            locationDetails: item.locationDetails,
+            contactDetails: item.contactDetails,
+            dateLostOrFound: item.dateLostOrFound,
+            image: item.image
+          }}
         />
       )}
 
@@ -487,9 +492,9 @@ export default function LostFoundCard({
       )}
 
       {isNotValidChat && (
-        <SelfChatErrorModal 
-          isOpen={isNotValidChat} 
-          onClose={() => setIsNotValidChat(false)} 
+        <SelfChatErrorModal
+          isOpen={isNotValidChat}
+          onClose={() => setIsNotValidChat(false)}
         />
       )}
 
