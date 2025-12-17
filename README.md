@@ -1,6 +1,8 @@
 # CampusSync Frontend
 
-<img src="./public/WebsiteLogo.png" alt="CampusSync Logo" width="10%" />
+<div align="center">
+  <img src="./public/WebsiteLogo.png" alt="CampusSync Logo" width="50%" style="background-color: white; border-radius: 10px; padding: 20px;" />
+</div>
 
 A centralized, communication platform designed to unify the USTP community under one trusted digital ecosystem. It streamlines access to events, announcements, and lost&found items while eliminating dependence on scattered social media channels and unverified sources.
 
