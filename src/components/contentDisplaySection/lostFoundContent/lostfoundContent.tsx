@@ -307,6 +307,17 @@ export default function LostFoundCard({
             {item.contactDetails}
           </p>
         </div>
+
+        {item.reportType === "Found" && (
+          <div className="flex flex-col bg-[#EFF6FF] px-3 py-2 rounded-lg">
+            <p className="text-[#4B4D51] text-xs uppercase font-bold tracking-wide">
+              Turn Over
+            </p>
+            <p className="text-sm font-medium text-gray-700">
+              {item.turnOver}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* LOCATION + TIME */}
