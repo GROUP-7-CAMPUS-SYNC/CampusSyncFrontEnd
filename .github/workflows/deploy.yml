@@ -15,18 +15,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step to handle the lowercase requirement for GHCR
+      - name: Lowercase the repo name
+        run: echo "REPO_LOWER=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }} # Automatically provided by GitHub
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/campussync-frontend:latest
+          # Uses the lowercase environment variable created above
+          tags: ghcr.io/${{ env.REPO_LOWER }}:latest
           build-args: |
             VITE_API_URL=http://localhost:3000
